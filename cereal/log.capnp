@@ -130,6 +130,7 @@ struct FrameData {
   focusVal @16 :List(Int16);
   focusConf @17 :List(UInt8);
   sharpnessScore @18 :List(UInt16);
+  recoverState @19 :Int32;
 
   frameType @7 :FrameType;
   timestampSof @8 :UInt64;
@@ -381,6 +382,7 @@ struct HealthData {
     blackPanda @3;
     pedal @4;
     uno @5;
+    dos @6;
   }
 
   enum UsbPowerMode {
@@ -627,6 +629,7 @@ struct ModelData {
     std @2 :Float32;
     stds @3 :List(Float32);
     poly @4 :List(Float32);
+    validLen @5 :Float32;
   }
 
   struct LeadData {
@@ -839,6 +842,7 @@ struct LiveLocationKalman {
   # These angles are all eulers and roll, pitch, yaw
   # orientationECEF transforms to rot matrix: ecef_from_device
   orientationECEF @6 : Measurement;
+  calibratedOrientationECEF @20 : Measurement;
   orientationNED @7 : Measurement;
   angularVelocityDevice @8 : Measurement;
 
@@ -858,6 +862,7 @@ struct LiveLocationKalman {
   inputsOK @17 :Bool = true;
   posenetOK @18 :Bool = true;
   gpsOK @19 :Bool = true;
+  sensorsOK @21 :Bool = true;
 
   enum Status {
     uninitialized @0;

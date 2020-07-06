@@ -40,6 +40,7 @@ def wait_for_sockets(socks, timeout=10.0):
         recvd.append(s)
   return recvd
 
+
 def get_route_log(route_name):
   log_path = os.path.join("/tmp", "%s--0--%s" % (route_name.replace("|", "_"), "rlog.bz2"))
 
@@ -49,7 +50,7 @@ def get_route_log(route_name):
     # if request fails, try again once and let it throw exception if fails again
     try:
       r = requests.get(log_url, timeout=15)
-    except:
+    except Exception:
       r = requests.get(log_url, timeout=15)
 
     if r.status_code == 200:
@@ -189,6 +190,14 @@ routes = {
   },
   "9c917ba0d42ffe78|2020-04-17--12-43-19": {
     'carFingerprint': HYUNDAI.PALISADE,
+    'enableCamera': True,
+  },
+  "610ebb9faaad6b43|2020-06-13--15-28-36": {
+    'carFingerprint': HYUNDAI.IONIQ_EV_LTD,
+    'enableCamera': True,
+  },
+  "2c5cf2dd6102e5da|2020-06-26--16-00-08": {
+    'carFingerprint': HYUNDAI.IONIQ,
     'enableCamera': True,
   },
   "f7b6be73e3dfd36c|2019-05-12--18-07-16": {
@@ -343,12 +352,20 @@ routes = {
     'enableDsu': False,
   },
   "1dd19ceed0ee2b48|2018-12-22--17-36-49": {
-    'carFingerprint': TOYOTA.LEXUS_IS, # 300 hybrid
+    'carFingerprint': TOYOTA.LEXUS_IS,  # 300 hybrid
     'enableCamera': True,
     'enableDsu': False,
   },
   "76b83eb0245de90e|2019-10-20--15-42-29": {
     'carFingerprint': VOLKSWAGEN.GOLF,
+    'enableCamera': True,
+  },
+  "3c8f0c502e119c1c|2020-06-30--12-58-02": {
+    'carFingerprint': SUBARU.ASCENT,
+    'enableCamera': True,
+  },
+  "c321c6b697c5a5ff|2020-06-23--11-04-33": {
+    'carFingerprint': SUBARU.FORESTER,
     'enableCamera': True,
   },
   "791340bc01ed993d|2019-03-10--16-28-08": {
@@ -363,12 +380,12 @@ routes = {
     'carFingerprint': NISSAN.LEAF,
     'enableCamera': True,
   },
-  "32a319f057902bb3|2020-04-27--15-18-58": {
-    'carFingerprint': MAZDA.CX5,
-    'enableCamera': True,
-  },
   "059ab9162e23198e|2020-05-30--09-41-01": {
     'carFingerprint': NISSAN.ROGUE,
+    'enableCamera': True,
+  },
+  "32a319f057902bb3|2020-04-27--15-18-58": {
+    'carFingerprint': MAZDA.CX5,
     'enableCamera': True,
   },
 }
@@ -460,7 +477,8 @@ if __name__ == "__main__":
     # Start unlogger
     print("Start unlogger")
     unlogger_cmd = [os.path.join(BASEDIR, 'tools/replay/unlogger.py'), route, '/tmp']
-    unlogger = subprocess.Popen(unlogger_cmd + ['--disable', 'frame,encodeIdx,plan,pathPlan,liveLongitudinalMpc,radarState,controlsState,liveTracks,liveMpc,sendcan,carState,carControl,carEvents,carParams', '--no-interactive'], preexec_fn=os.setsid)
+    disable_socks = 'frame,encodeIdx,plan,pathPlan,liveLongitudinalMpc,radarState,controlsState,liveTracks,liveMpc,sendcan,carState,carControl,carEvents,carParams'
+    unlogger = subprocess.Popen(unlogger_cmd + ['--disable', disable_socks, '--no-interactive'], preexec_fn=os.setsid)  # pylint: disable=subprocess-popen-preexec-fn
 
     print("Check sockets")
     extra_socks = []
