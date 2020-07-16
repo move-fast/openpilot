@@ -8,8 +8,8 @@
   path = laika_repo
   url = ../../commaai/laika.git
 [submodule "cereal"]
-  path = cereal
-  url = ../../commaai/cereal.git
+	path = cereal
+	url = ../../move-fast/cereal.git
 [submodule "rednose_repo"]
   path = rednose_repo
   url = ../../commaai/rednose.git
