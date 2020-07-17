@@ -61,6 +61,9 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool rightHandDM MEMBER rightHandDM);
   Q_PROPERTY(int status MEMBER status);
 
+  Q_PROPERTY(bool showHowAlert MEMBER showHowAlert);
+  Q_PROPERTY(bool howWarning MEMBER howWarning);
+
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -71,6 +74,7 @@ private:
 
   ExperimentalButton *experimental_btn;
   QPixmap dm_img;
+  QPixmap how_img;
   float speed;
   QString speedUnit;
   float setSpeed;
@@ -84,6 +88,8 @@ private:
   bool has_us_speed_limit = false;
   bool has_eu_speed_limit = false;
   bool v_ego_cluster_seen = false;
+  bool showHowAlert = false;
+  bool howWarning = false;
   int status = STATUS_DISENGAGED;
   std::unique_ptr<PubMaster> pm;
 

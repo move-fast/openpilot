@@ -232,6 +232,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
+  how_img = loadPixmap("../assets/img_hands_on_wheel.png", {img_size, img_size});
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -283,8 +284,11 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // update DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
+    const auto howState = sm["driverMonitoringState"].getDriverMonitoringState().getHandsOnWheelState();
     setProperty("dmActive", sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode());
     setProperty("rightHandDM", sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD());
+    setProperty("showHowAlert", howState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
+    setProperty("howWarning", howState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
   }
 
   // DM icon transition
@@ -562,6 +566,12 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   int y = rect().bottom() - footer_h / 2;
   float opacity = dmActive ? 0.65 : 0.2;
   drawIcon(painter, x, y, dm_img, blackColor(70), opacity);
+
+  // Hands on wheel icon
+  if (showHowAlert) {
+    drawIcon(painter, x, y -  (btn_size - 24) / 2 - (bdr_s * 2), how_img, 
+             bg_colors[howWarning ? STATUS_WARNING : STATUS_ALERT], 1.0);
+  }
 
   // face
   QPointF face_kpts_draw[std::size(default_face_kpts_3d)];
