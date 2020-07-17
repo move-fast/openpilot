@@ -566,6 +566,7 @@ def main():
     ("IsRHD", "0"),
     ("IsMetric", "0"),
     ("RecordFront", "0"),
+    ("HandsOnWheelMonitoring", "1"),
     ("HasAcceptedTerms", "0"),
     ("HasCompletedSetup", "0"),
     ("IsUploadRawEnabled", "1"),
@@ -580,6 +581,10 @@ def main():
   for k, v in default_params:
     if params.get(k) is None:
       params.put(k, v)
+
+  # parameters set by Enviroment Varables
+  if os.getenv("HANDSMONITORING") is not None:
+    params.put("HandsOnWheelMonitoring", str(int(os.getenv("HANDSMONITORING"))))
 
   # is this chffrplus?
   if os.getenv("PASSIVE") is not None:
