@@ -70,6 +70,13 @@ TogglesPanel::TogglesPanel(QWidget *parent) : ListWidget(parent) {
                                   "In this mode openpilot will ignore lanelines and just drive how it thinks a human would.",
                                   "../assets/offroad/icon_road.png",
                                   this));
+  
+  addItem(new ParamControl("HandsOnWheelMonitoring",
+                                  "Enable Hands on Wheel Monitoring",
+                                  "Monitor and alert when driver is not keeping the hands on the steering wheel.",
+                                  "../assets/offroad/icon_openpilot.png",
+                                  this));
+
 #ifdef ENABLE_MAPS
   addItem(new ParamControl("NavSettingTime24h",
                                   "Show ETA in 24h format",
