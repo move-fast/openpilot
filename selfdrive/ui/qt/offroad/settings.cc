@@ -73,6 +73,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("When enabled, pressing the accelerator pedal will disengage openpilot."),
       "../assets/offroad/icon_disengage_on_accelerator.svg",
     },
+    {
+      "HandsOnWheelMonitoring",
+      "Enable Hands on Wheel Monitoring",
+      "Monitor and alert when driver is not keeping the hands on the steering wheel.",
+      "../assets/offroad/icon_openpilot.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",

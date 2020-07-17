@@ -176,6 +176,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
   experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size, img_size});
+  how_img = loadPixmap("../assets/img_hands_on_wheel.png", {img_size, img_size});
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -224,9 +225,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // update engageability and DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
+    const auto howState = sm["driverMonitoringState"].getDriverMonitoringState().getHandsOnWheelState();
+
     setProperty("engageable", cs.getEngageable() || cs.getEnabled());
     setProperty("dmActive", sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode());
     setProperty("rightHandDM", sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD());
+    setProperty("showHowAlert", howState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
+    setProperty("howWarning", howState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
   }
 }
 
@@ -377,11 +382,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   configFont(p, "Inter", 66, "Regular");
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
-  // engage-ability icon
   if (engageable) {
     SubMaster &sm = *(uiState()->sm);
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5),
              sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), 1.0);
+
+    // Hands on wheel icon
+    if (showHowAlert) {
+      drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, int(bdr_s * 1.5) + 2 * radius + bdr_s + radius / 2,
+               how_img, bg_colors[howWarning ? STATUS_WARNING : STATUS_ALERT], 1.0);
+    }
   }
 
   // dm icon
