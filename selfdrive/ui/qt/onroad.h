@@ -42,6 +42,9 @@ class NvgWindow : public CameraViewWidget {
   Q_PROPERTY(bool rightHandDM MEMBER rightHandDM);
   Q_PROPERTY(int status MEMBER status);
 
+  Q_PROPERTY(bool showHowAlert MEMBER showHowAlert);
+  Q_PROPERTY(bool howWarning MEMBER howWarning);
+
 public:
   explicit NvgWindow(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -52,6 +55,7 @@ private:
 
   QPixmap engage_img;
   QPixmap dm_img;
+  QPixmap how_img;
   const int radius = 192;
   const int img_size = (radius / 2) * 1.5;
   float speed;
@@ -67,6 +71,8 @@ private:
   bool has_us_speed_limit = false;
   bool has_eu_speed_limit = false;
   bool v_ego_cluster_seen = false;
+  bool showHowAlert = false;
+  bool howWarning = false;
   int status = STATUS_DISENGAGED;
 
 protected:

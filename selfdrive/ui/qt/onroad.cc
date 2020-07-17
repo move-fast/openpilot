@@ -173,6 +173,7 @@ void OnroadAlerts::paintEvent(QPaintEvent *event) {
 NvgWindow::NvgWindow(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraViewWidget("camerad", type, true, parent) {
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size, img_size});
+  how_img = loadPixmap("../assets/img_hands_on_wheel.png", {img_size, img_size});
 }
 
 void NvgWindow::updateState(const UIState &s) {
@@ -221,9 +222,13 @@ void NvgWindow::updateState(const UIState &s) {
 
   // update engageability and DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
+    const auto howState = sm["driverMonitoringState"].getDriverMonitoringState().getHandsOnWheelState();
+
     setProperty("engageable", cs.getEngageable() || cs.getEnabled());
     setProperty("dmActive", sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode());
     setProperty("rightHandDM", sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD());
+    setProperty("showHowAlert", howState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
+    setProperty("howWarning", howState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING);
   }
 
   if (s.scene.calibration_valid) {
@@ -380,10 +385,16 @@ void NvgWindow::drawHud(QPainter &p) {
   configFont(p, "Inter", 66, "Regular");
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
-  // engage-ability icon
   if (engageable) {
+    // engage-ability icon
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5),
              engage_img, bg_colors[status], 1.0);
+    
+    // Hands on wheel icon
+    if (showHowAlert) {
+      drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, int(bdr_s * 1.5) + 2 * radius + bdr_s + radius / 2,
+               how_img, bg_colors[howWarning ? STATUS_WARNING : STATUS_ALERT], 1.0);
+    }
   }
 
   // dm icon
@@ -409,6 +420,7 @@ void NvgWindow::drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, flo
   p.drawEllipse(x - radius / 2, y - radius / 2, radius, radius);
   p.setOpacity(opacity);
   p.drawPixmap(x - img_size / 2, y - img_size / 2, img);
+  p.setOpacity(1.0);
 }
 
 
