@@ -113,6 +113,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"GitRemote", PERSISTENT},
     {"GsmApn", PERSISTENT},
     {"GsmRoaming", PERSISTENT},
+    {"HandsOnWheelMonitoring", PERSISTENT},
     {"HardwareSerial", PERSISTENT},
     {"HasAcceptedTerms", PERSISTENT},
     {"IMEI", PERSISTENT},
