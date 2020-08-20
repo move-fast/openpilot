@@ -176,7 +176,7 @@ class Controls:
 
     # Handle calibration status
     cal_status = self.sm['liveCalibration'].calStatus
-    if cal_status != Calibration.CALIBRATED:
+    if cal_status != Calibration.CALIBRATED and os.getenv("UNLOGGER") is None:
       if cal_status == Calibration.UNCALIBRATED:
         self.events.add(EventName.calibrationIncomplete)
       else:
@@ -198,7 +198,8 @@ class Controls:
       self.events.add(EventName.laneChange)
 
     if self.can_rcv_error or (not CS.canValid and self.sm.frame > 5 / DT_CTRL):
-      self.events.add(EventName.canError)
+      if os.getenv("UNLOGGER") is None:
+        self.events.add(EventName.canError)
     if self.mismatch_counter >= 200:
       self.events.add(EventName.controlsMismatch)
     if not self.sm.alive['plan'] and self.sm.alive['pathPlan']:
