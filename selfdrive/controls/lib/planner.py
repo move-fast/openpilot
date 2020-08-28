@@ -14,6 +14,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
+from selfdrive.controls.lib.turn_planner import limit_accel_for_turn_ahead
 
 MAX_SPEED = 255.0
 
@@ -133,6 +134,7 @@ class Planner():
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
+      accel_limits_turns = limit_accel_for_turn_ahead(v_ego, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
 
       if force_slow_decel:
         # if required so, force a smooth deceleration
