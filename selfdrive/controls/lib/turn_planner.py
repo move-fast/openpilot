@@ -31,6 +31,8 @@ def limit_accel_in_turns(v_ego, a_total_max, angle_steers, a_target, CP):
   else:
     # Going too fast, smoothly decelerate.
     a_lon_allowed = TURN_SMOOTH_DECEL
+    print(f'-> Immediate lat acceleration({a_lat: .2f}) too high. Setting top limit to: \
+        {min(a_target[1], a_lon_allowed): .2f}')
 
   return [a_target[0], min(a_target[1], a_lon_allowed)]
 
@@ -71,9 +73,12 @@ def limit_accel_for_turn_ahead(v_ego, d_poly, limits):
   max_lon_acc = max(acc_limit, limits[0]) if acc_limit < limits[0] + _ACC_SAFETY_OFFSET else limits[1]
 
   if max_lat_acc >= a_lat_reg_max:
-    print(f'**** Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts. v_ego: {v_ego}, \
-        acc_limit: {acc_limit:.2f}, limit_0: {limits[0]:.2f}, max_lon_acc: {max_lon_acc:.2f}')
+    print('-----------------------------')
+    print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
+    print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
+    print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
+    print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
   if acc_limit < limits[0] + _ACC_SAFETY_OFFSET:
-    print(f'**** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f}')
+    print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
 
   return [limits[0], max_lon_acc]

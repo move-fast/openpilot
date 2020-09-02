@@ -128,13 +128,16 @@ class Planner():
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
+    decel_for_turn = False
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].gasPressed:
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
+      old_limit = accel_limits_turns[1]
       accel_limits_turns = limit_accel_for_turn_ahead(v_ego, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
+      decel_for_turn = old_limit != accel_limits_turns[1]
 
       if force_slow_decel:
         # if required so, force a smooth deceleration
@@ -150,6 +153,12 @@ class Planner():
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
     else:
+      accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
+      accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
+      old_limit = accel_limits_turns[1]
+      accel_limits_turns = limit_accel_for_turn_ahead(v_ego, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
+      decel_for_turn = old_limit != accel_limits_turns[1]
+
       starting = long_control_state == LongCtrlState.starting
       a_ego = min(sm['carState'].aEgo, 0.0)
       reset_speed = MIN_CAN_SPEED if starting else v_ego
@@ -198,6 +207,9 @@ class Planner():
     plan_send.plan.radarStateMonoTime = sm.logMonoTime['radarState']
 
     # longitudal plan
+    print(f'-> vCruise: {self.v_cruise:.2f}, aCruise: {self.a_cruise:.2f}')
+    print(f'-> vStart: {self.v_acc_start:.2f}, aStart: {self.a_acc_start:.2f}')
+    print(f'-> vTarget: {self.v_acc:.2f}, aTarget: {self.a_cruise:.2f}') 
     plan_send.plan.vCruise = float(self.v_cruise)
     plan_send.plan.aCruise = float(self.a_cruise)
     plan_send.plan.vStart = float(self.v_acc_start)
@@ -216,6 +228,8 @@ class Planner():
 
     # Send out fcw
     plan_send.plan.fcw = fcw
+
+    plan_send.plan.decelForTurn = bool(decel_for_turn)
 
     pm.send('plan', plan_send)
 

@@ -235,6 +235,8 @@ class Controls:
       self.events.add(EventName.fcw)
     if self.sm['model'].frameDropPerc > 1 and (not SIMULATION):
         self.events.add(EventName.modeldLagging)
+    if self.sm['plan'].decelForTurn:
+      self.events.add(EventName.modelCommIssueDEPRECATED)
 
     # Only allow engagement with brake pressed when stopped behind another stopped car
     if CS.brakePressed and self.sm['plan'].vTargetFuture >= STARTING_TARGET_SPEED \
