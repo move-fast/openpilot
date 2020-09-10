@@ -51,7 +51,7 @@ def eval_lat_acc(poly, v_ego, x_vals):
   return np.vectorize(lat_acc)(x_vals)
 
 
-def limit_accel_for_turn_ahead(v_ego, d_poly, limits):
+def limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, d_poly, limits):
   """
   This function returns a limited long acceleration allowed to limit the maximum lateral acceleration
   on the predicted path ahead to the limit specified by regulation.
@@ -60,12 +60,12 @@ def limit_accel_for_turn_ahead(v_ego, d_poly, limits):
   """
   lat_accs = eval_lat_acc(d_poly, v_ego, _EVAL_RANGE)
   max_lat_acc_idx = np.argmax(lat_accs)
-  distance_to_max_lat_acc = max_lat_acc_idx * _EVAL_STEP
+  distance_to_max_lat_acc = max(max_lat_acc_idx * _EVAL_STEP, 0.00001)
   max_lat_acc = lat_accs[max_lat_acc_idx]
 
   a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
-  max_curvature = max_lat_acc / v_ego**2
-  v_target = math.sqrt(a_lat_reg_max / max_curvature)
+  max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
+  v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
   acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
 
   # Only limit max acceleration to `acc_limit` if it is getting close
@@ -81,4 +81,4 @@ def limit_accel_for_turn_ahead(v_ego, d_poly, limits):
   if acc_limit < limits[0] + _ACC_SAFETY_OFFSET:
     print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
 
-  return [limits[0], max_lon_acc]
+  return [limits[0], max_lon_acc], float(v_target)

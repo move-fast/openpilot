@@ -136,7 +136,7 @@ class Planner():
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
       old_limit = accel_limits_turns[1]
-      accel_limits_turns = limit_accel_for_turn_ahead(v_ego, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
+      accel_limits_turns, v_cruise_setpoint = limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
       decel_for_turn = old_limit != accel_limits_turns[1]
 
       if force_slow_decel:
@@ -158,7 +158,7 @@ class Planner():
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
       old_limit = accel_limits_turns[1]
-      accel_limits_turns = limit_accel_for_turn_ahead(v_ego, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
+      accel_limits_turns, v_cruise_setpoint = limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
       decel_for_turn = old_limit != accel_limits_turns[1]
 
       starting = long_control_state == LongCtrlState.starting
