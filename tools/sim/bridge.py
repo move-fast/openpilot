@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 W, H = 1164, 874
 REPEAT_COUNTER = 5
-PRINT_DECIMATION = 100
+PRINT_DECIMATION = 5
 STEER_RATIO = 15.
 
 pm = messaging.PubMaster(['frame', 'sensorEvents', 'can'])

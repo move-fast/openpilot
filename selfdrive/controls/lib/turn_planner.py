@@ -75,9 +75,9 @@ def limit_accel_for_turn_ahead(v_ego, d_poly, limits):
   if max_lat_acc >= a_lat_reg_max:
     print('-----------------------------')
     print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
-    print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
-    print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
-    print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
+#   print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
+#   print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
+#   print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
   if acc_limit < limits[0] + _ACC_SAFETY_OFFSET:
     print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
 

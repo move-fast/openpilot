@@ -251,6 +251,7 @@ class Localizer():
         self.acc_counter += 1
         if self.acc_counter % SENSOR_DECIMATION == 0:
           v = sensor_reading.acceleration.v
+          print(f'Device Accelerometer: {v}')
           self.update_kalman(current_time, ObservationKind.PHONE_ACCEL, [-v[2], -v[1], -v[0]])
 
   def handle_live_calib(self, current_time, log):

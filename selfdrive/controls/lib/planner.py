@@ -144,12 +144,14 @@ class Planner():
         accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
         accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
 
+      #print(f'input: {self.v_acc_start:.2f}, {self.a_acc_start:.2f}, {v_cruise_setpoint:.2f}, {accel_limits_turns[1]:.2f}, {accel_limits_turns[0]:.2f}, {jerk_limits[1]:.2f}, {jerk_limits[0]:.2f}, {LON_MPC_STEP:.2f}')
       self.v_cruise, self.a_cruise = speed_smoother(self.v_acc_start, self.a_acc_start,
                                                     v_cruise_setpoint,
                                                     accel_limits_turns[1], accel_limits_turns[0],
                                                     jerk_limits[1], jerk_limits[0],
                                                     LON_MPC_STEP)
 
+      #print(f'output v_cruise: {self.v_cruise:.2f}, a_cruise: {self.a_cruise:.2f}')  
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
     else:
@@ -177,6 +179,13 @@ class Planner():
     self.mpc2.update(pm, sm['carState'], lead_2, v_cruise_setpoint)
 
     self.choose_solution(v_cruise_setpoint, enabled)
+
+    if False: #decel_for_turn:
+      print(f'-> v_acc_start: {self.v_acc_start:.2f}, a_acc_start: {self.a_acc_start:.2f}')
+      print(f'-> v_cruise: {self.v_cruise:.2f}, a_cruise: {self.a_cruise:.2f}')
+      print(f'-> v_target: {self.v_acc:.2f}, a_target: {self.a_acc:.2f}')
+      print(f'-> v_acc_future: {self.v_acc_future:.2f}')
+      print(f'-> jMax: {jerk_limits[1]:.2f}, jMin: {jerk_limits[0]:.2f}')
 
     # determine fcw
     if self.mpc1.new_lead:
@@ -207,9 +216,6 @@ class Planner():
     plan_send.plan.radarStateMonoTime = sm.logMonoTime['radarState']
 
     # longitudal plan
-    print(f'-> vCruise: {self.v_cruise:.2f}, aCruise: {self.a_cruise:.2f}')
-    print(f'-> vStart: {self.v_acc_start:.2f}, aStart: {self.a_acc_start:.2f}')
-    print(f'-> vTarget: {self.v_acc:.2f}, aTarget: {self.a_cruise:.2f}') 
     plan_send.plan.vCruise = float(self.v_cruise)
     plan_send.plan.aCruise = float(self.a_cruise)
     plan_send.plan.vStart = float(self.v_acc_start)
