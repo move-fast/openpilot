@@ -71,6 +71,10 @@ def limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, d_poly, limits):
   # Only limit max acceleration to `acc_limit` if it is getting close
   # to minimum acceleration limit already provided.
   max_lon_acc = max(acc_limit, limits[0]) if acc_limit < limits[0] + _ACC_SAFETY_OFFSET else limits[1]
+  decel_for_turn = acc_limit < limits[0] + _ACC_SAFETY_OFFSET
+
+  v_turn = v_ego + max_lon_acc * 0.2  # speed in 0.2 seconds
+  v_turn_future = v_ego + max_lon_acc * 4 if decel_for_turn else 255.0  # speed in 4 seconds
 
   if max_lat_acc >= a_lat_reg_max:
     print('-----------------------------')
@@ -78,7 +82,7 @@ def limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, d_poly, limits):
 #   print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
 #   print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
 #   print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
-  if acc_limit < limits[0] + _ACC_SAFETY_OFFSET:
+  if decel_for_turn:
     print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
 
-  return [limits[0], max_lon_acc], float(v_target)
+  return [limits[0], max_lon_acc], decel_for_turn, v_turn, max_lon_acc, float(v_turn_future)

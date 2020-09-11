@@ -79,6 +79,10 @@ class Planner():
     self.a_acc = 0.0
     self.v_cruise = 0.0
     self.a_cruise = 0.0
+    self.v_turn = 0.0
+    self.a_turn = 0.0
+    self.v_turn_future = MAX_SPEED
+    self.decel_for_turn = False
 
     self.longitudinalPlanSource = 'cruise'
     self.fcw_checker = FCWChecker()
@@ -94,6 +98,8 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status:
         solutions['mpc2'] = self.mpc2.v_mpc
+      if self.decel_for_turn:
+        solutions['model'] = self.v_turn
 
       slowest = min(solutions, key=solutions.get)
 
@@ -108,8 +114,11 @@ class Planner():
       elif slowest == 'cruise':
         self.v_acc = self.v_cruise
         self.a_acc = self.a_cruise
+      elif slowest == 'model':
+        self.v_acc = self.v_turn
+        self.a_acc = self.a_turn
 
-    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint])
+    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint, self.v_turn_future])
 
   def update(self, sm, pm, CP, VM, PP):
     """Gets called when new radarState is available"""
@@ -128,16 +137,15 @@ class Planner():
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
-    decel_for_turn = False
+    self.decel_for_turn = False
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].gasPressed:
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
-      old_limit = accel_limits_turns[1]
-      accel_limits_turns, v_cruise_setpoint = limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
-      decel_for_turn = old_limit != accel_limits_turns[1]
+      accel_limits_turns, self.decel_for_turn, self.v_turn, self.a_turn, self.v_turn_future = \
+          limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
 
       if force_slow_decel:
         # if required so, force a smooth deceleration
@@ -157,9 +165,8 @@ class Planner():
     else:
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
-      old_limit = accel_limits_turns[1]
-      accel_limits_turns, v_cruise_setpoint = limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
-      decel_for_turn = old_limit != accel_limits_turns[1]
+      accel_limits_turns, self.decel_for_turn, self.v_turn, self.a_turn, self.v_turn_future = \
+          limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
 
       starting = long_control_state == LongCtrlState.starting
       a_ego = min(sm['carState'].aEgo, 0.0)
@@ -171,6 +178,8 @@ class Planner():
       self.a_acc_start = reset_accel
       self.v_cruise = reset_speed
       self.a_cruise = reset_accel
+      self.v_turn = reset_speed
+      self.a_turn = reset_speed
 
     self.mpc1.set_cur_state(self.v_acc_start, self.a_acc_start)
     self.mpc2.set_cur_state(self.v_acc_start, self.a_acc_start)
@@ -180,12 +189,12 @@ class Planner():
 
     self.choose_solution(v_cruise_setpoint, enabled)
 
-    if False: #decel_for_turn:
-      print(f'-> v_acc_start: {self.v_acc_start:.2f}, a_acc_start: {self.a_acc_start:.2f}')
+    if self.decel_for_turn:
+      # print(f'-> v_acc_start: {self.v_acc_start:.2f}, a_acc_start: {self.a_acc_start:.2f}')
       print(f'-> v_cruise: {self.v_cruise:.2f}, a_cruise: {self.a_cruise:.2f}')
       print(f'-> v_target: {self.v_acc:.2f}, a_target: {self.a_acc:.2f}')
       print(f'-> v_acc_future: {self.v_acc_future:.2f}')
-      print(f'-> jMax: {jerk_limits[1]:.2f}, jMin: {jerk_limits[0]:.2f}')
+      # print(f'-> jMax: {jerk_limits[1]:.2f}, jMin: {jerk_limits[0]:.2f}')
 
     # determine fcw
     if self.mpc1.new_lead:
@@ -235,7 +244,7 @@ class Planner():
     # Send out fcw
     plan_send.plan.fcw = fcw
 
-    plan_send.plan.decelForTurn = bool(decel_for_turn)
+    plan_send.plan.decelForTurn = bool(self.decel_for_turn)
 
     pm.send('plan', plan_send)
 
