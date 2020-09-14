@@ -65,24 +65,22 @@ def limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, d_poly, limits):
   a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
   decel_for_turn = max_lat_acc >= a_lat_reg_max
 
-  if decel_for_turn:
-    max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
-    v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
-    acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
+  if not decel_for_turn:
+    return limits, False, v_ego, limits[1], v_cruise_setpoint
 
-    max_lon_acc = min(max(acc_limit, limits[0]), limits[1])
-    v_turn = v_ego + max_lon_acc * 0.2  # speed in 0.2 seconds
-    v_turn_future = v_ego + max_lon_acc * 4  # speed in 4 seconds
+  max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
+  v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
+  acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
 
-    print('-----------------------------')
-    print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
+  max_lon_acc = min(max(acc_limit, limits[0]), limits[1])
+  v_turn = v_ego + max_lon_acc * 0.2  # speed in 0.2 seconds
+  v_turn_future = v_ego + max_lon_acc * 4  # speed in 4 seconds
+
+  print('-----------------------------')
+  print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
 #   print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
 #   print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
 #   print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
-    print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
-  else:
-    max_lon_acc = limits[1]
-    v_turn = v_ego  # This value will have no efect.
-    v_turn_future = v_ego  # This value will have no efect.
+  print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
 
-  return [limits[0], max_lon_acc], decel_for_turn, v_turn, max_lon_acc, float(v_turn_future)
+  return [limits[0], max_lon_acc], True, v_turn, max_lon_acc, float(v_turn_future)
