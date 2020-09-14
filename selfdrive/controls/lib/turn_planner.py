@@ -1,13 +1,20 @@
 import numpy as np
 import math
 from common.numpy_fast import interp
+from common.filter_simple import FirstOrderFilter
 
 from selfdrive.config import Conversions as CV
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
 _EVAL_LENGHT = 200.  # evaluate curvature for 200mts
 _EVAL_RANGE = np.arange(0., _EVAL_LENGHT, _EVAL_STEP)
-_ACC_SAFETY_OFFSET = 0.3  # Offset to cruise min acc where turn ahead limit kicks in.
+# Offset to target lateral acceleration on turns to prevent multiple decelerations in a single turn
+_TARGET_LAT_ACC_OFFSET = 0.5
+
+# Deceleration for turn filter
+_DECEL_FOR_TURN_FILTER_TS = .45  # 0.35 Hz (1/2*Pi*f)
+_DECEL_FOR_TURN_FILTER_ON_THOLD = 0.4
+_DECEL_FOR_TURN_FILTER_OFF_THOLD = 0.2
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
@@ -51,36 +58,57 @@ def eval_lat_acc(poly, v_ego, x_vals):
   return np.vectorize(lat_acc)(x_vals)
 
 
-def limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, d_poly, limits):
-  """
-  This function returns a limited long acceleration allowed to limit the maximum lateral acceleration
-  on the predicted path ahead to the limit specified by regulation.
-  The limit will be enforced only if the calculated limit is getting close to the already provided
-  minimum acceleration cruise limit.
-  """
-  lat_accs = eval_lat_acc(d_poly, v_ego, _EVAL_RANGE)
-  max_lat_acc_idx = np.argmax(lat_accs)
-  distance_to_max_lat_acc = max(max_lat_acc_idx * _EVAL_STEP, 0.00001)
-  max_lat_acc = lat_accs[max_lat_acc_idx]
-  a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
-  decel_for_turn = max_lat_acc >= a_lat_reg_max
+class TurnPlanner():
+  def __init__(self, CP):
+    self.CP = CP
+    self.decel_for_turn_filter = FirstOrderFilter(0., _DECEL_FOR_TURN_FILTER_TS, CP.radarTimeStep)
+    self.last_a_turn = 0.0
+    self.decel_for_turn_filtered = False
 
-  if not decel_for_turn:
-    return limits, False, v_ego, limits[1], v_cruise_setpoint
+  def limit_accel_for_turn_ahead(self, v_ego, v_cruise_setpoint, d_poly, limits):
+    """
+    This function returns a limited long acceleration allowed to limit the maximum lateral acceleration
+    on the predicted path ahead to the limit specified by regulation.
+    The limit will be enforced only if the calculated limit is getting close to the already provided
+    minimum acceleration cruise limit.
+    """
+    lat_accs = eval_lat_acc(d_poly, v_ego, _EVAL_RANGE)
+    max_lat_acc_idx = np.argmax(lat_accs)
+    distance_to_max_lat_acc = max(max_lat_acc_idx * _EVAL_STEP, 0.00001)
+    max_lat_acc = lat_accs[max_lat_acc_idx]
+    a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
 
-  max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
-  v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
-  acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
+    decel_for_turn = max_lat_acc >= a_lat_reg_max
+    filter_value = self.decel_for_turn_filter.update(float(decel_for_turn))
 
-  max_lon_acc = min(max(acc_limit, limits[0]), limits[1])
-  v_turn = v_ego + max_lon_acc * 0.2  # speed in 0.2 seconds
-  v_turn_future = v_ego + max_lon_acc * 4  # speed in 4 seconds
+    # Add hysteresis
+    self.decel_for_turn_filtered = (not self.decel_for_turn_filtered and filter_value >= _DECEL_FOR_TURN_FILTER_ON_THOLD) \
+        or (self.decel_for_turn_filtered and filter_value > _DECEL_FOR_TURN_FILTER_OFF_THOLD)
 
-  print('-----------------------------')
-  print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
-#   print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
-#   print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
-#   print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
-  print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {max_lon_acc:.2f} ****')
+    if not self.decel_for_turn_filtered:
+      return limits, False, v_ego, limits[1], v_cruise_setpoint
 
-  return [limits[0], max_lon_acc], True, v_turn, max_lon_acc, float(v_turn_future)
+    if not decel_for_turn:
+      # We need to keep limiting to descelerate while filter shifts.
+      v_turn = v_ego + self.last_a_turn * 0.2  # speed in 0.2 seconds
+      v_turn_future = v_ego + self.last_a_turn * 4  # speed in 4 seconds
+      return [limits[0], self.last_a_turn], True, v_turn, self.last_a_turn, float(v_turn_future)
+
+    max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
+    a_lat_target = max(1.0, a_lat_reg_max - _TARGET_LAT_ACC_OFFSET)  # Greater than 1.0 to prevent excesive deceleration
+    v_target = min(math.sqrt(a_lat_target / max_curvature), v_cruise_setpoint)
+    acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
+
+    a_turn = min(max(acc_limit, limits[0]), limits[1])
+    self.last_a_turn = a_turn
+    v_turn = v_ego + a_turn * 0.2  # speed in 0.2 seconds
+    v_turn_future = v_ego + a_turn * 4  # speed in 4 seconds
+
+    print('-----------------------------')
+    print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
+  #   print(f'-> v_ego: {v_ego}, v_target: {v_target:.2f}')
+  #   print(f'-> Provided acc limits: l: {limits[0]:.2f}  u: {limits[1]:.2f}')
+  #   print(f'-> acc_limit: {acc_limit:.2f}, new_upper_limit: {max_lon_acc:.2f}')
+    print(f'-> **** Ahead lat acceleration too high. Setting top limit to: {a_turn:.2f} ****')
+
+    return [limits[0], min(max(acc_limit, limits[0]), limits[1])], True, v_turn, a_turn, float(v_turn_future)
