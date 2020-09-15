@@ -15,6 +15,7 @@ _TARGET_LAT_ACC_OFFSET = 0.5
 _DECEL_FOR_TURN_FILTER_TS = .45  # 0.35 Hz (1/2*Pi*f)
 _DECEL_FOR_TURN_FILTER_ON_THOLD = 0.4
 _DECEL_FOR_TURN_FILTER_OFF_THOLD = 0.2
+_MIN_BRAKING_ACC = -3.0
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
@@ -99,7 +100,7 @@ class TurnPlanner():
     v_target = min(math.sqrt(a_lat_target / max_curvature), v_cruise_setpoint)
     acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
 
-    a_turn = min(max(acc_limit, limits[0]), limits[1])
+    a_turn = min(max(acc_limit, _MIN_BRAKING_ACC), limits[1])
     self.last_a_turn = a_turn
     v_turn = v_ego + a_turn * 0.2  # speed in 0.2 seconds
     v_turn_future = v_ego + a_turn * 4  # speed in 4 seconds
