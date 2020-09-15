@@ -378,7 +378,7 @@ class Controls:
 
     
     # Gas/Brake PID loop
-    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, self.CP)
+    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, plan.decelForTurn, self.CP)
     if False: # plan.decelForTurn:
       print(actuators)
 
