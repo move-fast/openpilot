@@ -14,7 +14,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
-from selfdrive.controls.lib.turn_planner import TurnPlanner
+from selfdrive.controls.lib.turn_planner import TurnSolver
 
 MAX_SPEED = 255.0
 
@@ -79,11 +79,7 @@ class Planner():
     self.a_acc = 0.0
     self.v_cruise = 0.0
     self.a_cruise = 0.0
-    self.turn_planner = TurnPlanner(CP)
-    self.v_turn = 0.0
-    self.a_turn = 0.0
-    self.v_turn_future = MAX_SPEED
-    self.decel_for_turn = False
+    self.turn_solver = TurnSolver(CP)
 
     self.longitudinalPlanSource = 'cruise'
     self.fcw_checker = FCWChecker()
@@ -99,8 +95,8 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status:
         solutions['mpc2'] = self.mpc2.v_mpc
-      if self.decel_for_turn:
-        solutions['model'] = self.v_turn
+      if self.turn_solver.decelerate:
+        solutions['model'] = self.turn_solver.v_turn
 
       slowest = min(solutions, key=solutions.get)
 
@@ -116,10 +112,11 @@ class Planner():
         self.v_acc = self.v_cruise
         self.a_acc = self.a_cruise
       elif slowest == 'model':
-        self.v_acc = self.v_turn
-        self.a_acc = self.a_turn
+        self.v_acc = self.turn_solver.v_turn
+        self.a_acc = self.turn_solver.a_turn
 
-    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint, self.v_turn_future])
+    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint,
+                            self.turn_solver.v_turn_future])
 
   def update(self, sm, pm, CP, VM, PP):
     """Gets called when new radarState is available"""
@@ -145,22 +142,18 @@ class Planner():
       accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
-      accel_limits_turns, self.decel_for_turn, self.v_turn, self.a_turn, self.v_turn_future = \
-          self.turn_planner.limit_accel_for_turn_ahead(v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly], accel_limits_turns)
 
       if force_slow_decel:
         # if required so, force a smooth deceleration
         accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
         accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
 
-      #print(f'input: {self.v_acc_start:.2f}, {self.a_acc_start:.2f}, {v_cruise_setpoint:.2f}, {accel_limits_turns[1]:.2f}, {accel_limits_turns[0]:.2f}, {jerk_limits[1]:.2f}, {jerk_limits[0]:.2f}, {LON_MPC_STEP:.2f}')
       self.v_cruise, self.a_cruise = speed_smoother(self.v_acc_start, self.a_acc_start,
                                                     v_cruise_setpoint,
                                                     accel_limits_turns[1], accel_limits_turns[0],
                                                     jerk_limits[1], jerk_limits[0],
                                                     LON_MPC_STEP)
 
-      #print(f'output v_cruise: {self.v_cruise:.2f}, a_cruise: {self.a_cruise:.2f}')  
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
     else:
@@ -177,23 +170,18 @@ class Planner():
       self.a_acc_start = reset_accel
       self.v_cruise = reset_speed
       self.a_cruise = reset_accel
-      self.v_turn = reset_speed
-      self.a_turn = reset_speed
 
     self.mpc1.set_cur_state(self.v_acc_start, self.a_acc_start)
     self.mpc2.set_cur_state(self.v_acc_start, self.a_acc_start)
 
     self.mpc1.update(pm, sm['carState'], lead_1, v_cruise_setpoint)
     self.mpc2.update(pm, sm['carState'], lead_2, v_cruise_setpoint)
+    self.turn_solver.update(enabled, v_ego, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly])
 
     self.choose_solution(v_cruise_setpoint, enabled)
-
-    if self.decel_for_turn:
-      # print(f'-> v_acc_start: {self.v_acc_start:.2f}, a_acc_start: {self.a_acc_start:.2f}')
-      print(f'-> v_cruise: {self.v_cruise:.2f}, a_cruise: {self.a_cruise:.2f}')
-      print(f'-> v_target: {self.v_acc:.2f}, a_target: {self.a_acc:.2f}')
-      print(f'-> v_acc_future: {self.v_acc_future:.2f}')
-      # print(f'-> jMax: {jerk_limits[1]:.2f}, jMin: {jerk_limits[0]:.2f}')
+    if enabled and self.longitudinalPlanSource == 'model':
+      print(f'{self.longitudinalPlanSource}  -> v_ego: {v_ego:.2f}, v_acc: {self.v_acc:.2f},\
+         v_acc_future: {self.v_acc_future:.2f}, a_acc: {self.a_acc:.2f}')
 
     # determine fcw
     if self.mpc1.new_lead:
@@ -243,7 +231,7 @@ class Planner():
     # Send out fcw
     plan_send.plan.fcw = fcw
 
-    plan_send.plan.decelForTurn = bool(self.decel_for_turn)
+    plan_send.plan.decelForTurn = bool(self.turn_solver.decelerate)
 
     pm.send('plan', plan_send)
 
