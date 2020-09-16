@@ -2,6 +2,7 @@ import numpy as np
 import math
 from common.numpy_fast import interp
 from common.filter_simple import FirstOrderFilter
+from common.params import Params
 
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
@@ -15,7 +16,6 @@ _TARGET_LAT_ACC_OFFSET = 0.5
 _DECEL_FOR_TURN_FILTER_TS = .45  # 0.35 Hz (1/2*Pi*f)
 _DECEL_FOR_TURN_FILTER_ON_THOLD = 0.4
 _DECEL_FOR_TURN_FILTER_OFF_THOLD = 0.2
-_MIN_BRAKING_ACC = -3.0
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
@@ -46,6 +46,7 @@ class TurnSolver():
     self._v_turn_future = 0.0
     self.decelerate = False
     self.v_cruise_setpoint = 0.0
+    self.min_braking_acc = float(Params().get("MaxDecelerationForTurns"))
 
   @property
   def v_turn_future(self):
@@ -81,7 +82,7 @@ class TurnSolver():
       a_lat_target = max(1.0, a_lat_reg_max - _TARGET_LAT_ACC_OFFSET)  # Avoid setting too low
       v_target = min(math.sqrt(a_lat_target / max_curvature), v_cruise_setpoint)
       acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
-      self.a_turn = max(acc_limit, _MIN_BRAKING_ACC)
+      self.a_turn = max(acc_limit, self.min_braking_acc)
 
     self.v_turn = v_ego + self.a_turn * 0.2  # speed in 0.2 seconds
     self._v_turn_future = v_ego + self.a_turn * 4  # speed in 4 seconds
