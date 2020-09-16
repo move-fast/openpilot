@@ -30,6 +30,7 @@ void ui_init(UIState *s) {
   s->status = STATUS_OFFROAD;
   s->scene.satelliteCount = -1;
   read_param(&s->is_metric, "IsMetric");
+  read_param(&s->max_acc_turn, "MaxDecelerationForTurns");
   s->vision_connected = getenv("UNLOGGER") != NULL;
 
   s->fb = framebuffer_init("ui", 0, true, &s->fb_w, &s->fb_h);

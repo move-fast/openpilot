@@ -412,6 +412,22 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   }
 }
 
+static void ui_draw_vision_maxaccturn(UIState *s) {
+  float max_acc_turn = s->max_acc_turn;
+
+  const int viz_text_w = 150;
+  const int viz_maxspeed_w = 184;
+  const int viz_text_x = s->scene.ui_viz_rx + bdr_s*3 + viz_maxspeed_w;
+  char max_acc_str[32];
+
+  nvgBeginPath(s->vg);
+  nvgRect(s->vg, viz_text_x, box_y, viz_text_w, header_h);
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+
+  snprintf(max_acc_str, sizeof(max_acc_str), "%d", (int)max_acc_turn);
+  ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 140, max_acc_turn >= 0.0?"off":max_acc_str, 36*2.5, COLOR_WHITE, s->font_sans_bold);
+}
+
 static void ui_draw_vision_speed(UIState *s) {
   const UIScene *scene = &s->scene;
   float v_ego = s->scene.controls_state.getVEgo();
@@ -543,6 +559,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_rect(s->vg, ui_viz_rx, box_y, ui_viz_rw, header_h, gradient);
 
   ui_draw_vision_maxspeed(s);
+  ui_draw_vision_maxaccturn(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
 }

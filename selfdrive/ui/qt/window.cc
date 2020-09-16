@@ -97,8 +97,19 @@ void GLWindow::mousePressEvent(QMouseEvent *e) {
     }
   }
 
+  // Change acc click
+  if ((e->x() >= ui_state->scene.ui_viz_rx - bdr_s) && (e->y() < (settings_btn_y + settings_btn_h) )) {
+    // If touching on the top side of the screen.
+    float max_acc = ui_state->max_acc_turn - 1.0;
+    if (max_acc < -4.0) {
+      max_acc = 0.0;
+    }
+    ui_state->max_acc_turn = max_acc;
+    write_param_float(max_acc, "MaxDecelerationForTurns");
+  }
+
   // Vision click
-  if (ui_state->started && (e->x() >= ui_state->scene.ui_viz_rx - bdr_s)){
+  else if (ui_state->started && (e->x() >= ui_state->scene.ui_viz_rx - bdr_s)){
     ui_state->scene.uilayout_sidebarcollapsed = !ui_state->scene.uilayout_sidebarcollapsed;
   }
 }

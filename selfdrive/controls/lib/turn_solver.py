@@ -3,6 +3,7 @@ import math
 from common.numpy_fast import interp
 from common.filter_simple import FirstOrderFilter
 from common.params import Params
+from common.realtime import sec_since_boot
 
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
@@ -39,6 +40,7 @@ def eval_lat_acc(poly, v_ego, x_vals):
 
 class TurnSolver():
   def __init__(self, CP):
+    self.params = Params()
     self.CP = CP
     self.filter = FirstOrderFilter(0., _DECEL_FOR_TURN_FILTER_TS, CP.radarTimeStep)
     self.a_turn = 0.0
@@ -46,16 +48,25 @@ class TurnSolver():
     self._v_turn_future = 0.0
     self.decelerate = False
     self.v_cruise_setpoint = 0.0
-    self.min_braking_acc = float(Params().get("MaxDecelerationForTurns"))
+    self.min_braking_acc = float(self.params.get("MaxDecelerationForTurns", True))
+    self.last_params_update = 0.0
 
   @property
   def v_turn_future(self):
     return float(self._v_turn_future) if self.decelerate else self.v_cruise_setpoint
 
+  def update_params(self):
+    time = sec_since_boot()
+    if time > self.last_params_update + 10.0:
+      self.min_braking_acc = float(self.params.get("MaxDecelerationForTurns"))
+      self.last_params_update = time
+      print(f'Updated Max Decel: {self.min_braking_acc:.2f}')
+
   def update(self, enabled, v_ego, v_cruise_setpoint, d_poly):
     self.v_cruise_setpoint = v_cruise_setpoint
+    self.update_params()
 
-    if not enabled:
+    if not enabled or self.min_braking_acc >= 0.0:
       self.decelerate = False
       return
 

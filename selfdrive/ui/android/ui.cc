@@ -119,7 +119,17 @@ static void handle_vision_touch(UIState *s, int touch_x, int touch_y) {
   if (s->started && (touch_x >= s->scene.ui_viz_rx - bdr_s)
       && (s->active_app != cereal::UiLayoutState::App::SETTINGS)) {
     if (!s->scene.frontview) {
-      s->scene.uilayout_sidebarcollapsed = !s->scene.uilayout_sidebarcollapsed;
+      if (touch_y < (settings_btn_y + settings_btn_h)) {
+        // If touching on the top side of the screen.
+        float max_acc = s->max_acc_turn - 1.0;
+        if (max_acc < -4.0) {
+          max_acc = 0.0;
+        }
+        s->max_acc_turn = max_acc;
+        write_param_float(max_acc, "MaxDecelerationForTurns");
+      } else {
+        s->scene.uilayout_sidebarcollapsed = !s->scene.uilayout_sidebarcollapsed;
+      }
     } else {
       write_db_value("IsDriverViewEnabled", "0", 1);
     }

@@ -210,6 +210,8 @@ typedef struct UIState {
   bool alert_blinked;
   float alert_blinking_alpha;
 
+  float max_acc_turn;
+
   track_vertices_data track_vertices[2];
   model_path_vertices_data model_path_vertices[MODEL_LANE_PATH_CNT * 2];
 } UIState;
