@@ -237,6 +237,8 @@ def ui_thread(addr, frame_address):
 
     SPACING = 25
 
+    dPoly = np.array(sm['pathPlan'].dPoly)
+
     lines = [
       info_font.render("ENABLED", True, GREEN if sm['controlsState'].enabled else BLACK),
       info_font.render("BRAKE LIGHTS", True, RED if sm['carState'].brakeLights else BLACK),
@@ -244,8 +246,8 @@ def ui_thread(addr, frame_address):
       info_font.render("LONG CONTROL STATE: " + str(sm['controlsState'].longControlState), True, YELLOW),
       info_font.render("LONG MPC SOURCE: " + str(sm['plan'].longitudinalPlanSource), True, YELLOW),
       None,
-      info_font.render("ANGLE OFFSET (AVG): " + str(round(sm['liveParameters'].angleOffsetAverage, 2)) + " deg", True, YELLOW),
-      info_font.render("ANGLE OFFSET (INSTANT): " + str(round(sm['liveParameters'].angleOffset, 2)) + " deg", True, YELLOW),
+      # info_font.render("ANGLE OFFSET (AVG): " + str(round(sm['liveParameters'].angleOffsetAverage, 2)) + " deg", True, YELLOW),
+      # info_font.render("ANGLE OFFSET (INSTANT): " + str(round(sm['liveParameters'].angleOffset, 2)) + " deg", True, YELLOW),
       info_font.render("STIFFNESS: " + str(round(sm['liveParameters'].stiffnessFactor * 100., 2)) + " %", True, YELLOW),
       info_font.render("STEER RATIO: " + str(round(sm['liveParameters'].steerRatio, 2)), True, YELLOW),
       info_font.render("LEAD DISTANCE: " + str(round(sm['radarState'].leadOne.dRel, 2)), True, YELLOW)
@@ -254,6 +256,12 @@ def ui_thread(addr, frame_address):
     for i, line in enumerate(lines):
       if line is not None:
         screen.blit(line, (write_x, write_y + i * SPACING))
+
+    if dPoly is not None and len(dPoly) == 4:
+      print("-----")
+      for i in range(4):
+        print(dPoly[i])
+      print(sm['carState'].vEgo)
 
     # this takes time...vsync or something
     pygame.display.flip()
