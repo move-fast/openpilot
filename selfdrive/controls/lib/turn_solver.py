@@ -7,16 +7,16 @@ from common.realtime import sec_since_boot
 
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
-_EVAL_START = 15.  # start evaluating 15 mts ahead
-_EVAL_LENGHT = 150.  # evaluate curvature for 150mts
+_EVAL_START = 0.  # start evaluating 0 mts ahead
+_EVAL_LENGHT = 130.  # evaluate curvature for 130mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 # Offset to target lateral acceleration on turns to prevent multiple decelerations in a single turn
-_TARGET_LAT_ACC_OFFSET = 0.5
+_TARGET_LAT_ACC_OFFSET = 1.0
 
 # Deceleration for turn filter
-_DECEL_FOR_TURN_FILTER_TS = .45  # 0.35 Hz (1/2*Pi*f)
-_DECEL_FOR_TURN_FILTER_ON_THOLD = 0.4
-_DECEL_FOR_TURN_FILTER_OFF_THOLD = 0.2
+_DECEL_FOR_TURN_FILTER_TS = .35  # 0.45 Hz (1/2*Pi*f)
+_DECEL_FOR_TURN_FILTER_ON_THOLD = 0.3
+_DECEL_FOR_TURN_FILTER_OFF_THOLD = 0.1
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
@@ -74,7 +74,7 @@ class TurnSolver():
     max_lat_acc_idx = np.argmax(lat_accs)
     distance_to_max_lat_acc = max(max_lat_acc_idx * _EVAL_STEP + _EVAL_START, 0.00001)
     max_lat_acc = lat_accs[max_lat_acc_idx]
-    a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
+    a_lat_reg_max = max(1.0, interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V) - _TARGET_LAT_ACC_OFFSET)
 
     decel_for_turn = max_lat_acc >= a_lat_reg_max
     filter_value = self.filter.update(float(decel_for_turn))
@@ -90,8 +90,7 @@ class TurnSolver():
       # As long as signal indicate we must decelerate, we update a_turn and calculate.
       # Otherwise, we need to keep descelerating while filtered value shifts. Use last value of a_turn
       max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
-      a_lat_target = max(1.0, a_lat_reg_max - _TARGET_LAT_ACC_OFFSET)  # Avoid setting too low
-      v_target = min(math.sqrt(a_lat_target / max_curvature), v_cruise_setpoint)
+      v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
       acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
       self.a_turn = max(acc_limit, self.min_braking_acc)
 
