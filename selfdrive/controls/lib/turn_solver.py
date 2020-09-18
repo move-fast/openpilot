@@ -4,6 +4,7 @@ from common.numpy_fast import interp
 from common.filter_simple import FirstOrderFilter
 from common.params import Params
 from common.realtime import sec_since_boot
+from selfdrive.config import Conversions as CV
 
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
@@ -12,6 +13,8 @@ _EVAL_LENGHT = 130.  # evaluate curvature for 130mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 # Offset to target lateral acceleration on turns to prevent multiple decelerations in a single turn
 _TARGET_LAT_ACC_OFFSET = 1.0
+
+_CURRENT_CURVATURE_THOLD = 0.0025  # 400mt raidus. current curvature threshold to detect vehicle turning.
 
 # Deceleration for turn filter
 _DECEL_FOR_TURN_FILTER_TS = .35  # 0.45 Hz (1/2*Pi*f)
@@ -62,7 +65,7 @@ class TurnSolver():
       self.last_params_update = time
       print(f'Updated Max Decel: {self.min_braking_acc:.2f}')
 
-  def update(self, enabled, v_ego, v_cruise_setpoint, d_poly):
+  def update(self, enabled, v_ego, v_cruise_setpoint, d_poly, steering_angle):
     self.v_cruise_setpoint = v_cruise_setpoint
     self.update_params()
 
@@ -76,16 +79,35 @@ class TurnSolver():
     max_lat_acc = lat_accs[max_lat_acc_idx]
     a_lat_reg_max = max(1.0, interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V) - _TARGET_LAT_ACC_OFFSET)
 
+    # detect if we will a any point in predicted path exceed max lat acc.
     decel_for_turn = max_lat_acc >= a_lat_reg_max
-    filter_value = self.filter.update(float(decel_for_turn))
 
-    # hysteresis
-    self.decelerate = (not self.decelerate and filter_value >= _DECEL_FOR_TURN_FILTER_ON_THOLD) \
+    # filter value and add hysteresis
+    filter_value = self.filter.update(float(decel_for_turn))
+    decelerate = (not self.decelerate and filter_value >= _DECEL_FOR_TURN_FILTER_ON_THOLD) \
         or (self.decelerate and filter_value > _DECEL_FOR_TURN_FILTER_OFF_THOLD)
 
-    if not self.decelerate:
+    if not decelerate:
+      if not self.decelerate:
+        # Provide no solution if not deceleration necessary and no change.
+        return
+
+      # Vehicle has reached a viable turn speed. Keep this solution as long as vehicle is turning.
+      current_curvature = steering_angle * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
+      print(f'-> Current Curvature: {current_curvature:.4f}')
+      if current_curvature <= _CURRENT_CURVATURE_THOLD:
+        print('VVVVVV Leaving Curve, Stop decelerating')
+        # quite straight, provide no solution.
+        self.decelerate = False
+        return
+      # Still turning, keep providing solution to keep speed.
+      print(f'^^^^^ Still on turn, keep speed: {v_ego:.2f}')
+      self.a_turn = 0.0
+      self.v_turn = v_ego
+      self._v_turn_future = v_ego
       return
 
+    self.decelerate = True
     if decel_for_turn:
       # As long as signal indicate we must decelerate, we update a_turn and calculate.
       # Otherwise, we need to keep descelerating while filtered value shifts. Use last value of a_turn
@@ -93,9 +115,10 @@ class TurnSolver():
       v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
       acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
       self.a_turn = max(acc_limit, self.min_braking_acc)
+      print(f'^^^^^ New Limit found a_turn: {self.a_turn:.2f}')
+      print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
+    else:
+      print(f'^^^^^ Using old Limit a_turn: {self.a_turn:.2f}')
 
     self.v_turn = v_ego + self.a_turn * 0.2  # speed in 0.2 seconds
-    self._v_turn_future = v_ego + self.a_turn * 4  # speed in 4 seconds
-
-    print('-----------------------------')
-    print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
+    self._v_turn_future = v_ego + self.a_turn * 4  # speed in 4 seconds.

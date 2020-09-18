@@ -172,7 +172,8 @@ class Planner():
 
     self.mpc1.update(pm, sm['carState'], lead_1, v_cruise_setpoint)
     self.mpc2.update(pm, sm['carState'], lead_2, v_cruise_setpoint)
-    self.turn_solver.update(enabled, self.v_acc_start, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly])
+    self.turn_solver.update(enabled, self.v_acc_start, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly],
+                            sm['carState'].steeringAngle)
 
     self.choose_solution(v_cruise_setpoint, enabled)
     if enabled and self.longitudinalPlanSource == 'model':
