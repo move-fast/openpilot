@@ -165,20 +165,20 @@ def ui_thread(addr, frame_address):
 
     plot_arr[:-1] = plot_arr[1:]
     plot_arr[-1, name_to_arr_idx['angle_steers']] = sm['controlsState'].angleSteers
-    plot_arr[-1, name_to_arr_idx['angle_steers_des']] = sm['carControl'].actuators.steerAngle
-    plot_arr[-1, name_to_arr_idx['angle_steers_k']] = angle_steers_k
+    # plot_arr[-1, name_to_arr_idx['angle_steers_des']] = sm['carControl'].actuators.steerAngle
+    # plot_arr[-1, name_to_arr_idx['angle_steers_k']] = angle_steers_k
     plot_arr[-1, name_to_arr_idx['gas']] = sm['carState'].gas
     plot_arr[-1, name_to_arr_idx['computer_gas']] = sm['carControl'].actuators.gas
-    plot_arr[-1, name_to_arr_idx['user_brake']] = sm['carState'].brake
+    # plot_arr[-1, name_to_arr_idx['user_brake']] = sm['carState'].brake
     plot_arr[-1, name_to_arr_idx['steer_torque']] = sm['carControl'].actuators.steer * ANGLE_SCALE
     plot_arr[-1, name_to_arr_idx['computer_brake']] = sm['carControl'].actuators.brake
     plot_arr[-1, name_to_arr_idx['v_ego']] = sm['controlsState'].vEgo
-    plot_arr[-1, name_to_arr_idx['v_pid']] = sm['controlsState'].vPid
-    plot_arr[-1, name_to_arr_idx['v_override']] = sm['carControl'].cruiseControl.speedOverride
+    # plot_arr[-1, name_to_arr_idx['v_pid']] = sm['controlsState'].vPid
+    # plot_arr[-1, name_to_arr_idx['v_override']] = sm['carControl'].cruiseControl.speedOverride
     plot_arr[-1, name_to_arr_idx['v_cruise']] = sm['carState'].cruiseState.speed
     plot_arr[-1, name_to_arr_idx['a_ego']] = sm['carState'].aEgo
     plot_arr[-1, name_to_arr_idx['a_target']] = sm['plan'].aTarget
-    plot_arr[-1, name_to_arr_idx['accel_override']] = sm['carControl'].cruiseControl.accelOverride
+    # plot_arr[-1, name_to_arr_idx['accel_override']] = sm['carControl'].cruiseControl.accelOverride
 
     # ***** model ****
     if len(sm['model'].path.poly) > 0:
