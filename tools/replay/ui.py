@@ -85,7 +85,7 @@ def ui_thread(addr, frame_address):
                       "computer_brake": 3,
                       "v_ego": 4,
                       "v_pid": 5,
-                      "angle_steers_des": 6,
+                      "car_state_steering": 6,
                       "angle_steers": 7,
                       "angle_steers_k": 8,
                       "steer_torque": 9,
@@ -100,7 +100,7 @@ def ui_thread(addr, frame_address):
   plot_xlims = [(0, plot_arr.shape[0]), (0, plot_arr.shape[0]), (0, plot_arr.shape[0]), (0, plot_arr.shape[0])]
   plot_ylims = [(-0.1, 1.1), (-ANGLE_SCALE, ANGLE_SCALE), (0., 75.), (-3.0, 2.0)]
   plot_names = [["gas", "computer_gas", "user_brake", "computer_brake", "accel_override"],
-                ["angle_steers", "angle_steers_des", "angle_steers_k", "steer_torque"],
+                ["angle_steers", "car_state_steering", "angle_steers_k", "steer_torque"],
                 ["v_ego", "v_override", "v_pid", "v_cruise"],
                 ["a_ego", "a_target"]]
   plot_colors = [["b", "b", "g", "r", "y"],
@@ -165,7 +165,8 @@ def ui_thread(addr, frame_address):
 
     plot_arr[:-1] = plot_arr[1:]
     plot_arr[-1, name_to_arr_idx['angle_steers']] = sm['controlsState'].angleSteers
-    # plot_arr[-1, name_to_arr_idx['angle_steers_des']] = sm['carControl'].actuators.steerAngle
+    plot_arr[-1, name_to_arr_idx['car_state_steering']] = sm['carState'].steeringAngle
+    # plot_arr[-1, name_to_arr_idx['car_state_steering']] = sm['carControl'].actuators.steerAngle
     # plot_arr[-1, name_to_arr_idx['angle_steers_k']] = angle_steers_k
     plot_arr[-1, name_to_arr_idx['gas']] = sm['carState'].gas
     plot_arr[-1, name_to_arr_idx['computer_gas']] = sm['carControl'].actuators.gas
