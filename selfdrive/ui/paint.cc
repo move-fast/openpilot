@@ -428,9 +428,9 @@ static void ui_draw_vision_maxaccturn(UIState *s) {
 
   snprintf(max_acc_str, sizeof(max_acc_str), "%d", (int)max_acc_turn);
   ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 140, max_acc_turn >= 0.0?"off":max_acc_str, 36*2.5, COLOR_WHITE, s->font_sans_bold);
-  snprintf(atarget_str, sizeof(atarget_str), "a_target: %4.1f", atarget);
+  snprintf(atarget_str, sizeof(atarget_str), "a_t: %4.1f", atarget);
   ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 190, atarget_str, 24*2.5, COLOR_WHITE, s->font_sans_semibold);
-  snprintf(latacc_str, sizeof(latacc_str), "lat_acc: %4.1f", latacc);
+  snprintf(latacc_str, sizeof(latacc_str), "l_a: %4.1f", latacc);
   ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 230, latacc_str, 24*2.5, COLOR_WHITE, s->font_sans_semibold);
 }
 
