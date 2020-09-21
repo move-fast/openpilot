@@ -14,6 +14,8 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 # Offset to target lateral acceleration on turns to prevent multiple decelerations in a single turn
 _TARGET_LAT_ACC_OFFSET = 1.0
 
+# Curvature detection
+_STEERING_ANGLE_FILTER_TS = .35
 _CURRENT_CURVATURE_THOLD = 0.0025  # 400mt raidus. current curvature threshold to detect vehicle turning.
 
 # Deceleration for turn filter
@@ -45,7 +47,8 @@ class TurnSolver():
   def __init__(self, CP):
     self.params = Params()
     self.CP = CP
-    self.filter = FirstOrderFilter(0., _DECEL_FOR_TURN_FILTER_TS, CP.radarTimeStep)
+    self.decelFilter = FirstOrderFilter(0., _DECEL_FOR_TURN_FILTER_TS, CP.radarTimeStep)
+    self.angleFilter = FirstOrderFilter(0., _STEERING_ANGLE_FILTER_TS, CP.radarTimeStep)
     self.a_turn = 0.0
     self.v_turn = 0.0
     self._v_turn_future = 0.0
@@ -67,6 +70,7 @@ class TurnSolver():
 
   def update(self, enabled, v_ego, v_cruise_setpoint, d_poly, steering_angle):
     self.v_cruise_setpoint = v_cruise_setpoint
+    angle_filtered = self.angleFilter.update(steering_angle)
     self.update_params()
 
     if not enabled or self.min_braking_acc >= 0.0:
@@ -83,7 +87,7 @@ class TurnSolver():
     decel_for_turn = max_lat_acc >= a_lat_reg_max
 
     # filter value and add hysteresis
-    filter_value = self.filter.update(float(decel_for_turn))
+    filter_value = self.decelFilter.update(float(decel_for_turn))
     decelerate = (not self.decelerate and filter_value >= _DECEL_FOR_TURN_FILTER_ON_THOLD) \
         or (self.decelerate and filter_value > _DECEL_FOR_TURN_FILTER_OFF_THOLD)
 
@@ -93,7 +97,7 @@ class TurnSolver():
         return
 
       # Vehicle has reached a viable turn speed. Keep this solution as long as vehicle is turning.
-      current_curvature = steering_angle * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
+      current_curvature = angle_filtered * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
       print(f'-> Current Curvature: {current_curvature:.4f}')
       if current_curvature <= _CURRENT_CURVATURE_THOLD:
         print('VVVVVV Leaving Curve, Stop decelerating')
