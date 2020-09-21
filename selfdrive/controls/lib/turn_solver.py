@@ -101,7 +101,6 @@ class TurnSolver():
       print(f'-> Current Curvature: {current_curvature:.4f}, isntant angle: {steering_angle:.2f}, filt: {angle_filtered:.2f}')
       if current_curvature <= _CURRENT_CURVATURE_THOLD:
         print('VVVVVV Leaving Curve, Stop decelerating')
-        print(f'VVVVVV Instant angle: {}')
         # quite straight, provide no solution.
         self.decelerate = False
         return
