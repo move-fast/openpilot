@@ -415,19 +415,23 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 static void ui_draw_vision_maxaccturn(UIState *s) {
   float max_acc_turn = s->max_acc_turn;
   float atarget = s->scene.controls_state.getATarget();
+  float latacc = powf(s->scene.controls_state.getVEgo(), 2.0) * s->scene.controls_state.getCurvature();
 
   const int viz_text_w = 150;
   const int viz_maxspeed_w = 184;
   const int viz_text_x = s->scene.ui_viz_rx + bdr_s*3 + viz_maxspeed_w;
   char max_acc_str[32];
   char atarget_str[32];
+  char latacc_str[32];
 
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
 
   snprintf(max_acc_str, sizeof(max_acc_str), "%d", (int)max_acc_turn);
   ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 140, max_acc_turn >= 0.0?"off":max_acc_str, 36*2.5, COLOR_WHITE, s->font_sans_bold);
-  snprintf(atarget_str, sizeof(atarget_str), "%d", (int)(atarget * 100));
-  ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 180, atarget_str, 36*2.5, COLOR_WHITE, s->font_sans_bold);
+  snprintf(atarget_str, sizeof(atarget_str), "%f3.1", atarget);
+  ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 190, atarget_str, 24*2.5, COLOR_WHITE, s->font_sans_semibold);
+  snprintf(latacc_str, sizeof(latacc_str), "%f3.1", latacc);
+  ui_draw_text(s->vg, viz_text_x + viz_text_w / 2, 230, latacc_str, 24*2.5, COLOR_WHITE, s->font_sans_semibold);
 }
 
 static void ui_draw_vision_speed(UIState *s) {
