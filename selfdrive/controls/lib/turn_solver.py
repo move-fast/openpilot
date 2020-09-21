@@ -15,7 +15,7 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 _TARGET_LAT_ACC_OFFSET = 1.0
 
 # Curvature detection
-_STEERING_ANGLE_FILTER_TS = .35
+_STEERING_ANGLE_FILTER_TS = .08  # 2 Hz
 _CURRENT_CURVATURE_THOLD = 0.0025  # 400mt raidus. current curvature threshold to detect vehicle turning.
 
 # Deceleration for turn filter
