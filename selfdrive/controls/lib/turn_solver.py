@@ -119,7 +119,7 @@ class TurnSolver():
       max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
       v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
       acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
-      self.a_turn = min(-1.0, max(acc_limit, self.min_braking_acc))
+      self.a_turn = max(acc_limit, self.min_braking_acc)
       print(f'^^^^^ New Limit found a_turn: {self.a_turn:.2f}')
       print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
     else:
