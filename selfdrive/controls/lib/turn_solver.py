@@ -15,7 +15,6 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 _TARGET_LAT_ACC_OFFSET = 1.0
 
 # Curvature detection
-_STEERING_ANGLE_FILTER_TS = .08  # 2 Hz
 _CURRENT_CURVATURE_THOLD = 0.0025  # 400mt raidus. current curvature threshold to detect vehicle turning.
 
 # Deceleration for turn filter
@@ -48,7 +47,6 @@ class TurnSolver():
     self.params = Params()
     self.CP = CP
     self.decelFilter = FirstOrderFilter(0., _DECEL_FOR_TURN_FILTER_TS, CP.radarTimeStep)
-    self.angleFilter = FirstOrderFilter(0., _STEERING_ANGLE_FILTER_TS, CP.radarTimeStep)
     self.a_turn = 0.0
     self.v_turn = 0.0
     self._v_turn_future = 0.0
@@ -70,7 +68,6 @@ class TurnSolver():
 
   def update(self, enabled, v_ego, v_cruise_setpoint, d_poly, steering_angle):
     self.v_cruise_setpoint = v_cruise_setpoint
-    angle_filtered = self.angleFilter.update(steering_angle)
     self.update_params()
 
     if not enabled or self.min_braking_acc >= 0.0:
@@ -97,8 +94,8 @@ class TurnSolver():
         return
 
       # Vehicle has reached a viable turn speed. Keep this solution as long as vehicle is turning.
-      current_curvature = angle_filtered * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
-      print(f'-> Current Curvature: {current_curvature:.4f}, isntant angle: {steering_angle:.2f}, filt: {angle_filtered:.2f}')
+      current_curvature = steering_angle * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
+      print(f'-> Current Curvature: {current_curvature:.4f}, isntant angle: {steering_angle:.2f}')
       if abs(current_curvature) <= _CURRENT_CURVATURE_THOLD:
         print('VVVVVV Leaving Curve, Stop decelerating')
         # quite straight, provide no solution.
