@@ -11,6 +11,7 @@ _EVAL_STEP = 5.  # evaluate curvature every 5mts
 _EVAL_START = 0.  # start evaluating 0 mts ahead
 _EVAL_LENGHT = 130.  # evaluate curvature for 130mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
+_EVAL_LENGHT_SERGEI = 55.0
 # Offset to target lateral acceleration on turns to prevent multiple decelerations in a single turn
 _TARGET_LAT_ACC_OFFSET = 1.0
 
@@ -95,8 +96,11 @@ class TurnSolver():
 
       # Vehicle has reached a viable turn speed. Keep this solution as long as vehicle is turning.
       current_curvature = steering_angle * CV.DEG_TO_RAD / (self.CP.steerRatio * self.CP.wheelbase)
-      print(f'-> Current Curvature: {current_curvature:.4f}, isntant angle: {steering_angle:.2f}')
-      if abs(current_curvature) <= _CURRENT_CURVATURE_THOLD:
+      lat_accs_near = lat_accs[:int(_EVAL_LENGHT_SERGEI / _EVAL_STEP)]
+      max_lat_acc_idx_near = np.argmax(lat_accs_near)
+      max_lat_acc_near = lat_accs_near[max_lat_acc_idx_near]
+      print(f'-> Current Curvature: {current_curvature:.4f}, isntant angle: {steering_angle:.2f}, max Acc: {max_lat_acc_near:.2f}')
+      if abs(current_curvature) <= _CURRENT_CURVATURE_THOLD and max_lat_acc_near <= 0.5:
         print('VVVVVV Leaving Curve, Stop decelerating')
         # quite straight, provide no solution.
         self.decelerate = False
@@ -115,7 +119,7 @@ class TurnSolver():
       max_curvature = max_lat_acc / max(v_ego**2, 0.000001)
       v_target = min(math.sqrt(a_lat_reg_max / max_curvature), v_cruise_setpoint)
       acc_limit = (v_target**2 - v_ego**2) / (2 * distance_to_max_lat_acc)
-      self.a_turn = max(acc_limit, self.min_braking_acc)
+      self.a_turn = min(-1.0, max(acc_limit, self.min_braking_acc))
       print(f'^^^^^ New Limit found a_turn: {self.a_turn:.2f}')
       print(f'-> Ahead lat acceleration ({max_lat_acc:.2f}) in {distance_to_max_lat_acc:.0f} mts.')
     else:
