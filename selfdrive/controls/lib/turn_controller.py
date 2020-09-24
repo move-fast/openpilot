@@ -138,7 +138,6 @@ class TurnController():
     max_curvature_for_vego = a_lat_reg_max / max(self._v_ego, 0.1)**2
     lat_acc_overshoot_idxs = np.nonzero(pred_curvatures >= max_curvature_for_vego)[0]
     self._lat_acc_overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
-    print(f'Max Lat Acc: {self._max_pred_lat_acc:.2f}, Max allowed curv: {max_curvature_for_vego:.4f}')
 
     if self._lat_acc_overshoot_ahead:
       self._v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
