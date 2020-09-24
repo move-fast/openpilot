@@ -83,6 +83,7 @@ class TurnController():
     self._CP = CP
     self._op_enabled = False
     self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns", True))
+    self._jerk_limits = [self._min_braking_acc, 1.0]
     self._last_params_update = 0.0
     self._v_cruise_setpoint = 0.0
     self._v_ego = 0.0
@@ -110,6 +111,7 @@ class TurnController():
     time = sec_since_boot()
     if time > self._last_params_update + 10.0:
       self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns"))
+      self._jerk_limits = [self._min_braking_acc, 1.0]
       self._last_params_update = time
       print(f'Updated Max Decel: {self._min_braking_acc:.2f}')
 
@@ -181,12 +183,8 @@ class TurnController():
         self.state = TurnState.DISABLED
 
   def _update_solution(self):
-    a_target = self._a_ego
-    j_limits = np.array([-1., 1.])
-    a_limits = a_target + j_limits * _LON_MPC_STEP
-
     if self.state == TurnState.DISABLED:
-      pass
+      a_target = self._a_ego
     elif self.state == TurnState.ENTERING:
       if self._lat_acc_overshoot_ahead:
         a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), _ENTERING_SMOOTH_DECEL)
@@ -197,6 +195,8 @@ class TurnController():
     elif self.state == TurnState.LEAVING:
       a_target = _LEAVING_ACC
 
+    j_limits = np.array(self._jerk_limits)
+    a_limits = self._a_ego + j_limits * _LON_MPC_STEP
     a_target = max(min(a_target, a_limits[1]), a_limits[0])
 
     self.a_turn = max(a_target, self._min_braking_acc)
