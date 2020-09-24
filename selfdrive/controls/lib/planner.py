@@ -178,7 +178,7 @@ class Planner():
     self.choose_solution(v_cruise_setpoint, enabled)
     if enabled and self.longitudinalPlanSource == 'model':
       print(f'v_acc_start: {self.v_acc_start:.2f}, v_acc: {self.v_acc:.2f}, v_acc_future: {self.v_acc_future:.2f},\
-         a_acc: {self.a_acc:.2f}')
+         a_acc_start: {self.a_acc_start:.2f}, a_acc: {self.a_acc:.2f}')
 
     # determine fcw
     if self.mpc1.new_lead:
