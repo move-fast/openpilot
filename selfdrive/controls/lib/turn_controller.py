@@ -18,7 +18,7 @@ _TURNING_CURVATURE_TH = 0.0045  # Curvature threshold to trigger turning turn st
 _LEAVING_CURVATURE_TH = 0.0025  # Curvature threshold to trigger leaving turn state.
 _FINISH_CURVATURE_TH = 0.002  # Curvature threshold to trigger the end of turn cycle.
 
-_ENTERING_SMOOTH_DECEL = -0.2  # Smooth decel when entering curve without overshooting lat acc limits.
+_ENTERING_SMOOTH_DECEL = -0.3  # Smooth decel when entering curve without overshooting lat acc limits.
 _TURNING_SMOOTH_DECEL = -0.2  # Smooth decel when turning.
 _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
 
@@ -142,6 +142,7 @@ class TurnController():
     if self._lat_acc_overshoot_ahead:
       self._v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
       self._v_target = min(math.sqrt(a_lat_reg_max / self._max_pred_curvature), self._v_cruise_setpoint)
+      print(f'High Lat Acc ahead. Distance: {self._v_target_distance:.2f}, target v: {self._v_target_distance:.2f}')
 
   def _state_transition(self):
     # In any case, if system is disabled or min braking param has been set to non negative value, disable.
