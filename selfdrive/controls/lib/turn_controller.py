@@ -29,7 +29,7 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
-_A_LAT_REG_MAX_V = [4., 4., 4., 4.]  # Currently all the same for all speed ranges
+_A_LAT_REG_MAX_V = [3., 3., 3., 3.]  # Currently all the same for all speed ranges
 _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 
 
