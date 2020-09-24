@@ -142,7 +142,7 @@ class TurnController():
     if self._lat_acc_overshoot_ahead:
       self._v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
       self._v_target = min(math.sqrt(a_lat_reg_max / self._max_pred_curvature), self._v_cruise_setpoint)
-      print(f'High Lat Acc ahead. Distance: {self._v_target_distance:.2f}, target v: {self._v_target_distance:.2f}')
+      print(f'High Lat Acc ahead. Distance: {self._v_target_distance:.2f}, target v: {self._v_target:.2f}')
 
   def _state_transition(self):
     # In any case, if system is disabled or min braking param has been set to non negative value, disable.
