@@ -111,7 +111,7 @@ class TurnController():
     if time > self._last_params_update + 10.0:
       self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns"))
       self._last_params_update = time
-      print(f'Updated Max Decel: {self.min_braking_acc:.2f}')
+      print(f'Updated Max Decel: {self._min_braking_acc:.2f}')
 
   def _reset(self):
     self._v_turn_future = 0.0
