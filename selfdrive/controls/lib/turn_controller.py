@@ -29,7 +29,7 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
-_A_LAT_REG_MAX_V = [3., 3., 3., 3.]  # Currently all the same for all speed ranges
+_A_LAT_REG_MAX_V = [2., 2., 2., 2.]  # Currently all the same for all speed ranges
 _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 
 
@@ -135,9 +135,10 @@ class TurnController():
     self._max_pred_lat_acc = self._v_ego**2 * self._max_pred_curvature
 
     a_lat_reg_max = interp(self._v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
-    max_curvature_for_vego = a_lat_reg_max / max(self._v_ego, 0.1)
+    max_curvature_for_vego = a_lat_reg_max / max(self._v_ego, 0.1)**2
     lat_acc_overshoot_idxs = np.nonzero(pred_curvatures >= max_curvature_for_vego)[0]
     self._lat_acc_overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
+    print(f'Max Lat Acc: {self._max_pred_lat_acc:.2f}, Max allowed curv: {max_curvature_for_vego:.4f}')
 
     if self._lat_acc_overshoot_ahead:
       self._v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
