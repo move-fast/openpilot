@@ -14,7 +14,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
-from selfdrive.controls.lib.turn_solver import TurnSolver
+from selfdrive.controls.lib.turn_controller import TurnController, TurnState
 
 MAX_SPEED = 255.0
 
@@ -70,7 +70,7 @@ class Planner():
 
     self.mpc1 = LongitudinalMpc(1)
     self.mpc2 = LongitudinalMpc(2)
-    self.turn_solver = TurnSolver(CP)
+    self.turn_controller = TurnController(CP)
 
     self.v_acc_start = 0.0
     self.a_acc_start = 0.0
@@ -95,8 +95,8 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status:
         solutions['mpc2'] = self.mpc2.v_mpc
-      if self.turn_solver.decelerate:
-        solutions['model'] = self.turn_solver.v_turn
+      if self.turn_controller.state != TurnState.DISABLED:
+        solutions['model'] = self.turn_controller.v_turn
 
       slowest = min(solutions, key=solutions.get)
 
@@ -112,11 +112,11 @@ class Planner():
         self.v_acc = self.v_cruise
         self.a_acc = self.a_cruise
       elif slowest == 'model':
-        self.v_acc = self.turn_solver.v_turn
-        self.a_acc = self.turn_solver.a_turn
+        self.v_acc = self.turn_controller.v_turn
+        self.a_acc = self.turn_controller.a_turn
 
     self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint,
-                            self.turn_solver.v_turn_future])
+                            self.turn_controller.v_turn_future])
 
   def update(self, sm, pm, CP, VM, PP):
     """Gets called when new radarState is available"""
@@ -172,8 +172,8 @@ class Planner():
 
     self.mpc1.update(pm, sm['carState'], lead_1, v_cruise_setpoint)
     self.mpc2.update(pm, sm['carState'], lead_2, v_cruise_setpoint)
-    self.turn_solver.update(enabled, self.v_acc_start, v_cruise_setpoint, [float(x) for x in PP.LP.d_poly],
-                            sm['carState'].steeringAngle)
+    self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint, 
+                                [float(x) for x in PP.LP.d_poly], sm['carState'].steeringAngle)
 
     self.choose_solution(v_cruise_setpoint, enabled)
     if enabled and self.longitudinalPlanSource == 'model':
@@ -227,7 +227,7 @@ class Planner():
 
     # Send out fcw
     plan_send.plan.fcw = fcw
-    plan_send.plan.decelForTurn = bool(self.turn_solver.decelerate)
+    plan_send.plan.decelForTurn = bool(self.turn_controller.state != TurnState.DISABLED)
 
     pm.send('plan', plan_send)
 
