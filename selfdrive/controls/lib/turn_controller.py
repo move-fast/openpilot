@@ -183,17 +183,22 @@ class TurnController():
 
   def _update_solution(self):
     a_target = self._a_ego
+    j_limits = np.array([-1., 1.])
+    a_limits = a_target + j_limits * _LON_MPC_STEP
+
     if self.state == TurnState.DISABLED:
       pass
     elif self.state == TurnState.ENTERING:
       if self._lat_acc_overshoot_ahead:
-        a_target = (self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance)
+        a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), _ENTERING_SMOOTH_DECEL)
       else:
         a_target = _ENTERING_SMOOTH_DECEL
     elif self.state == TurnState.TURNING:
       a_target = _TURNING_SMOOTH_DECEL
     elif self.state == TurnState.LEAVING:
       a_target = _LEAVING_ACC
+
+    a_target = max(min(a_target, a_limits[1]), a_limits[0])
 
     self.a_turn = max(a_target, self._min_braking_acc)
     self.v_turn = self._v_ego + self.a_turn * _LON_MPC_STEP  # speed in next Longitudinal control step.
