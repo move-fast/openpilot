@@ -19,7 +19,6 @@ _LEAVING_CURVATURE_TH = 0.0025  # Curvature threshold to trigger leaving turn st
 _FINISH_CURVATURE_TH = 0.002  # Curvature threshold to trigger the end of turn cycle.
 
 _ENTERING_SMOOTH_DECEL = -0.3  # Smooth decel when entering curve without overshooting lat acc limits.
-_TURNING_SMOOTH_DECEL = -0.3  # Smooth decel when turning.
 _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
@@ -38,6 +37,11 @@ _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 # depending on the actual maximum lateral acceleration predicted on the turn ahead.
 _ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # max acc value allowed on ENTERING state
 _ENTERING_SMOOTH_DECEL_BP = [1., 3]  # absolute value of lat acc ahead
+
+# Lookup table for the acceleration for the TURNING state
+# depending on the current lateral acceleration of the vehicle.
+_TURNING_ACC_V = [0.5, -0.2, -0.4]  # acc value
+_TURNING_ACC_BP = [1., 2., 3.]  # absolute value of current lat acc
 
 
 def eval_curvature(poly, x_vals):
@@ -202,7 +206,8 @@ class TurnController():
         a_target = entering_smooth_decel
     # TURNING
     elif self.state == TurnState.TURNING:
-      a_target = _TURNING_SMOOTH_DECEL
+      current_lat_acc = self._current_curvature * self._v_ego**2
+      a_target = interp(current_lat_acc, _TURNING_ACC_BP, _TURNING_ACC_V)
     # LEAVING
     elif self.state == TurnState.LEAVING:
       a_target = _LEAVING_ACC
