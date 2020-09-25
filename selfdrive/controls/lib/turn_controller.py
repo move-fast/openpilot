@@ -12,14 +12,14 @@ _MIN_V = 5.6  # Do not operate under 20km/h
 
 _ENTERING_CURVATURE_TH = 0.003  # Curvature threshold to trigger entering turn state.
 _ENTERING_LAT_ACC_TH = 1.0  # Lat Acc threshold to trigger entering turn state.
-_ABORT_ENTERING_CURVATURE_TH = 0.002  # Curvature threshold to abourt entering state if road straightens.
+_ABORT_ENTERING_CURVATURE_TH = 0.0015  # Curvature threshold to abourt entering state if road straightens.
 
 _TURNING_CURVATURE_TH = 0.0045  # Curvature threshold to trigger turning turn state.
 _LEAVING_CURVATURE_TH = 0.0025  # Curvature threshold to trigger leaving turn state.
 _FINISH_CURVATURE_TH = 0.002  # Curvature threshold to trigger the end of turn cycle.
 
 _ENTERING_SMOOTH_DECEL = -0.3  # Smooth decel when entering curve without overshooting lat acc limits.
-_TURNING_SMOOTH_DECEL = -0.2  # Smooth decel when turning.
+_TURNING_SMOOTH_DECEL = -0.3  # Smooth decel when turning.
 _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
@@ -32,6 +32,10 @@ _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 _A_LAT_REG_MAX_V = [2., 2., 2., 2.]  # Currently all the same for all speed ranges
 _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 
+# Lookup table for maximum lateral acceleration according
+# to R079r4e regulation for M1 category vehicles.
+_ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # Currently all the same for all speed ranges
+_ENTERING_SMOOTH_DECEL_BP = [1., 3]  # 10, 60, 100, 130 km/h
 
 def eval_curvature(poly, x_vals):
   """
@@ -111,7 +115,7 @@ class TurnController():
     time = sec_since_boot()
     if time > self._last_params_update + 10.0:
       self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns"))
-      self._jerk_limits = [self._min_braking_acc, 1.0]
+      self._jerk_limits = [self._min_braking_acc, 0.5]
       self._last_params_update = time
       print(f'Updated Max Decel: {self._min_braking_acc:.2f}')
 
@@ -186,10 +190,12 @@ class TurnController():
     if self.state == TurnState.DISABLED:
       a_target = self._a_ego
     elif self.state == TurnState.ENTERING:
+      _entering_smooth_decel = interp(self._max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V)
+      print(f'Overshooting {self._lat_acc_overshoot_ahead}, _entering_smooth_decel {_entering_smooth_decel:.2f}')
       if self._lat_acc_overshoot_ahead:
-        a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), _ENTERING_SMOOTH_DECEL)
+        a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), _entering_smooth_decel)
       else:
-        a_target = _ENTERING_SMOOTH_DECEL
+        a_target = _entering_smooth_decel
     elif self.state == TurnState.TURNING:
       a_target = _TURNING_SMOOTH_DECEL
     elif self.state == TurnState.LEAVING:
