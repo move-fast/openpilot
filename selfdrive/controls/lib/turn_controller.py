@@ -27,15 +27,18 @@ _EVAL_START = 0.  # start evaluating 0 mts ahead
 _EVAL_LENGHT = 195.  # evaluate curvature for 130mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 
+_MAX_JERK_ACC_INCREASE = 0.5  # Maximum jerk allowed when increasing acceleration.
+
 # Lookup table for maximum lateral acceleration according
 # to R079r4e regulation for M1 category vehicles.
 _A_LAT_REG_MAX_V = [2., 2., 2., 2.]  # Currently all the same for all speed ranges
 _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 
-# Lookup table for maximum lateral acceleration according
-# to R079r4e regulation for M1 category vehicles.
-_ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # Currently all the same for all speed ranges
-_ENTERING_SMOOTH_DECEL_BP = [1., 3]  # 10, 60, 100, 130 km/h
+# Lookup table for the maximum deceleration during the ENTERING state
+# depending on the actual maximum lateral acceleration predicted on the turn ahead.
+_ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # max acc value allowed on ENTERING state
+_ENTERING_SMOOTH_DECEL_BP = [1., 3]  # absolute value of lat acc ahead
+
 
 def eval_curvature(poly, x_vals):
   """
@@ -87,7 +90,7 @@ class TurnController():
     self._CP = CP
     self._op_enabled = False
     self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns", True))
-    self._jerk_limits = [self._min_braking_acc, 1.0]
+    self._jerk_limits = [self._min_braking_acc, _MAX_JERK_ACC_INCREASE]
     self._last_params_update = 0.0
     self._v_cruise_setpoint = 0.0
     self._v_ego = 0.0
@@ -115,7 +118,7 @@ class TurnController():
     time = sec_since_boot()
     if time > self._last_params_update + 10.0:
       self._min_braking_acc = float(self._params.get("MaxDecelerationForTurns"))
-      self._jerk_limits = [self._min_braking_acc, 0.5]
+      self._jerk_limits = [self._min_braking_acc, _MAX_JERK_ACC_INCREASE]
       self._last_params_update = time
       print(f'Updated Max Decel: {self._min_braking_acc:.2f}')
 
@@ -125,7 +128,6 @@ class TurnController():
     self._d_poly = [0., 0., 0., 0.]
     self._max_pred_curvature = 0.0
     self._max_pred_lat_acc = 0.0
-    self._distance_to_max_curv = 200.0
     self._v_target_distance = 200.0
     self._v_target = 0.0
     self._lat_acc_overshoot_ahead = False
@@ -136,7 +138,6 @@ class TurnController():
   def _update_calculations(self):
     pred_curvatures = eval_curvature(self._d_poly, _EVAL_RANGE)
     max_pred_curvature_idx = np.argmax(pred_curvatures)
-    self._distance_to_max_curv = max(max_pred_curvature_idx * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
     self._max_pred_curvature = pred_curvatures[max_pred_curvature_idx]
     self._max_pred_lat_acc = self._v_ego**2 * self._max_pred_curvature
 
@@ -187,25 +188,32 @@ class TurnController():
         self.state = TurnState.DISABLED
 
   def _update_solution(self):
+    # Calculate target acceleration based on turn state.
+    # DISABLED
     if self.state == TurnState.DISABLED:
       a_target = self._a_ego
+    # ENTERING
     elif self.state == TurnState.ENTERING:
-      _entering_smooth_decel = interp(self._max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V)
-      print(f'Overshooting {self._lat_acc_overshoot_ahead}, _entering_smooth_decel {_entering_smooth_decel:.2f}')
+      entering_smooth_decel = interp(self._max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V)
+      print(f'Overshooting {self._lat_acc_overshoot_ahead}, _entering_smooth_decel {entering_smooth_decel:.2f}')
       if self._lat_acc_overshoot_ahead:
-        a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), _entering_smooth_decel)
+        a_target = min((self._v_target**2 - self._v_ego**2) / (2 * self._v_target_distance), entering_smooth_decel)
       else:
-        a_target = _entering_smooth_decel
+        a_target = entering_smooth_decel
+    # TURNING
     elif self.state == TurnState.TURNING:
       a_target = _TURNING_SMOOTH_DECEL
+    # LEAVING
     elif self.state == TurnState.LEAVING:
       a_target = _LEAVING_ACC
 
+    # smooth out acceleration using jerk limits.
     j_limits = np.array(self._jerk_limits)
     a_limits = self._a_ego + j_limits * _LON_MPC_STEP
     a_target = max(min(a_target, a_limits[1]), a_limits[0])
 
-    self.a_turn = max(a_target, self._min_braking_acc)
+    # calculate solution values.
+    self.a_turn = max(a_target, self._min_braking_acc)  # acceleration in next Longitudinal control step.
     self.v_turn = self._v_ego + self.a_turn * _LON_MPC_STEP  # speed in next Longitudinal control step.
     self._v_turn_future = self._v_ego + self.a_turn * 4.  # speed in 4 seconds.
 
