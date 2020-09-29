@@ -61,6 +61,23 @@ static void ui_draw_text(NVGcontext *vg, float x, float y, const char* string, f
   nvgText(vg, x, y, string, NULL);
 }
 
+static void ui_draw_circle(NVGcontext *vg, float x, float y, float size, NVGcolor color) {
+  nvgBeginPath(vg);
+  nvgCircle(vg, x, y + (bdr_s * 1.5), size);
+  nvgFillColor(vg, color);
+  nvgFill(vg);
+}
+
+static void ui_draw_speed_sign(NVGcontext *vg, float x, float y, int size, float speed, int font) {
+  ui_draw_circle(vg, x, y, float(size), COLOR_RED);
+  ui_draw_circle(vg, x, y, float(size) * 0.8, COLOR_WHITE);
+
+  char speedlimit_str[16];
+  nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
+  ui_draw_text(vg, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK, font);
+}
+
 static void draw_chevron(UIState *s, float x_in, float y_in, float sz,
                           NVGcolor fillColor, NVGcolor glowColor) {
   const vec4 p_car_space = (vec4){{x_in, y_in, 0., 1.}};
@@ -412,6 +429,18 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   }
 }
 
+static void ui_draw_vision_speedlimit(UIState *s) {
+  float speedLimit = s->scene.controls_state.getSpeedLimit();
+
+  if (speedLimit > 0.0) {
+    int viz_maxspeed_w = 184;
+    const int signal_size = 96;
+    const int signal_x = s->scene.ui_viz_rx + bdr_s*3 + viz_maxspeed_w;
+    const int signal_y = (box_y + (bdr_s*1.5));
+    ui_draw_speed_sign(s->vg, signal_x, signal_y, signal_size, speedLimit, s->font_sans_bold);
+  }
+}
+
 static void ui_draw_vision_maxaccturn(UIState *s) {
   float max_acc_turn = s->max_acc_turn;
   float atarget = s->scene.controls_state.getATarget();
@@ -419,7 +448,8 @@ static void ui_draw_vision_maxaccturn(UIState *s) {
 
   const int viz_text_w = 150;
   const int viz_maxspeed_w = 184;
-  const int viz_text_x = s->scene.ui_viz_rx + bdr_s*3 + viz_maxspeed_w;
+  const int signal_size = 96;
+  const int viz_text_x = s->scene.ui_viz_rx + bdr_s*4 + viz_maxspeed_w + signal_size;
   char max_acc_str[32];
   char atarget_str[32];
   char latacc_str[32];
@@ -565,6 +595,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_rect(s->vg, ui_viz_rx, box_y, ui_viz_rw, header_h, gradient);
 
   ui_draw_vision_maxspeed(s);
+  ui_draw_vision_speedlimit(s);
   ui_draw_vision_maxaccturn(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
