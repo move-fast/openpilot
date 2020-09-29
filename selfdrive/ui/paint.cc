@@ -61,6 +61,23 @@ static void ui_draw_text(NVGcontext *vg, float x, float y, const char* string, f
   nvgText(vg, x, y, string, NULL);
 }
 
+static void ui_draw_circle(NVGcontext *vg, float x, float y, float size, NVGcolor color) {
+  nvgBeginPath(vg);
+  nvgCircle(vg, x, y + (bdr_s * 1.5), size);
+  nvgFillColor(vg, color);
+  nvgFill(vg);
+}
+
+static void ui_draw_speed_sign(NVGcontext *vg, float x, float y, int size, float speed, int font) {
+  ui_draw_circle(vg, x, y, float(size), COLOR_RED);
+  ui_draw_circle(vg, x, y, float(size) * 0.8, COLOR_WHITE);
+
+  char speedlimit_str[16];
+  nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
+  ui_draw_text(vg, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK, font);
+}
+
 static void draw_chevron(UIState *s, float x_in, float y_in, float sz,
                           NVGcolor fillColor, NVGcolor glowColor) {
   const vec4 p_car_space = (vec4){{x_in, y_in, 0., 1.}};
@@ -479,7 +496,8 @@ static void ui_draw_vision_event(UIState *s) {
     if (s->scene.controls_state.getEngageable()){
       ui_draw_circle_image(s->vg, bg_wheel_x, bg_wheel_y, bg_wheel_size, s->img_wheel, color, 1.0f, bg_wheel_y - 25);
       
-      // draw hands on wheel pictogram under wheel pictogram.
+      float speedLimit = s->scene.controls_state.getSpeedLimit();
+      // draw hands on wheel pictogram or speed limit under wheel pictogram.
       auto handsOnWheelState = s->scene.dmonitoring_state.getHandsOnWheelState();
       if (handsOnWheelState >= cereal::DMonitoringState::HandsOnWheelState::WARNING) {
         if (handsOnWheelState == cereal::DMonitoringState::HandsOnWheelState::WARNING) {
@@ -491,6 +509,11 @@ static void ui_draw_vision_event(UIState *s) {
         const int wheel_x = viz_event_x + viz_event_w - wheel_size;
         const int wheel_y = bg_wheel_y + bdr_s + bg_wheel_size + wheel_size;
         ui_draw_circle_image(s->vg, wheel_x, wheel_y, wheel_size, s->img_hands_on_wheel, color, 1.0f, wheel_y - 25);
+      } else if (speedLimit > 0.0) {
+        const int signal_size = 96;
+        const int signal_x = viz_event_x + viz_event_w - signal_size;
+        const int signal_y = bg_wheel_y + bdr_s + bg_wheel_size + signal_size;
+        ui_draw_speed_sign(s->vg, signal_x, signal_y, signal_size, speedLimit, s->font_sans_bold);
       }
     }
   }
