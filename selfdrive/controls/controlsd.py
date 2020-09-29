@@ -126,6 +126,9 @@ class Controls:
     self.distance_traveled = 0
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
+    self.speed_limit_active = False
+    self.v_cruise_before_limit_kph = 0
+    self.speed_limit_kph = 0
 
     self.sm['liveCalibration'].calStatus = Calibration.INVALID
     self.sm['thermal'].freeSpace = 1.
@@ -276,11 +279,41 @@ class Controls:
 
     self.v_cruise_kph_last = self.v_cruise_kph
 
-    # if stock cruise is completely disabled, then we can use our own set speed logic
-    if not self.CP.enableCruise:
+    # Get speed limit and define its state.
+    speed_limit_kph = CS.cruiseState.speedLimit * CV.MS_TO_KPH
+    speed_limit_changed = speed_limit_kph != self.speed_limit_kph
+    self.speed_limit_kph = speed_limit_kph
+    speed_limit_active = self.speed_limit_kph > 0 and self.enabled
+
+    # Remember cruise setpoint and set cruise to speed limit when starting speed limit zone.
+    # Only activate speed limit if limit is less than cruise setpoint
+    if speed_limit_active and not self.speed_limit_active and self.speed_limit_kph < self.v_cruise_kph:
+      self.speed_limit_active = True
+      self.v_cruise_before_limit_kph = self.v_cruise_kph
+      self.v_cruise_kph = self.speed_limit_kph
+    # Restore last cruise setpoint when ending speed limit zone.
+    elif not speed_limit_active and self.speed_limit_active:
+      self.speed_limit_active = False
+      self.v_cruise_kph = self.v_cruise_before_limit_kph
+    # Handle changes on speed limit while active
+    elif speed_limit_active and self.speed_limit_active and speed_limit_changed:
+      # Just update to new limit if below the cruise speed set by driver.
+      if self.speed_limit_kph < self.v_cruise_before_limit_kph:
+        self.v_cruise_kph = self.speed_limit_kph
+      # when limit above driver set cruise, deactivate the limit and restore cruise setpoint by driver.
+      else:
+        self.speed_limit_active = False
+        self.v_cruise_kph = self.v_cruise_before_limit_kph
+
+    # also when speed limit is active update cruise speed with button events.
+    if self.speed_limit_active:
       self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled)
-    elif self.CP.enableCruise and CS.cruiseState.enabled:
-      self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
+    else:
+      # if stock cruise is completely disabled, then we can use our own set speed logic
+      if not self.CP.enableCruise:
+        self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled)
+      elif self.CP.enableCruise and CS.cruiseState.enabled:
+        self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
     # decrease the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -415,7 +448,7 @@ class Controls:
     CC.cruiseControl.speedOverride = float(speed_override if self.CP.enableCruise else 0.0)
     CC.cruiseControl.accelOverride = self.CI.calc_accel_override(CS.aEgo, self.sm['plan'].aTarget, CS.vEgo, self.sm['plan'].vTarget)
 
-    CC.hudControl.setSpeed = float(self.v_cruise_kph * CV.KPH_TO_MS)
+    CC.hudControl.setSpeed = float((self.v_cruise_before_limit_kph if self.speed_limit_active else self.v_cruise_kph) * CV.KPH_TO_MS)
     CC.hudControl.speedVisible = self.enabled
     CC.hudControl.lanesVisible = self.enabled
     CC.hudControl.leadVisible = self.sm['plan'].hasLead
@@ -484,7 +517,7 @@ class Controls:
     controlsState.longControlState = self.LoC.long_control_state
     controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_kph)
-    controlsState.speedLimit = float(CS.cruiseState.speedLimit * CV.MS_TO_KPH)
+    controlsState.speedLimit = float(self.v_cruise_kph if self.speed_limit_active else 0.0)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
