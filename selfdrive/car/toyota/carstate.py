@@ -116,6 +116,7 @@ class CarState(CarStateBase):
       ret.rightBlindspot = (cp.vl["BSM"]['R_ADJACENT'] == 1) or (cp.vl["BSM"]['R_APPROACHING'] == 1)
 
     self._update_traffic_signals(cp_cam)
+    ret.cruiseState.speedLimit = self._calculate_speed_limit()
 
     return ret
 
@@ -189,6 +190,13 @@ class CarState(CarStateBase):
   def _traffic_signal_description(self, tsgn):
     desc = _TRAFFIC_SINGAL_MAP.get(int(tsgn))
     return f'{tsgn}: {desc}' if desc is not None else f'{tsgn}'
+
+  def _calculate_speed_limit(self):
+    if self._tsgn1 == 1:
+      return self._spdval1 * CV.KPH_TO_MS
+    if self._tsgn1 == 36:
+      return self._spdval1 * CV.MPH_TO_MS
+    return 0
 
   @staticmethod
   def get_can_parser(CP):
