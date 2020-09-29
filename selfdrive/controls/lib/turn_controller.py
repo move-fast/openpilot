@@ -10,11 +10,11 @@ from selfdrive.config import Conversions as CV
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _MIN_V = 5.6  # Do not operate under 20km/h
 
-_ENTERING_CURVATURE_TH = 0.003  # Curvature threshold to trigger entering turn state.
-_ENTERING_LAT_ACC_TH = 1.0  # Lat Acc threshold to trigger entering turn state.
-_ABORT_ENTERING_CURVATURE_TH = 0.0015  # Curvature threshold to abourt entering state if road straightens.
+_ENTERING_PRED_CURVATURE_TH = 0.003  # Predicitve curvature threshold to trigger entering turn state.
+_ENTERING_PRED_LAT_ACC_TH = 1.0  # Predicted Lat Acc threshold to trigger entering turn state.
+_ABORT_ENTERING_CURVATURE_TH = 0.0015  # Curvature threshold to abort entering state if road straightens.
 
-_TURNING_CURVATURE_TH = 0.0045  # Curvature threshold to trigger turning turn state.
+_TURNING_CURVATURE_TH = 0.003  # Curvature threshold to trigger turning turn state.
 _LEAVING_CURVATURE_TH = 0.0025  # Curvature threshold to trigger leaving turn state.
 _FINISH_CURVATURE_TH = 0.002  # Curvature threshold to trigger the end of turn cycle.
 
@@ -33,9 +33,9 @@ _MAX_JERK_ACC_INCREASE = 0.5  # Maximum jerk allowed when increasing acceleratio
 _A_LAT_REG_MAX_V = [2., 2., 2., 2.]  # Currently all the same for all speed ranges
 _A_LAT_REG_MAX_BP = [2.8, 16.7, 27.8, 36.1]  # 10, 60, 100, 130 km/h
 
-# Lookup table for the maximum deceleration during the ENTERING state
-# depending on the actual maximum lateral acceleration predicted on the turn ahead.
-_ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # max acc value allowed on ENTERING state
+# Lookup table for the minimum deceleration during the ENTERING state
+# depending on the actual maximum absolute lateral acceleration predicted on the turn ahead.
+_ENTERING_SMOOTH_DECEL_V = [-0.3, -1.]  # min decel value allowed on ENTERING state
 _ENTERING_SMOOTH_DECEL_BP = [1., 3]  # absolute value of lat acc ahead
 
 # Lookup table for the acceleration for the TURNING state
@@ -168,7 +168,7 @@ class TurnController():
         pass
       # If substantial curvature ahead is detected, and a minimum lateral
       # acceleration is predicted, then move to Entering turn state.
-      elif self._max_pred_curvature >= _ENTERING_CURVATURE_TH and self._max_pred_lat_acc >= _ENTERING_LAT_ACC_TH:
+      elif self._max_pred_curvature >= _ENTERING_PRED_CURVATURE_TH and self._max_pred_lat_acc >= _ENTERING_PRED_LAT_ACC_TH:
         self.state = TurnState.ENTERING
     # ENTERING
     elif self.state == TurnState.ENTERING:
