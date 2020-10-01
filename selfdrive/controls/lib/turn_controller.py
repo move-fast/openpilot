@@ -110,6 +110,10 @@ class TurnController():
   def state(self):
     return self._state
 
+  @property
+  def is_active(self):
+    return self._state != TurnState.DISABLED
+
   @state.setter
   def state(self, value):
     if value != self._state:

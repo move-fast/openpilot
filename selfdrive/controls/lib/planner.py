@@ -14,7 +14,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
-from selfdrive.controls.lib.turn_controller import TurnController, TurnState
+from selfdrive.controls.lib.turn_controller import TurnController
 
 MAX_SPEED = 255.0
 
@@ -95,7 +95,7 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status:
         solutions['mpc2'] = self.mpc2.v_mpc
-      if self.turn_controller.state != TurnState.DISABLED:
+      if self.turn_controller.is_active:
         solutions['model'] = self.turn_controller.v_turn
 
       slowest = min(solutions, key=solutions.get)
@@ -115,8 +115,9 @@ class Planner():
         self.v_acc = self.turn_controller.v_turn
         self.a_acc = self.turn_controller.a_turn
 
-    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint,
-                            self.turn_controller.v_turn_future])
+    self.v_acc_future = min([self.mpc1.v_mpc_future, self.mpc2.v_mpc_future, v_cruise_setpoint])
+    if self.turn_controller.is_active:
+      self.v_acc_future = min(self.v_acc_future, self.turn_controller.v_turn_future)
 
   def update(self, sm, pm, CP, VM, PP):
     """Gets called when new radarState is available"""
@@ -227,7 +228,7 @@ class Planner():
 
     # Send out fcw
     plan_send.plan.fcw = fcw
-    plan_send.plan.decelForTurn = bool(self.turn_controller.state != TurnState.DISABLED)
+    plan_send.plan.decelForTurn = bool(self.turn_controller.is_active)
 
     pm.send('plan', plan_send)
 
