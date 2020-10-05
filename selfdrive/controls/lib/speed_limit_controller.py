@@ -95,9 +95,8 @@ class SpeedLimitController():
     # ADAPTING
     elif self._state == LimitState.ADAPTING:
       # Calculate to adapt speed on target time.
-      adapting_time = _LIMIT_ADAPT_TIME - self._adapting_cycles * _LON_MPC_STEP
-      adapting_distance = max(self._v_ego * adapting_time, 5.0)  # minimum adapting distance is 5m.
-      a_target = (self.speed_limit**2 - self._v_ego**2) / (2 * adapting_distance)
+      adapting_time = max(_LIMIT_ADAPT_TIME - self._adapting_cycles * _LON_MPC_STEP, 1.0)  # min adapt time 1 sec.
+      a_target = (self.speed_limit - self._v_ego) / adapting_time
       # smooth out acceleration using jerk limits.
       j_limits = np.array(self._adapting_jerk_limits)
       a_limits = self._a_ego + j_limits * _LON_MPC_STEP
