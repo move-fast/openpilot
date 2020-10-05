@@ -437,7 +437,8 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int signal_size = 96;
     const int signal_x = s->scene.ui_viz_rx + bdr_s*3 + viz_maxspeed_w;
     const int signal_y = (box_y + (bdr_s*1.5));
-    ui_draw_speed_sign(s->vg, signal_x, signal_y, signal_size, speedLimit, s->font_sans_bold);
+    const float speed = s->is_metric?speedLimit*3.6:speedLimit*2.2369363;
+    ui_draw_speed_sign(s->vg, signal_x, signal_y, signal_size, speed, s->font_sans_bold);
   }
 }
 

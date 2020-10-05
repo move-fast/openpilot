@@ -1,6 +1,8 @@
 import numpy as np
 from enum import Enum
+from common.params import Params
 from selfdrive.controls.lib.speed_smoother import speed_smoother
+from selfdrive.config import Conversions as CV
 from cereal import car
 
 
@@ -28,6 +30,7 @@ class LimitState(Enum):
 
 class SpeedLimitController():
   def __init__(self):
+    self._is_metric = Params().get("IsMetric", encoding='utf8') == "1"
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
     self._active_accel_limits = [0.0, 0.0]
@@ -70,11 +73,12 @@ class SpeedLimitController():
       self._speed_limit_offset = 0.0
     else:
       for b in self._button_events:
+        delta = CV.KPH_TO_MS if self._is_metric else CV.MPH_TO_MS
         if not b.pressed:
           if b.type == car.CarState.ButtonEvent.Type.accelCruise:
-            self._speed_limit_offset += 1
+            self.speed_limit_offset += delta
           elif b.type == car.CarState.ButtonEvent.Type.decelCruise:
-            self._speed_limit_offset -= 1
+            self.speed_limit_offset -= delta
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit - self._v_ego
 
