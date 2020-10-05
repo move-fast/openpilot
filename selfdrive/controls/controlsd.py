@@ -485,6 +485,7 @@ class Controls:
     controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_kph)
     controlsState.speedLimit = float(CS.cruiseState.speedLimit)
+    controlsState.speedLimitOffset = float(self.sm['plan'].speedLimitOffset)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)

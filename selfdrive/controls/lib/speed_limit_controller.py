@@ -39,10 +39,10 @@ class SpeedLimitController():
     self._a_ego = 0.0
     self._v_offset = 0.0
     self._speed_limit = 0.0
-    self._speed_limit_offset = 0.0
     self._state = LimitState.INACTIVE
     self._adapting_cycles = 0
 
+    self.speed_limit_offset = 0.0
     self.v_limit = 0.0
     self.a_limit = 0.0
     self.v_limit_future = 0.0
@@ -65,13 +65,10 @@ class SpeedLimitController():
 
   @property
   def speed_limit(self):
-    return self._speed_limit + self._speed_limit_offset
+    return self._speed_limit + self.speed_limit_offset
 
   def _update_calculations(self):
-    # Update speed limit offset: reset to 0 while inactive, react to button events otherwise.
-    if not self.is_active:
-      self._speed_limit_offset = 0.0
-    else:
+    if self.is_active:
       for b in self._button_events:
         delta = CV.KPH_TO_MS if self._is_metric else CV.MPH_TO_MS
         if not b.pressed:
@@ -142,10 +139,14 @@ class SpeedLimitController():
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
-    self._speed_limit = car_state.cruiseState.speedLimit
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
     self._button_events = car_state.buttonEvents
+
+    # Reset speed limit offset when speed limit changes.
+    if car_state.cruiseState.speedLimit != self._speed_limit:
+      self.speed_limit_offset = 0.0
+      self._speed_limit = car_state.cruiseState.speedLimit
 
     self._update_calculations()
     self._state_transition()
