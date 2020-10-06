@@ -12,6 +12,8 @@ _MIN_ADAPTING_BRAKE_ACC = -2.0  # Minimum acceleration allowed when adapting to 
 _SPEED_OFFSET_TH = -5.0  # Maximum offset between speed limit and current speed for ADAPTING state.
 _LIMIT_ADAPT_TIME = 4.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
 
+_MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
+
 
 class LimitState(Enum):
   INACTIVE = 1  # No speed limit set.
@@ -29,8 +31,9 @@ class LimitState(Enum):
 
 
 class SpeedLimitController():
-  def __init__(self):
+  def __init__(self, CP):
     self._is_metric = Params().get("IsMetric", encoding='utf8') == "1"
+    self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
     self._active_accel_limits = [0.0, 0.0]
@@ -41,6 +44,7 @@ class SpeedLimitController():
     self._speed_limit = 0.0
     self._state = LimitState.INACTIVE
     self._adapting_cycles = 0
+    self._cruise_speed = 0
 
     self.speed_limit_offset = 0.0
     self.v_limit = 0.0
@@ -68,14 +72,29 @@ class SpeedLimitController():
     return self._speed_limit + self.speed_limit_offset
 
   def _update_calculations(self):
+    # Reset speed limit offset when speed limit changes.
+    if self._CS.cruiseState.speedLimit != self._speed_limit:
+      self.speed_limit_offset = 0.0
+      self._speed_limit = self._CS.cruiseState.speedLimit
+
+    # Process button events or change on set speed to update speed limit offset
     if self.is_active:
-      for b in self._button_events:
-        delta = CV.KPH_TO_MS if self._is_metric else CV.MPH_TO_MS
-        if not b.pressed:
-          if b.type == car.CarState.ButtonEvent.Type.accelCruise:
-            self.speed_limit_offset += delta
-          elif b.type == car.CarState.ButtonEvent.Type.decelCruise:
-            self.speed_limit_offset -= delta
+      # if stock cruise is completely disabled, use button events to update speed limit offset
+      # otherwise use cruise state speed changes.
+      if not self._CP.enableCruise:
+        for b in self._CS.buttonEvents:
+          delta = CV.KPH_TO_MS if self._is_metric else CV.MPH_TO_MS
+          if not b.pressed:
+            if b.type == car.CarState.ButtonEvent.Type.accelCruise:
+              self.speed_limit_offset += delta
+            elif b.type == car.CarState.ButtonEvent.Type.decelCruise:
+              self.speed_limit_offset -= delta
+      elif self._CS.cruiseState.enabled:
+        delta = self._CS.cruiseState.speed - self._cruise_speed
+        if abs(delta) <= _MAX_SPEED_OFFSET_DELTA:  # Only update is delta is small.
+          self.speed_limit_offset += delta
+        self._cruise_speed = self._CS.cruiseState.speed
+
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit - self._v_ego
 
@@ -135,18 +154,13 @@ class SpeedLimitController():
       self.v_limit = max(self.v_limit, 0.)
       self.v_limit_future = self._speed_limit
 
-  def update(self, enabled, v_ego, a_ego, car_state, accel_limits, jerk_limits):
+  def update(self, enabled, v_ego, a_ego, CS, accel_limits, jerk_limits):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
+    self._CS = CS
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
-    self._button_events = car_state.buttonEvents
-
-    # Reset speed limit offset when speed limit changes.
-    if car_state.cruiseState.speedLimit != self._speed_limit:
-      self.speed_limit_offset = 0.0
-      self._speed_limit = car_state.cruiseState.speedLimit
 
     self._update_calculations()
     self._state_transition()

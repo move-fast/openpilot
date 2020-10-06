@@ -73,7 +73,7 @@ class Planner():
     self.mpc1 = LongitudinalMpc(1)
     self.mpc2 = LongitudinalMpc(2)
     self.turn_controller = TurnController(CP)
-    self.speed_limit_controller = SpeedLimitController()
+    self.speed_limit_controller = SpeedLimitController(CP)
 
     self.v_acc_start = 0.0
     self.a_acc_start = 0.0
