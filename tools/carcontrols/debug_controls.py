@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from common.numpy_fast import clip
 from common.params import Params
+from common.realtime import Ratekeeper
 from copy import copy
 from cereal import car, log
 import cereal.messaging as messaging
@@ -20,22 +21,30 @@ def steer_thread():
   carcontrol = messaging.pub_sock('carControl')
   sendcan = messaging.pub_sock('sendcan')
 
+  axis_3 = 0
+  axis_1 = 0
   button_1_last = 0
   enabled = False
 
   # wait for CAN packets
+  rk = Ratekeeper(100, print_delay_threshold=None)
+
   print("Waiting for CAN messages...")
   get_one_can(logcan)
 
   CI, CP = get_car(logcan, sendcan)
   Params().put("CarParams", CP.to_bytes())
 
+  print("Long Control: %r" % CP.openpilotLongitudinalControl)
+
   CC = car.CarControl.new_message()
 
   while True:
+    pcm_cancel_cmd = False
+    hud_alert = 0
 
     # send
-    joystick = messaging.recv_one(joystick_sock)
+    joystick = messaging.recv_one_or_none(joystick_sock)
     can_strs = messaging.drain_sock_raw(logcan, wait_for_one=True)
     CS = CI.update(CC, can_strs)
 
@@ -45,11 +54,7 @@ def steer_thread():
 
     if joystick is not None:
       axis_3 = clip(-joystick.testJoystick.axes[3] * 1.05, -1., 1.)          # -1 to 1
-      actuators.steer = axis_3
-      actuators.steerAngle = axis_3 * 43.   # deg
       axis_1 = clip(-joystick.testJoystick.axes[1] * 1.05, -1., 1.)          # -1 to 1
-      actuators.gas = max(axis_1, 0.)
-      actuators.brake = max(-axis_1, 0.)
 
       pcm_cancel_cmd = joystick.testJoystick.buttons[0]
       button_1 = joystick.testJoystick.buttons[1]
@@ -60,9 +65,13 @@ def steer_thread():
 
       #print "enable", enabled, "steer", actuators.steer, "accel", actuators.gas - actuators.brake
 
-      hud_alert = 0
       if joystick.testJoystick.buttons[3]:
         hud_alert = "steerRequired"
+
+    actuators.steer = axis_3
+    actuators.steerAngle = axis_3 * 43.   # deg
+    actuators.gas = max(axis_1, 0.)
+    actuators.brake = max(-axis_1, 0.)
 
     CC.actuators.gas = actuators.gas
     CC.actuators.brake = actuators.brake
@@ -71,8 +80,10 @@ def steer_thread():
     CC.hudControl.visualAlert = hud_alert
     CC.hudControl.setSpeed = 20
     CC.cruiseControl.cancel = pcm_cancel_cmd
+    CC.cruiseControl.setSpeedUpdate = 20
     CC.enabled = enabled
     can_sends = CI.apply(CC)
+    print(can_sends)
     sendcan.send(can_list_to_can_capnp(can_sends, msgtype='sendcan'))
 
     # broadcast carState
@@ -84,6 +95,8 @@ def steer_thread():
     cc_send = messaging.new_message('carControl')
     cc_send.carControl = copy(CC)
     carcontrol.send(cc_send.to_bytes())
+
+    rk.keep_time()
 
 
 if __name__ == "__main__":
