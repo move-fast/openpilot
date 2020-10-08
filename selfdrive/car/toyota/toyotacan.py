@@ -1,3 +1,6 @@
+from selfdrive.config import Conversions as CV
+
+
 def create_steer_command(packer, steer, steer_req, raw_cnt):
   """Creates a CAN message for the Toyota Steer Command."""
 
@@ -81,3 +84,12 @@ def create_ui_command(packer, steer, chime, left_line, right_line, left_lane_dep
     "LDA_ALERT": steer,
   }
   return packer.make_can_msg("LKAS_HUD", 0, values)
+
+
+def create_pcm_setspeed_command(packer, pcm_available, pcm_speed, low_speed_lockout):
+  values = {
+    "MAIN_ON": pcm_available,
+    "LOW_SPEED_LOCKOUT": 2 if low_speed_lockout else 1,
+    "SET_SPEED": pcm_speed * CV.MS_TO_KPH
+  }
+  return packer.make_can_msg("PCM_CRUISE_2", 0, values)
