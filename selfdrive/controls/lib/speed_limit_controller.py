@@ -33,6 +33,7 @@ class SpeedLimitController():
     self._params = Params()
     self._last_params_update = 0.0
     self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
+    self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
     self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
     self._CP = CP
     self._op_enabled = False
@@ -81,8 +82,9 @@ class SpeedLimitController():
     self._v_offset = self.speed_limit - self._v_ego
 
   def _state_transition(self):
-    # In any case, if system is disabled or the reported speed limit is 0, deactivate.
-    if not self._op_enabled or self._speed_limit == 0:
+    # In any case, if op is disabled, or speed limit control is disabled
+    # or the reported speed limit is 0, deactivate.
+    if not self._op_enabled or not self._is_enabled or self._speed_limit == 0:
       self.state = LimitState.INACTIVE
       return
 
