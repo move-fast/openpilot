@@ -119,8 +119,14 @@ static void handle_vision_touch(UIState *s, int touch_x, int touch_y) {
   if (s->started && (touch_x >= s->scene.ui_viz_rx - bdr_s)
       && (s->active_app != cereal::UiLayoutState::App::SETTINGS)) {
     if (!s->scene.frontview) {
-      if (touch_y < (settings_btn_y + settings_btn_h)) {
-        // If touching on the top side of the screen.
+      if (s->scene.controls_state.getSpeedLimit() > 0.0 
+          && touch_y >= s->scene.ui_speed_sgn_y && touch_y < (s->scene.ui_speed_sgn_y + 2 * speed_sgn_r)
+          && touch_x >= s->scene.ui_speed_sgn_x && touch_x < (s->scene.ui_speed_sgn_x + 2 * speed_sgn_r)) {
+        // If touching the speed limit sign area when visible
+        s->speed_limit_control_enabled = !s->speed_limit_control_enabled;
+        write_param_bool(s->speed_limit_control_enabled, "SpeedLimitControl");
+      } else if (s->scene.uilayout_sidebarcollapsed && touch_y < (settings_btn_y + settings_btn_h)) {
+        // If touching on the top side of the screen when sidebar is collapsed.
         float max_acc = s->max_acc_turn - 1.0;
         if (max_acc < -4.0) {
           max_acc = 0.0;

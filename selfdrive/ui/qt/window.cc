@@ -97,8 +97,18 @@ void GLWindow::mousePressEvent(QMouseEvent *e) {
     }
   }
 
-  // Change acc click
-  if ((e->x() >= ui_state->scene.ui_viz_rx - bdr_s) && (e->y() < (settings_btn_y + settings_btn_h) )) {
+  // Toggle speed limit control enabled
+  else if (ui_state->scene.controls_state.getSpeedLimit() > 0.0 
+      && e->x() >= ui_state->scene.ui_speed_sgn_x && e->x() < (ui_state->scene.ui_speed_sgn_x + 2 * speed_sgn_r)
+      && e->y() >= ui_state->scene.ui_speed_sgn_y && e->y() < (ui_state->scene.ui_speed_sgn_y + 2 * speed_sgn_r)) {
+    // If touching the speed limit sign area when visible
+    ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
+    write_param_bool(ui_state->speed_limit_control_enabled, "SpeedLimitControl");
+  }
+
+  // Change max deceleration click
+  else if (ui_state->scene.uilayout_sidebarcollapsed 
+      && e->y() < (settings_btn_y + settings_btn_h)) {
     // If touching on the top side of the screen.
     float max_acc = ui_state->max_acc_turn - 1.0;
     if (max_acc < -4.0) {

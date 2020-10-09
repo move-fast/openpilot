@@ -22,6 +22,12 @@ int write_param_float(float param, const char* param_name, bool persistent_param
   return write_db_value(param_name, s, size < sizeof(s) ? size : sizeof(s), persistent_param);
 }
 
+int write_param_bool(bool param, const char* param_name, bool persistent_param) {
+  char s[16];
+  int size = snprintf(s, sizeof(s), "%d", param);
+  return write_db_value(param_name, s, size < sizeof(s) ? size : sizeof(s), persistent_param);
+}
+
 void ui_init(UIState *s) {
   s->sm = new SubMaster({"model", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "thermal",
                          "health", "carParams", "ubloxGnss", "driverState", "dMonitoringState"});
@@ -31,6 +37,7 @@ void ui_init(UIState *s) {
   s->scene.satelliteCount = -1;
   read_param(&s->is_metric, "IsMetric");
   read_param(&s->max_acc_turn, "MaxDecelerationForTurns");
+  read_param(&s->speed_limit_control_enabled, "SpeedLimitControl");
   read_param(&s->speed_limit_perc_offset, "SpeedLimitPercOffset");
   s->vision_connected = getenv("UNLOGGER") != NULL;
 
@@ -270,6 +277,7 @@ void ui_update(UIState *s) {
   // Read params
   if ((s->sm)->frame % (5*UI_FREQ) == 0) {
     read_param(&s->is_metric, "IsMetric");
+    read_param(&s->speed_limit_control_enabled, "SpeedLimitControl");
   } else if ((s->sm)->frame % (6*UI_FREQ) == 0) {
     int param_read = read_param(&s->last_athena_ping, "LastAthenaPingTime");
     if (param_read != 0) { // Failed to read param

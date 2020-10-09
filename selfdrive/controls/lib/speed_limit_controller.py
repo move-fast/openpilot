@@ -32,9 +32,9 @@ class SpeedLimitController():
   def __init__(self, CP):
     self._params = Params()
     self._last_params_update = 0.0
-    self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
-    self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
-    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
+    self._is_metric = self._params.get("IsMetric", True, encoding='utf8') == "1"
+    self._is_enabled = self._params.get("SpeedLimitControl", True, encoding='utf8') == "1"
+    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset", True))
     self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
@@ -73,8 +73,11 @@ class SpeedLimitController():
 
   def _update_params(self):
     time = sec_since_boot()
-    if time > self._last_params_update + 10.0:
+    if time > self._last_params_update + 5.0:
       self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
+      self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
+      print(f'Updated Speed limit params. enabled: {self._is_enabled}, \
+              perc_offset: {self._speed_limit_perc_offset:.1f}')
       self._last_params_update = time
 
   def _update_calculations(self):
@@ -146,6 +149,7 @@ class SpeedLimitController():
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
 
+    self._update_params()
     self._update_calculations()
     self._state_transition()
     self._update_solution()

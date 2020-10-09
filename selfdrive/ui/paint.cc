@@ -68,21 +68,22 @@ static void ui_draw_circle(NVGcontext *vg, float x, float y, float size, NVGcolo
   nvgFill(vg);
 }
 
-static void ui_draw_speed_sign(NVGcontext *vg, float x, float y, int size, float speed, float speed_offset, int font) {
-  ui_draw_circle(vg, x, y, float(size), COLOR_RED);
-  ui_draw_circle(vg, x, y, float(size) * 0.8, COLOR_WHITE);
+static void ui_draw_speed_sign(NVGcontext *vg, float x, float y, int size, float speed, float speed_offset, int font, bool enabled) {
+  const int alpha = enabled ? 255 : 100;
+  ui_draw_circle(vg, x, y, float(size), COLOR_RED_ALPHA(alpha));
+  ui_draw_circle(vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(alpha));
 
   char speedlimit_str[16];
   nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
-  ui_draw_text(vg, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK, font);
+  ui_draw_text(vg, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK_ALPHA(alpha), font);
 
   if (int(speed_offset) == 0) {
     return;
   }
   char speedlimitoffset_str[16];
   snprintf(speedlimitoffset_str, sizeof(speedlimitoffset_str), "%+d", int(speed_offset));
-  ui_draw_text(vg, x, y + (bdr_s * 1.5) + 55, speedlimitoffset_str, 50, COLOR_BLACK, font);
+  ui_draw_text(vg, x, y + (bdr_s * 1.5) + 55, speedlimitoffset_str, 50, COLOR_BLACK_ALPHA(alpha), font);
 }
 
 static void draw_chevron(UIState *s, float x_in, float y_in, float sz,
@@ -443,12 +444,14 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   if (speedLimit > 0.0) {
     const int viz_maxspeed_w = 189;
     const int viz_maxspeed_h = 202;
-    const int signal_size = 96;
-    const int signal_x = s->scene.ui_viz_rx + bdr_s * 3 + viz_maxspeed_w + signal_size;
-    const int signal_y = box_y + viz_maxspeed_h / 2;
+    const float sign_center_x = s->scene.ui_viz_rx + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
+    const float sign_center_y = box_y + viz_maxspeed_h / 2;
     const float speed = (s->is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
     const float speed_offset = (s->is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
-    ui_draw_speed_sign(s->vg, signal_x, signal_y, signal_size, speed, speed_offset, s->font_sans_bold);
+
+    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, s->font_sans_bold, s->speed_limit_control_enabled);
+    s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
+    s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
 }
 
