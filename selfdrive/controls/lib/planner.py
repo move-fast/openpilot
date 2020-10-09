@@ -244,7 +244,6 @@ class Planner():
     plan_send.plan.fcw = fcw
 
     plan_send.plan.decelForTurn = bool(self.turn_controller.is_active)
-    plan_send.plan.speedLimitOffset = float(self.speed_limit_controller.speed_limit_offset)
 
     pm.send('plan', plan_send)
 

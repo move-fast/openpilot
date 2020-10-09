@@ -437,8 +437,8 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 }
 
 static void ui_draw_vision_speedlimit(UIState *s) {
-  float speedLimit = s->scene.controls_state.getSpeedLimit();
-  float speedLimitOffset = s->scene.controls_state.getSpeedLimitOffset();
+  const float speedLimit = s->scene.controls_state.getSpeedLimit();
+  const float speedLimitOffset = speedLimit * s->speed_limit_perc_offset / 100.0;
 
   if (speedLimit > 0.0) {
     const int viz_maxspeed_w = 189;

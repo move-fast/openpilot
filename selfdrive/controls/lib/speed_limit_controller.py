@@ -1,10 +1,8 @@
 import numpy as np
 from enum import Enum
 from common.params import Params
+from common.realtime import sec_since_boot
 from selfdrive.controls.lib.speed_smoother import speed_smoother
-from selfdrive.config import Conversions as CV
-from cereal import car
-
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 
@@ -32,7 +30,10 @@ class LimitState(Enum):
 
 class SpeedLimitController():
   def __init__(self, CP):
-    self._is_metric = Params().get("IsMetric", encoding='utf8') == "1"
+    self._params = Params()
+    self._last_params_update = 0.0
+    self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
+    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
     self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
@@ -44,9 +45,7 @@ class SpeedLimitController():
     self._speed_limit = 0.0
     self._state = LimitState.INACTIVE
     self._adapting_cycles = 0
-    self._cruise_speed = 0
 
-    self.speed_limit_offset = 0.0
     self.v_limit = 0.0
     self.a_limit = 0.0
     self.v_limit_future = 0.0
@@ -69,32 +68,15 @@ class SpeedLimitController():
 
   @property
   def speed_limit(self):
-    return self._speed_limit + self.speed_limit_offset
+    return self._speed_limit * (1.0 + self._speed_limit_perc_offset / 100.0)
+
+  def _update_params(self):
+    time = sec_since_boot()
+    if time > self._last_params_update + 10.0:
+      self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
+      self._last_params_update = time
 
   def _update_calculations(self):
-    # Reset speed limit offset when speed limit changes.
-    if self._CS.cruiseState.speedLimit != self._speed_limit:
-      self.speed_limit_offset = 0.0
-      self._speed_limit = self._CS.cruiseState.speedLimit
-
-    # Process button events or change on set speed to update speed limit offset
-    if self.is_active:
-      # if stock cruise is completely disabled, use button events to update speed limit offset
-      # otherwise use cruise state speed changes.
-      if not self._CP.enableCruise:
-        for b in self._CS.buttonEvents:
-          delta = CV.KPH_TO_MS if self._is_metric else CV.MPH_TO_MS
-          if not b.pressed:
-            if b.type == car.CarState.ButtonEvent.Type.accelCruise:
-              self.speed_limit_offset += delta
-            elif b.type == car.CarState.ButtonEvent.Type.decelCruise:
-              self.speed_limit_offset -= delta
-      elif self._CS.cruiseState.enabled:
-        delta = self._CS.cruiseState.speed - self._cruise_speed
-        if abs(delta) <= _MAX_SPEED_OFFSET_DELTA:  # Only update is delta is small.
-          self.speed_limit_offset += delta
-        self._cruise_speed = self._CS.cruiseState.speed
-
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit - self._v_ego
 
@@ -158,7 +140,7 @@ class SpeedLimitController():
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
-    self._CS = CS
+    self._speed_limit = CS.cruiseState.speedLimit
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
 
