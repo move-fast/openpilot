@@ -277,7 +277,6 @@ void ui_update(UIState *s) {
   // Read params
   if ((s->sm)->frame % (5*UI_FREQ) == 0) {
     read_param(&s->is_metric, "IsMetric");
-    read_param(&s->speed_limit_control_enabled, "SpeedLimitControl");
   } else if ((s->sm)->frame % (6*UI_FREQ) == 0) {
     int param_read = read_param(&s->last_athena_ping, "LastAthenaPingTime");
     if (param_read != 0) { // Failed to read param
