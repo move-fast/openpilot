@@ -170,8 +170,8 @@ class Planner():
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
       # update speed limit solution calculation.
-      self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start,
-                                         sm['carState'], accel_limits_turns, jerk_limits)
+      self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm['carState'],
+                                         v_cruise_setpoint, accel_limits_turns, jerk_limits)
     else:
       starting = long_control_state == LongCtrlState.starting
       a_ego = min(sm['carState'].aEgo, 0.0)

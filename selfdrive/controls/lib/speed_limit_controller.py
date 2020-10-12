@@ -14,14 +14,17 @@ _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
 
 class LimitState(Enum):
-  INACTIVE = 1  # No speed limit set.
-  ADAPTING = 2  # Reducing speed to match new speed limit.
-  ACTIVE = 3  # Cruising at speed limit.
+  INACTIVE = 1  # No speed limit set or not enabled by parameter.
+  TEMP_INACTIVE = 2  # User wants to ignore speed limit until it changes.
+  ADAPTING = 3  # Reducing speed to match new speed limit.
+  ACTIVE = 4  # Cruising at speed limit.
 
   @property
   def description(self):
     if self == LimitState.INACTIVE:
       return 'INACTIVE'
+    if self == LimitState.TEMP_INACTIVE:
+      return 'TEMP_INACTIVE'
     if self == LimitState.ADAPTING:
       return 'ADAPTING'
     if self == LimitState.ACTIVE:
@@ -43,7 +46,12 @@ class SpeedLimitController():
     self._v_ego = 0.0
     self._a_ego = 0.0
     self._v_offset = 0.0
+    self._v_cruise_setpoint = 0.0
+    self._v_cruise_setpoint_prev = 0.0
+    self._v_cruise_setpoint_changed = False
     self._speed_limit = 0.0
+    self._speed_limit_prev = 0.0
+    self._speed_limit_changed = False
     self._state = LimitState.INACTIVE
     self._adapting_cycles = 0
 
@@ -65,7 +73,7 @@ class SpeedLimitController():
 
   @property
   def is_active(self):
-    return self.state != LimitState.INACTIVE
+    return self.state > LimitState.TEMP_INACTIVE
 
   @property
   def speed_limit(self):
@@ -83,6 +91,11 @@ class SpeedLimitController():
   def _update_calculations(self):
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit - self._v_ego
+    # Update change tracking variables
+    self._speed_limit_changed = self._speed_limit != self._speed_limit_prev
+    self._v_cruise_setpoint_changed = self._v_cruise_setpoint != self._v_cruise_setpoint_prev
+    self._speed_limit_prev = self._speed_limit_prev
+    self._v_cruise_setpoint_prev = self._v_cruise_setpoint
 
   def _state_transition(self):
     # In any case, if op is disabled, or speed limit control is disabled
@@ -99,16 +112,28 @@ class SpeedLimitController():
         self.state = LimitState.ADAPTING
       else:
         self.state = LimitState.ACTIVE
+    # TEMP_INACTIVE
+    elif self.state == LimitState.TEMP_INACTIVE:
+      # if speed limit changes, transition to INACTIVE,
+      # proper active state will be set on next iteration.
+      if self._speed_limit_changed:
+        self.state = LimitState.INACTIVE
     # ADAPTING
     elif self.state == LimitState.ADAPTING:
       self._adapting_cycles += 1
+      # If user changes the cruise speed, deactivate temporarely
+      if self._v_cruise_setpoint_changed:
+        self.state = LimitState.TEMP_INACTIVE
       # Go to ACTIVE once the speed offset is over threshold.
-      if self._v_offset >= _SPEED_OFFSET_TH:
+      elif self._v_offset >= _SPEED_OFFSET_TH:
         self.state = LimitState.ACTIVE
     # ACTIVE
     elif self.state == LimitState.ACTIVE:
+      # If user changes the cruise speed, deactivate temporarely
+      if self._v_cruise_setpoint_changed:
+        self.state = LimitState.TEMP_INACTIVE
       # Go to ADAPTING if the speed offset goes below threshold.
-      if self._v_offset < _SPEED_OFFSET_TH:
+      elif self._v_offset < _SPEED_OFFSET_TH:
         self.state = LimitState.ADAPTING
 
   def _update_solution(self):
@@ -141,11 +166,12 @@ class SpeedLimitController():
       self.v_limit = max(self.v_limit, 0.)
       self.v_limit_future = self._speed_limit
 
-  def update(self, enabled, v_ego, a_ego, CS, accel_limits, jerk_limits):
+  def update(self, enabled, v_ego, a_ego, CS, v_cruise_setpoint, accel_limits, jerk_limits):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
     self._speed_limit = CS.cruiseState.speedLimit
+    self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
 
