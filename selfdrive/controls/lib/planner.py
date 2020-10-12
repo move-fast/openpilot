@@ -102,6 +102,9 @@ class Planner():
         solutions['model'] = self.turn_controller.v_turn
       if self.speed_limit_controller.is_active:
         solutions['limit'] = self.speed_limit_controller.v_limit
+        # Remove 'cruise' as a feasable solution as long as
+        # speed limit control is active.
+        del solutions['cruise']
 
       slowest = min(solutions, key=solutions.get)
 
