@@ -5,6 +5,7 @@ from common.realtime import sec_since_boot
 from selfdrive.controls.lib.speed_smoother import speed_smoother
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
+_WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
 
 _MIN_ADAPTING_BRAKE_ACC = -2.0  # Minimum acceleration allowed when adapting to lower speed limit.
 _SPEED_OFFSET_TH = -5.0  # Maximum offset between speed limit and current speed for adapting state.
@@ -44,9 +45,12 @@ class SpeedLimitController():
     self._v_cruise_setpoint = 0.0
     self._v_cruise_setpoint_prev = 0.0
     self._v_cruise_setpoint_changed = False
+    self._speed_limit_set = 0.0
+    self._speed_limit_set_prev = 0.0
     self._speed_limit = 0.0
     self._speed_limit_prev = 0.0
     self._speed_limit_changed = False
+    self._last_speed_limit_set_change_ts = 0.0
     self._state = SpeedLimitControlState.inactive
     self._adapting_cycles = 0
 
@@ -84,13 +88,26 @@ class SpeedLimitController():
       self._last_params_update = time
 
   def _update_calculations(self):
+    # Track the time when speed limit set value changes.
+    time = sec_since_boot()
+    if self._speed_limit_set != self._speed_limit_set_prev:
+      self._last_speed_limit_set_change_ts = time
+    # Update speed limit from the set value.
+    # - Imediate when changing from 0 or when updating to a lower speed limit.
+    # - After a predefined period of time when increasing speed limit.
+    if self._speed_limit != self._speed_limit_set:
+      if self._speed_limit == 0.0 or self._speed_limit_set < self._speed_limit:
+        self._speed_limit = self._speed_limit_set
+      elif time > self._last_speed_limit_set_change_ts + _WAIT_TIME_LIMIT_RISE:
+        self._speed_limit = self._speed_limit_set
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit - self._v_ego
     # Update change tracking variables
     self._speed_limit_changed = self._speed_limit != self._speed_limit_prev
     self._v_cruise_setpoint_changed = self._v_cruise_setpoint != self._v_cruise_setpoint_prev
-    self._speed_limit_prev = self._speed_limit_prev
+    self._speed_limit_prev = self._speed_limit
     self._v_cruise_setpoint_prev = self._v_cruise_setpoint
+    self._speed_limit_set_prev = self._speed_limit_set
 
   def _state_transition(self):
     # In any case, if op is disabled, or speed limit control is disabled
@@ -165,7 +182,7 @@ class SpeedLimitController():
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
-    self._speed_limit = CS.cruiseState.speedLimit
+    self._speed_limit_set = CS.cruiseState.speedLimit
     self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
