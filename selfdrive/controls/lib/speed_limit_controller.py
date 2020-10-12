@@ -1,8 +1,9 @@
 import numpy as np
-from cereal import log
+from cereal import log, car
 from common.params import Params
 from common.realtime import sec_since_boot
 from selfdrive.controls.lib.speed_smoother import speed_smoother
+from selfdrive.controls.lib.events import Events
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
@@ -14,6 +15,7 @@ _LIMIT_ADAPT_TIME = 4.0  # Ideal time (s) to adapt to lower speed limit. i.e. br
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
 SpeedLimitControlState = log.ControlsState.SpeedLimitControlState
+EventName = car.CarEvent.EventName
 
 
 def _description_for_state(speed_limit_control_state):
@@ -47,11 +49,13 @@ class SpeedLimitController():
     self._v_cruise_setpoint_changed = False
     self._speed_limit_set = 0.0
     self._speed_limit_set_prev = 0.0
+    self._speed_limit_set_change = 0.0
     self._speed_limit = 0.0
     self._speed_limit_prev = 0.0
     self._speed_limit_changed = False
     self._last_speed_limit_set_change_ts = 0.0
     self._state = SpeedLimitControlState.inactive
+    self._state_prev = SpeedLimitControlState.inactive
     self._adapting_cycles = 0
 
     self.v_limit = 0.0
@@ -105,11 +109,13 @@ class SpeedLimitController():
     # Update change tracking variables
     self._speed_limit_changed = self._speed_limit != self._speed_limit_prev
     self._v_cruise_setpoint_changed = self._v_cruise_setpoint != self._v_cruise_setpoint_prev
+    self._speed_limit_set_change = self._speed_limit_set - self._speed_limit_set_prev
     self._speed_limit_prev = self._speed_limit
     self._v_cruise_setpoint_prev = self._v_cruise_setpoint
     self._speed_limit_set_prev = self._speed_limit_set
 
   def _state_transition(self):
+    self._state_prev = self._state
     # In any case, if op is disabled, or speed limit control is disabled
     # or the reported speed limit is 0, deactivate.
     if not self._op_enabled or not self._is_enabled or self._speed_limit == 0:
@@ -178,7 +184,19 @@ class SpeedLimitController():
       self.v_limit = max(self.v_limit, 0.)
       self.v_limit_future = self._speed_limit
 
-  def update(self, enabled, v_ego, a_ego, CS, v_cruise_setpoint, accel_limits, jerk_limits):
+  def _update_events(self, events):
+    if not self.is_active:
+      # no event while inactive or deactivating
+      return
+
+    if self._state_prev <= SpeedLimitControlState.tempInactive:
+      events.add(EventName.speedLimitActive)
+    elif self._speed_limit_set_change > 0:
+      events.add(EventName.speedLimitIncrease)
+    elif self._speed_limit_set_change < 0:
+      events.add(EventName.speedLimitDecrease)
+
+  def update(self, enabled, v_ego, a_ego, CS, v_cruise_setpoint, accel_limits, jerk_limits, events=Events()):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
@@ -191,6 +209,7 @@ class SpeedLimitController():
     self._update_calculations()
     self._state_transition()
     self._update_solution()
+    self._update_events(events)
 
   def deactivate(self):
     self.state = SpeedLimitControlState.inactive

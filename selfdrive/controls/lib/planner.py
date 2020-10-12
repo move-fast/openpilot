@@ -10,6 +10,7 @@ from common.realtime import sec_since_boot
 from selfdrive.swaglog import cloudlog
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.speed_smoother import speed_smoother
+from selfdrive.controls.lib.events import Events
 from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
@@ -146,6 +147,7 @@ class Planner():
 
     lead_1 = sm['radarState'].leadOne
     lead_2 = sm['radarState'].leadTwo
+    events = Events()
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
@@ -171,7 +173,7 @@ class Planner():
       self.v_cruise = max(self.v_cruise, 0.)
       # update speed limit solution calculation.
       self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm['carState'],
-                                         v_cruise_setpoint, accel_limits_turns, jerk_limits)
+                                         v_cruise_setpoint, accel_limits_turns, jerk_limits, events)
     else:
       starting = long_control_state == LongCtrlState.starting
       a_ego = min(sm['carState'].aEgo, 0.0)
@@ -248,6 +250,7 @@ class Planner():
 
     plan_send.plan.decelForTurn = bool(self.turn_controller.is_active)
     plan_send.plan.speedLimitControlState = self.speed_limit_controller.state
+    plan_send.plan.eventsDEPRECATED = events.to_msg()
 
     pm.send('plan', plan_send)
 
