@@ -1,5 +1,5 @@
 import numpy as np
-from enum import Enum
+from cereal import log
 from common.params import Params
 from common.realtime import sec_since_boot
 from selfdrive.controls.lib.speed_smoother import speed_smoother
@@ -7,28 +7,23 @@ from selfdrive.controls.lib.speed_smoother import speed_smoother
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 
 _MIN_ADAPTING_BRAKE_ACC = -2.0  # Minimum acceleration allowed when adapting to lower speed limit.
-_SPEED_OFFSET_TH = -5.0  # Maximum offset between speed limit and current speed for ADAPTING state.
+_SPEED_OFFSET_TH = -5.0  # Maximum offset between speed limit and current speed for adapting state.
 _LIMIT_ADAPT_TIME = 4.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
 
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
+SpeedLimitControlState = log.ControlsState.SpeedLimitControlState
 
-class LimitState(Enum):
-  INACTIVE = 1  # No speed limit set or not enabled by parameter.
-  TEMP_INACTIVE = 2  # User wants to ignore speed limit until it changes.
-  ADAPTING = 3  # Reducing speed to match new speed limit.
-  ACTIVE = 4  # Cruising at speed limit.
 
-  @property
-  def description(self):
-    if self == LimitState.INACTIVE:
-      return 'INACTIVE'
-    if self == LimitState.TEMP_INACTIVE:
-      return 'TEMP_INACTIVE'
-    if self == LimitState.ADAPTING:
-      return 'ADAPTING'
-    if self == LimitState.ACTIVE:
-      return 'ACTIVE'
+def _description_for_state(speed_limit_control_state):
+  if speed_limit_control_state == SpeedLimitControlState.inactive:
+    return 'INACTIVE'
+  if speed_limit_control_state == SpeedLimitControlState.tempInactive:
+    return 'TEMP_INACTIVE'
+  if speed_limit_control_state == SpeedLimitControlState.adapting:
+    return 'ADAPTING'
+  if speed_limit_control_state == SpeedLimitControlState.active:
+    return 'ACTIVE'
 
 
 class SpeedLimitController():
@@ -52,7 +47,7 @@ class SpeedLimitController():
     self._speed_limit = 0.0
     self._speed_limit_prev = 0.0
     self._speed_limit_changed = False
-    self._state = LimitState.INACTIVE
+    self._state = SpeedLimitControlState.inactive
     self._adapting_cycles = 0
 
     self.v_limit = 0.0
@@ -66,14 +61,14 @@ class SpeedLimitController():
   @state.setter
   def state(self, value):
     if value != self._state:
-      print(f'Speed Limit Controller state: {value.description}')
-      if value == LimitState.ADAPTING:
+      print(f'Speed Limit Controller state: {_description_for_state(value)}')
+      if value == SpeedLimitControlState.adapting:
         self._adapting_cycles = 0  # Reset adapting state cycle count when entereing state.
     self._state = value
 
   @property
   def is_active(self):
-    return self.state > LimitState.TEMP_INACTIVE
+    return self.state > SpeedLimitControlState.tempInactive
 
   @property
   def speed_limit(self):
@@ -101,50 +96,50 @@ class SpeedLimitController():
     # In any case, if op is disabled, or speed limit control is disabled
     # or the reported speed limit is 0, deactivate.
     if not self._op_enabled or not self._is_enabled or self._speed_limit == 0:
-      self.state = LimitState.INACTIVE
+      self.state = SpeedLimitControlState.inactive
       return
 
-    # INACTIVE
-    if self.state == LimitState.INACTIVE:
+    # inactive
+    if self.state == SpeedLimitControlState.inactive:
       # If the limit speed offset is negative (i.e. reduce speed) and lower than threshold
-      # we go to ADAPTING state to quickly reduce speed, otherwise we go directly to ACTIVE
+      # we go to adapting state to quickly reduce speed, otherwise we go directly to active
       if self._v_offset < _SPEED_OFFSET_TH:
-        self.state = LimitState.ADAPTING
+        self.state = SpeedLimitControlState.adapting
       else:
-        self.state = LimitState.ACTIVE
-    # TEMP_INACTIVE
-    elif self.state == LimitState.TEMP_INACTIVE:
-      # if speed limit changes, transition to INACTIVE,
+        self.state = SpeedLimitControlState.active
+    # tempInactive
+    elif self.state == SpeedLimitControlState.tempInactive:
+      # if speed limit changes, transition to inactive,
       # proper active state will be set on next iteration.
       if self._speed_limit_changed:
-        self.state = LimitState.INACTIVE
-    # ADAPTING
-    elif self.state == LimitState.ADAPTING:
+        self.state = SpeedLimitControlState.inactive
+    # adapting
+    elif self.state == SpeedLimitControlState.adapting:
       self._adapting_cycles += 1
       # If user changes the cruise speed, deactivate temporarely
       if self._v_cruise_setpoint_changed:
-        self.state = LimitState.TEMP_INACTIVE
-      # Go to ACTIVE once the speed offset is over threshold.
+        self.state = SpeedLimitControlState.tempInactive
+      # Go to active once the speed offset is over threshold.
       elif self._v_offset >= _SPEED_OFFSET_TH:
-        self.state = LimitState.ACTIVE
-    # ACTIVE
-    elif self.state == LimitState.ACTIVE:
+        self.state = SpeedLimitControlState.active
+    # active
+    elif self.state == SpeedLimitControlState.active:
       # If user changes the cruise speed, deactivate temporarely
       if self._v_cruise_setpoint_changed:
-        self.state = LimitState.TEMP_INACTIVE
-      # Go to ADAPTING if the speed offset goes below threshold.
+        self.state = SpeedLimitControlState.tempInactive
+      # Go to adapting if the speed offset goes below threshold.
       elif self._v_offset < _SPEED_OFFSET_TH:
-        self.state = LimitState.ADAPTING
+        self.state = SpeedLimitControlState.adapting
 
   def _update_solution(self):
-    # INACTIVE
-    if self.state == LimitState.INACTIVE:
+    # inactive
+    if self.state == SpeedLimitControlState.inactive:
       # Preserve values
       self.v_limit = self._v_ego
       self.a_limit = self._a_ego
       self.v_limit_future = self._v_ego
-    # ADAPTING
-    elif self.state == LimitState.ADAPTING:
+    # adapting
+    elif self.state == SpeedLimitControlState.adapting:
       # Calculate to adapt speed on target time.
       adapting_time = max(_LIMIT_ADAPT_TIME - self._adapting_cycles * _LON_MPC_STEP, 1.0)  # min adapt time 1 sec.
       a_target = (self.speed_limit - self._v_ego) / adapting_time
@@ -156,8 +151,8 @@ class SpeedLimitController():
       self.a_limit = max(a_target, _MIN_ADAPTING_BRAKE_ACC)  # acceleration in next Longitudinal control step.
       self.v_limit = self._v_ego + self.a_limit * _LON_MPC_STEP  # speed in next Longitudinal control step.
       self.v_limit_future = self._v_ego + self.a_limit * 4.  # speed in 4 seconds.
-    # ACTIVE
-    elif self.state == LimitState.ACTIVE:
+    # active
+    elif self.state == SpeedLimitControlState.active:
       # Calculate following same cruise logic in planner.py
       self.v_limit, self.a_limit = speed_smoother(self._v_ego, self._a_ego, self.speed_limit,
                                                   self._active_accel_limits[1], self._active_accel_limits[0],
@@ -181,4 +176,4 @@ class SpeedLimitController():
     self._update_solution()
 
   def deactivate(self):
-    self.state = LimitState.INACTIVE
+    self.state = SpeedLimitControlState.inactive

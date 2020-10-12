@@ -247,6 +247,7 @@ class Planner():
     plan_send.plan.fcw = fcw
 
     plan_send.plan.decelForTurn = bool(self.turn_controller.is_active)
+    plan_send.plan.speedLimitControlState = self.speed_limit_controller.state
 
     pm.send('plan', plan_send)
 
