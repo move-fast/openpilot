@@ -501,7 +501,7 @@ EVENTS = {
       "Cruise set to speed limit",
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, .0, .1, .1),
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
   },
 
   EventName.speedLimitDecrease: {
@@ -509,7 +509,7 @@ EVENTS = {
       "Decreasing speed to match new speed limit",
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, .0, .1, .1),
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
   },
 
   EventName.speedLimitIncrease: {
@@ -517,7 +517,7 @@ EVENTS = {
       "Higher speed limit detected",
       "Increasing vehicle speed after short delay",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, .0, .1, .1),
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
   },
 
   # ********** events that affect controls state transitions **********
