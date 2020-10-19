@@ -73,6 +73,11 @@ class SpeedLimitController():
       print(f'Speed Limit Controller state: {_description_for_state(value)}')
       if value == SpeedLimitControlState.adapting:
         self._adapting_cycles = 0  # Reset adapting state cycle count when entereing state.
+      elif value == SpeedLimitControlState.tempInactive:
+        # Make sure speed limit is set to `set` value, this will have the effect
+        # of canceling delayed increase limit, if pending.
+        self._speed_limit = self._speed_limit_set
+        self._speed_limit_prev = self._speed_limit
     self._state = value
 
   @property
