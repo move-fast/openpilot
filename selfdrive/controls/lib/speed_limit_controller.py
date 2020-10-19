@@ -57,6 +57,7 @@ class SpeedLimitController():
     self._state = SpeedLimitControlState.inactive
     self._state_prev = SpeedLimitControlState.inactive
     self._adapting_cycles = 0
+    self._ignore_solution = False
 
     self.v_limit = 0.0
     self.a_limit = 0.0
@@ -79,6 +80,10 @@ class SpeedLimitController():
     return self.state > SpeedLimitControlState.tempInactive
 
   @property
+  def is_solution_valid(self):
+    return not self._ignore_solution and self.is_active
+
+  @property
   def speed_limit(self):
     return self._speed_limit * (1.0 + self._speed_limit_perc_offset / 100.0)
 
@@ -92,6 +97,7 @@ class SpeedLimitController():
       self._last_params_update = time
 
   def _update_calculations(self):
+    self._ignore_solution = False  # Reset flag every time update is called
     # Track the time when speed limit set value changes.
     time = sec_since_boot()
     if self._speed_limit_set != self._speed_limit_set_prev:
@@ -211,5 +217,5 @@ class SpeedLimitController():
     self._update_solution()
     self._update_events(events)
 
-  def deactivate(self):
-    self.state = SpeedLimitControlState.inactive
+  def ignore_solution(self):
+    self._ignore_solution = True
