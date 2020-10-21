@@ -3,7 +3,7 @@ from common.numpy_fast import clip
 from selfdrive.car import apply_toyota_steer_torque_limits, create_gas_command, make_can_msg
 from selfdrive.car.toyota.toyotacan import create_steer_command, create_ui_command, \
                                            create_accel_command, create_acc_cancel_command, \
-                                           create_fcw_command
+                                           create_fcw_command, create_set_speed_command
 from selfdrive.car.toyota.values import Ecu, CAR, STATIC_MSGS, SteerLimitParams
 from opendbc.can.packer import CANPacker
 
@@ -50,7 +50,8 @@ class CarController():
     self.packer = CANPacker(dbc_name)
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
-             left_line, right_line, lead, left_lane_depart, right_lane_depart):
+             left_line, right_line, lead, left_lane_depart, right_lane_depart,
+             set_speed_update=0.0):
 
     # *** compute control surfaces ***
 
@@ -152,6 +153,10 @@ class CarController():
 
     if frame % 100 == 0 and Ecu.dsu in self.fake_ecus:
       can_sends.append(create_fcw_command(self.packer, fcw_alert))
+
+    # Set speed messages.
+    if enabled and CS.pcm_acc_status and set_speed_update > 0.0:
+      can_sends.append(create_set_speed_command(self.packer, set_speed_update))
 
     #*** static msgs ***
 

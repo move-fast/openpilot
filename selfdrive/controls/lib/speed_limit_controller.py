@@ -61,6 +61,7 @@ class SpeedLimitController():
     self.v_limit = 0.0
     self.a_limit = 0.0
     self.v_limit_future = 0.0
+    self.speed_limit_update = 0.0
 
   @property
   def state(self):
@@ -188,6 +189,14 @@ class SpeedLimitController():
                                                   _LON_MPC_STEP)
       self.v_limit = max(self.v_limit, 0.)
       self.v_limit_future = self._speed_limit
+
+    # Update spped limit update value
+    if not self._op_enabled or not self._is_enabled or self._speed_limit == 0:
+      self.speed_limit_update = 0.0
+    elif self._speed_limit_changed:
+      self.speed_limit_update = self.speed_limit
+    else:
+      self.speed_limit_update = 0.0
 
   def _update_events(self, events):
     if not self.is_active:

@@ -238,6 +238,7 @@ class Planner():
 
     plan_send.plan.decelForTurn = bool(self.turn_controller.is_active)
     plan_send.plan.speedLimitControlState = self.speed_limit_controller.state
+    plan_send.plan.setSpeedUpdate = self.speed_limit_controller.speed_limit_update
     plan_send.plan.eventsDEPRECATED = events.to_msg()
 
     pm.send('plan', plan_send)

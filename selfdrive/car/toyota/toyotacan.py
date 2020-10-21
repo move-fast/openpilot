@@ -1,3 +1,6 @@
+from selfdrive.config import Conversions as CV
+
+
 def create_steer_command(packer, steer, steer_req, raw_cnt):
   """Creates a CAN message for the Toyota Steer Command."""
 
@@ -53,6 +56,16 @@ def create_acc_cancel_command(packer):
     "CANCEL_REQ": 1,
   }
   return packer.make_can_msg("PCM_CRUISE", 0, values)
+
+
+def create_set_speed_command(packer, speed):
+  values = {
+    "MAIN_ON": 1,
+    "CRUISE_CONTROL_STATE": 6,
+    "DISTANCE_LINES": 3,
+    "UI_SET_SPEED": int(CV.MS_TO_KPH * speed),
+  }
+  return packer.make_can_msg("PCM_CRUISE_SM", 0, values)
 
 
 def create_fcw_command(packer, fcw):
