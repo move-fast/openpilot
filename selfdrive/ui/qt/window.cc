@@ -102,6 +102,7 @@ void GLWindow::mousePressEvent(QMouseEvent *e) {
       && e->x() >= ui_state->scene.ui_speed_sgn_x && e->x() < (ui_state->scene.ui_speed_sgn_x + 2 * speed_sgn_r)
       && e->y() >= ui_state->scene.ui_speed_sgn_y && e->y() < (ui_state->scene.ui_speed_sgn_y + 2 * speed_sgn_r)) {
     // If touching the speed limit sign area when visible
+    ui_state->last_speed_limit_sign_tap = seconds_since_boot();
     ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
     write_param_bool(ui_state->speed_limit_control_enabled, "SpeedLimitControl");
   }

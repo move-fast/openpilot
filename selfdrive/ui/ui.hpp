@@ -25,6 +25,7 @@
 #include "common/framebuffer.h"
 #include "common/modeldata.h"
 #include "common/params.h"
+#include "common/timing.h"
 #include "sound.hpp"
 
 #define COLOR_BLACK nvgRGBA(0, 0, 0, 255)
@@ -217,6 +218,7 @@ typedef struct UIState {
   float max_acc_turn;
   bool speed_limit_control_enabled;
   float speed_limit_perc_offset;
+  double last_speed_limit_sign_tap;
 
   track_vertices_data track_vertices[2];
   model_path_vertices_data model_path_vertices[MODEL_LANE_PATH_CNT * 2];

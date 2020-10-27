@@ -449,8 +449,11 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const float speed_offset = (s->is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
 
     auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
-    const int ring_alpha = speedLimitControlState > cereal::ControlsState::SpeedLimitControlState::INACTIVE && s->speed_limit_control_enabled ? 255 : 100;
-    const int inner_alpha = speedLimitControlState > cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE && s->speed_limit_control_enabled ? 255 : 100;
+    const bool force_active = s->speed_limit_control_enabled && seconds_since_boot() < s->last_speed_limit_sign_tap + 5.0;
+    const bool inactive = !force_active && (!s->speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
+    const bool temp_inactive = !force_active && (s->speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
+    const int ring_alpha = inactive ? 100 : 255;
+    const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
     ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, s->font_sans_bold, ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;

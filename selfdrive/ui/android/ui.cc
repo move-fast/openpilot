@@ -123,6 +123,7 @@ static void handle_vision_touch(UIState *s, int touch_x, int touch_y) {
           && touch_y >= s->scene.ui_speed_sgn_y && touch_y < (s->scene.ui_speed_sgn_y + 2 * speed_sgn_r)
           && touch_x >= s->scene.ui_speed_sgn_x && touch_x < (s->scene.ui_speed_sgn_x + 2 * speed_sgn_r)) {
         // If touching the speed limit sign area when visible
+        s->last_speed_limit_sign_tap = seconds_since_boot();
         s->speed_limit_control_enabled = !s->speed_limit_control_enabled;
         write_param_bool(s->speed_limit_control_enabled, "SpeedLimitControl");
       } else if (s->scene.uilayout_sidebarcollapsed && touch_y < (settings_btn_y + settings_btn_h)) {
