@@ -70,6 +70,7 @@ const int home_btn_w = 180;
 const int home_btn_x = 60;
 const int home_btn_y = vwp_h - home_btn_h - 40;
 const int speed_sgn_r = 96;
+const int speed_sgn_touch_pad = 50;
 
 const int UI_FREQ = 20;   // Hz
 

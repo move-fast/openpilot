@@ -120,8 +120,10 @@ static void handle_vision_touch(UIState *s, int touch_x, int touch_y) {
       && (s->active_app != cereal::UiLayoutState::App::SETTINGS)) {
     if (!s->scene.frontview) {
       if (s->scene.controls_state.getSpeedLimit() > 0.0 
-          && touch_y >= s->scene.ui_speed_sgn_y && touch_y < (s->scene.ui_speed_sgn_y + 2 * speed_sgn_r)
-          && touch_x >= s->scene.ui_speed_sgn_x && touch_x < (s->scene.ui_speed_sgn_x + 2 * speed_sgn_r)) {
+          && touch_y >= s->scene.ui_speed_sgn_y - speed_sgn_touch_pad
+          && touch_y < s->scene.ui_speed_sgn_y + 2 * speed_sgn_r + speed_sgn_touch_pad
+          && touch_x >= s->scene.ui_speed_sgn_x - speed_sgn_touch_pad
+          && touch_x < s->scene.ui_speed_sgn_x + 2 * speed_sgn_r + speed_sgn_touch_pad) {
         // If touching the speed limit sign area when visible
         s->last_speed_limit_sign_tap = seconds_since_boot();
         s->speed_limit_control_enabled = !s->speed_limit_control_enabled;
