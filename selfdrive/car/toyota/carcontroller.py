@@ -158,6 +158,12 @@ class CarController():
     if enabled and CS.pcm_acc_status and set_speed_update > 0.0:
       can_sends.append(create_set_speed_command(self.packer, set_speed_update))
 
+    if False and enabled and CS.pcm_acc_status > 0.0:
+      current_set_speed = CS.out.cruiseState.speed
+      speed_limit = CS.out.cruiseState.speedLimit
+      if speed_limit > current_set_speed:
+        can_sends.append(create_set_speed_command(self.packer, current_set_speed, 0, 1))
+
     #*** static msgs ***
 
     for (addr, ecu, cars, bus, fr_step, vl) in STATIC_MSGS:

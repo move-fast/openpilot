@@ -58,14 +58,14 @@ def create_acc_cancel_command(packer):
   return packer.make_can_msg("PCM_CRUISE", 0, values)
 
 
-def create_set_speed_command(packer, speed):
+def create_set_speed_command(packer, speed, set_btn=0, res_btn=0):
   values = {
-    "MAIN_ON": 1,
-    "CRUISE_CONTROL_STATE": 6,
-    "DISTANCE_LINES": 3,
-    "UI_SET_SPEED": int(CV.MS_TO_KPH * speed),
+    "CRUISE_ACTIVE": 1,
+    "SET_BTN": set_btn,
+    "RES_BTN": res_btn,
+    "SET_SPEED": int(CV.MS_TO_KPH * speed),
   }
-  return packer.make_can_msg("PCM_CRUISE_SM", 0, values)
+  return packer.make_can_msg("ACC_USER_CONTROL", 0, values)
 
 
 def create_fcw_command(packer, fcw):
