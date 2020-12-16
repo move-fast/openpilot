@@ -357,7 +357,7 @@ void can_health_thread() {
     healthData.setIgnitionLine(health.ignition_line);
     healthData.setIgnitionCan(health.ignition_can);
     healthData.setControlsAllowed(health.controls_allowed);
-    healthData.setGasInterceptorDetected(health.gas_interceptor_detected);
+    healthData.setGasInterceptorDetected(false);
     healthData.setHasGps(panda->is_pigeon);
     healthData.setCanRxErrs(health.can_rx_errs);
     healthData.setCanSendErrs(health.can_send_errs);
