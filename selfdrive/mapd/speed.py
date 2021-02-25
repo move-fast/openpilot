@@ -13,8 +13,13 @@ if __name__ == '__main__':
 
   # Find valid ways
   way_relations = map(lambda way: WayRelation(way, location, bearing), ways)
-  valid_way_relations = filter(lambda wr: wr.valid, way_relations)
+  valid_way_relations = list(filter(lambda wr: wr.valid, way_relations))
 
-  for wr in list(valid_way_relations):
-    print(wr)
-    print(wr.speed_limit)
+  # Pick the one with lowest bearing delta between our bearing and the real bearing of the road where we are located.
+  if len(valid_way_relations) == 0:
+    print('No valid ways found for given loaction and bearing.')
+  else:
+    valid_way_relations.sort(key=lambda wr: wr.located_bearing_delta(bearing))
+    wr = valid_way_relations[0]
+    print(f'Best way: {wr}')
+    print(f'Speed Limit: {wr.speed_limit}')

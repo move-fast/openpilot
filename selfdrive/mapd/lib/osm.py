@@ -1,8 +1,10 @@
 import overpy
+from common.numpy_fast import interp
 from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta
 
 
-ACCEPTABLE_BEARING_DELTA = 5.0
+_ACCEPTABLE_BEARING_DELTA_V = [40., 20, 10, 5]
+_ACCEPTABLE_BEARING_DELTA_BP = [.03, .1, .2, .3]
 
 
 class OSM():
@@ -25,6 +27,8 @@ class OSM():
 
 
 class NodeRelation():
+  """A class that represent the relationship of an OSM node and a given `location` and `bearing` of a driving vehicle.
+  """
   def __init__(self, node, location, bearing):
     self.node = node
     self.update(location, bearing)
@@ -34,20 +38,20 @@ class NodeRelation():
       direction: {self.direction}'
 
   def update(self, location, bearing):
+    """Will update the associated node with a given `location` and `bearing`.
+       Specifically it will find the distance, bearing delta and direction between the node and the given location.
+    """
     self.distance, self.bearing_to_node = distance_and_bearing(location, (self.node.lat, self.node.lon))
     self.bearing_delta, self.direction = absoule_delta_with_direction(bearing_delta(bearing, self.bearing_to_node))
 
 
 class WayRelation():
+  """A class that represent the relationship of an OSM way and a given `location` and `bearing` of a driving vehicle.
+  """
   def __init__(self, way, location=None, bearing=None):
     self.way = way
     self.update_bounding_box()
-
-    self.ahead_idx = None
-    self.behind_idx = None
-    self.valid = False
-    self.direction = DIRECTION.NONE
-    self._speed_limit = None
+    self.reset()
 
     if location is not None and bearing is not None:
       self.update(location, bearing)
@@ -55,13 +59,27 @@ class WayRelation():
   def __repr__(self):
     return f'Way: {self.way.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, ok: {self.valid}'
 
+  def reset(self):
+    self.ahead_idx = None
+    self.behind_idx = None
+    self.valid = False
+    self.direction = DIRECTION.NONE
+    self._speed_limit = None
+    self._located_way_bearing = None
+
   def update(self, location, bearing):
+    """Will update and validate the associated way with a given `location` and `bearing`.
+       Specifically it will find the nodes behind and ahead of the current location and bearing.
+       If no proper fit to the way geometry, the way relation is marked as invalid.
+    """
+    self.reset()
     if self.is_location_in_bbox(location):
       # TODO: This can perhaps be done more efficient by starting from the closest node.
       for idx, node in enumerate(self.way.nodes):
         node_relation = NodeRelation(node, location, bearing)
-
-        if abs(node_relation.bearing_delta) > ACCEPTABLE_BEARING_DELTA:
+        # print(f'idx: {idx}, N: {node_relation}')
+        if abs(node_relation.bearing_delta) > \
+           interp(node_relation.distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
           continue
 
         if node_relation.direction == DIRECTION.AHEAD:
@@ -72,15 +90,9 @@ class WayRelation():
           self.behind_idx = idx
           if self.ahead_idx is not None:
             break
-
-    self.validate()
-
-  def validate(self):
+    # Validate
     if self.ahead_idx is None or self.behind_idx is None or abs(self.ahead_idx - self.behind_idx) > 1:
-      self.valid = False
-      self.direction = DIRECTION.NONE
       return
-
     self.valid = True
     self.direction = DIRECTION.FORWARD if self.ahead_idx - self.behind_idx > 0 else DIRECTION.BACKWARD
 
@@ -100,6 +112,8 @@ class WayRelation():
     self.bbox = min_lat, min_lon, max_lat, max_lon
 
   def is_location_in_bbox(self, location):
+    """Indicates if a given location is contained in the bounding box surrounding the way.
+    """
     lat, lon = location
     min_lat, min_lon, max_lat, max_lon = self.bbox
     return lat >= min_lat and lat <= max_lat and lon >= min_lon and lon <= max_lon
@@ -118,3 +132,28 @@ class WayRelation():
 
     self._speed_limit = limit
     return self._speed_limit
+
+  @property
+  def located_bearing(self):
+    """Returns the exact bearing of the portion of way we are currentluy located at.
+    """
+    if self._located_way_bearing is not None:
+      return self._located_way_bearing
+
+    if not self.valid:
+      return None
+
+    ahead_node = self.way.nodes[self.ahead_idx]
+    behind_node = self.way.nodes[self.behind_idx]
+
+    _, self._located_way_bearing = distance_and_bearing((behind_node.lat, behind_node.lon),
+                                                        (ahead_node.lat, ahead_node.lon))
+    return self._located_way_bearing
+
+  def located_bearing_delta(self, bearing):
+    """Returns the delta between the given bearing and the exact
+       bearing of the portion of way we are currentluy located at.
+    """
+    if self.located_bearing is None:
+      return None
+    return bearing_delta(bearing, self.located_bearing)
