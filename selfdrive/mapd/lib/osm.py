@@ -1,6 +1,6 @@
 import overpy
 from common.numpy_fast import interp
-from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta
+from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing, distance
 
 
 _ACCEPTABLE_BEARING_DELTA_V = [40., 20, 10, 5]
@@ -52,6 +52,8 @@ class WayRelation():
     self.way = way
     self.update_bounding_box()
     self.reset()
+    self._internode_distances = [None] * (len(way.nodes) - 1)
+    self._lenght = None
 
     if location is not None and bearing is not None:
       self.update(location, bearing)
@@ -77,13 +79,13 @@ class WayRelation():
       # TODO: This can perhaps be done more efficient by starting from the closest node.
       for idx, node in enumerate(self.way.nodes):
         node_relation = NodeRelation(node, location, bearing)
-        # print(f'idx: {idx}, N: {node_relation}')
         if abs(node_relation.bearing_delta) > \
            interp(node_relation.distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
           continue
 
         if node_relation.direction == DIRECTION.AHEAD:
           self.ahead_idx = idx
+          self.distance_to_node_ahead = node_relation.distance
           if self.behind_idx is not None:
             break
         elif node_relation.direction == DIRECTION.BEHIND:
@@ -134,6 +136,10 @@ class WayRelation():
     return self._speed_limit
 
   @property
+  def ref(self):
+    return self.way.tags.get("ref", None)
+
+  @property
   def located_bearing(self):
     """Returns the exact bearing of the portion of way we are currentluy located at.
     """
@@ -146,8 +152,7 @@ class WayRelation():
     ahead_node = self.way.nodes[self.ahead_idx]
     behind_node = self.way.nodes[self.behind_idx]
 
-    _, self._located_way_bearing = distance_and_bearing((behind_node.lat, behind_node.lon),
-                                                        (ahead_node.lat, ahead_node.lon))
+    self._located_way_bearing = bearing((behind_node.lat, behind_node.lon), (ahead_node.lat, ahead_node.lon))
     return self._located_way_bearing
 
   def located_bearing_delta(self, bearing):
@@ -157,3 +162,103 @@ class WayRelation():
     if self.located_bearing is None:
       return None
     return bearing_delta(bearing, self.located_bearing)
+
+  def internode_distance(self, idx):
+    d = self._internode_distances[idx]
+    if d is not None:
+      return d
+    pointA = (self.way.nodes[idx].lat, self.way.nodes[idx].lon)
+    pointB = (self.way.nodes[idx + 1].lat, self.way.nodes[idx + 1].lon)
+    d = distance(pointA, pointB)
+    self._internode_distances[idx] = d
+    return d
+
+  @property
+  def lenght(self):
+    if self._lenght is None:
+      distances = [self.internode_distance(idx) for idx in range(len(self._internode_distances))]
+      self._lenght = sum(distances)
+    return self._lenght
+
+  @property
+  def distance_to_end(self):
+    if not self.valid:
+      return None
+    if self.direction == DIRECTION.FORWARD:
+      indices = range(self.ahead_idx, len(self.way.nodes) - 1)
+    else:  # BACKWARDS
+      indices = range(self.ahead_idx)
+    distances = [self.internode_distance(idx) for idx in indices]
+    return sum(distances) + self.distance_to_node_ahead
+
+  @property
+  def last_node(self):
+    """Returns the last node on the way considering the traveling direction
+    """
+    if not self.valid:
+      return None
+    return self.way.nodes[-1] if self.direction == DIRECTION.FORWARD else self.way.nodes[0]
+
+  def edge_on_node(self, node_id):
+    """Indicates if the associated way starts or ends in the node with `node_id`
+    """
+    return self.way.nodes[0].id == node_id or self.way.nodes[-1].id == node_id
+
+
+class WayCollection():
+  """A collection of WayRelations to use for maps data analysis.
+  """
+  def __init__(self, ways):
+    self.ways = ways
+    self.way_relations = list(map(lambda way: WayRelation(way), ways))
+    self.reset()
+
+  def reset(self):
+    self.location = None
+    self.bearing = None
+    self.located_way_relations = []
+
+  def locate(self, location, bearing):
+    """Updates the driving location inside the collection based on given `location` and `bearing` for the
+    driving vehicle.
+    In practice repopulates the located_way_relations list with all valid way_relations and sorted by best bearing
+    match to driving direction.
+    """
+    if location is None or bearing is None or (self.location == location and self.bearing == bearing):
+      return
+
+    self.reset()
+    self.location = location
+    self.bearing = bearing
+
+    for wr in self.way_relations:
+      wr.update(location, bearing)
+
+    self.located_way_relations = list(filter(lambda wr: wr.valid, self.way_relations))
+    self.located_way_relations.sort(key=lambda wr: wr.located_bearing_delta(bearing))
+
+  @property
+  def current(self):
+    """Returns the current way relation if any based on current `location` and `bearing`
+    """
+    # the best matching way relation is the first one on the located_way_relations list.
+    return self.located_way_relations[0] if len(self.located_way_relations) else None
+
+  @property
+  def next(self):
+    """Returns the next way relation if any based on current `location` and `bearing`
+    """
+    current = self.current
+    if current is None:
+      return None
+
+    last_node = current.last_node
+    possible_next_wr = list(filter(lambda wr: wr.edge_on_node(last_node.id), self.way_relations))
+    possibles = len(possible_next_wr)
+
+    if possibles == 0:
+      return None
+    if possibles == 1 or current.ref is None:
+      return possible_next_wr[0]
+
+    return next((wr for wr in possible_next_wr if wr.ref == current.ref), possible_next_wr[0])

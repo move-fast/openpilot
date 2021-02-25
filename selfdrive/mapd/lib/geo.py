@@ -5,9 +5,19 @@ from enum import Enum
 R = 6373.0  # approximate radius of earth in km
 
 
-def distance_and_bearing(pointA, pointB):
-  (latA, lonA) = tuple(map(lambda p: radians(p), pointA))
-  (latB, lonB) = tuple(map(lambda p: radians(p), pointB))
+def coordToRad(point):
+  return tuple(map(lambda p: radians(p), point))
+
+
+def distance(pointA, pointB):
+  pointArad = coordToRad(pointA)
+  pointBrad = coordToRad(pointB)
+  return distance_rad(pointArad, pointBrad)
+
+
+def distance_rad(pointArad, pointBrad):
+  (latA, lonA) = pointArad
+  (latB, lonB) = pointBrad
 
   dlon = lonB - lonA
   dlat = latB - latA
@@ -15,12 +25,32 @@ def distance_and_bearing(pointA, pointB):
   a = sin(dlat / 2)**2 + cos(latA) * cos(latB) * sin(dlon / 2)**2
   c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
+  return R * c
+
+
+def bearing(pointA, pointB):
+  pointArad = coordToRad(pointA)
+  pointBrad = coordToRad(pointB)
+  return bearing_rad(pointArad, pointBrad)
+
+
+def bearing_rad(pointArad, pointBrad):
+  (latA, lonA) = pointArad
+  (latB, lonB) = pointBrad
+
+  dlon = lonB - lonA
+
   x = sin(dlon) * cos(latB)
   y = cos(latA) * sin(latB) - (sin(latA) * cos(latB) * cos(dlon))
   bearing = degrees(atan2(x, y))
-  compass_bearing = (bearing + 360) % 360
+  return (bearing + 360) % 360
 
-  return R * c, compass_bearing
+
+def distance_and_bearing(pointA, pointB):
+  pointArad = coordToRad(pointA)
+  pointBrad = coordToRad(pointB)
+
+  return distance_rad(pointArad, pointBrad), bearing_rad(pointArad, pointBrad)
 
 
 def bearing_delta(bearingA, bearingB):
