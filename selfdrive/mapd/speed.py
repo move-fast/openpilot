@@ -29,7 +29,8 @@ if __name__ == '__main__':
     print(f'Best way: {wr}')
     print(f'Speed Limit: {wr.speed_limit}')
     print(f'Distance To End: {wr.distance_to_end}')
-    print(f'Next way: {way_collection.next}')
+    print(f'Route Ahead: {way_collection.route}')
+    print(f'Limits Ahead: {way_collection.route.speed_limits_ahead}')
 
   # 4. Update on the oposit direction for testing
   way_collection.locate(location, bearing - 180)
@@ -43,4 +44,5 @@ if __name__ == '__main__':
     print(f'Best way: {wr}')
     print(f'Speed Limit: {wr.speed_limit}')
     print(f'Distance To End: {wr.distance_to_end}')
-    print(f'Next way: {way_collection.next}')
+    print(f'Route Ahead: {way_collection.route}')
+    print(f'Limits Ahead: {way_collection.route.speed_limits_ahead}')

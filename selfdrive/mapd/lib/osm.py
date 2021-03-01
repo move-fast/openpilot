@@ -1,4 +1,5 @@
 import overpy
+from copy import deepcopy
 from common.numpy_fast import interp
 from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing, distance
 
@@ -51,7 +52,9 @@ class WayRelation():
   def __init__(self, way, location=None, bearing=None):
     self.way = way
     self.update_bounding_box()
-    self.reset()
+    self.reset_location_variables()
+    self.direction = DIRECTION.NONE
+    self._speed_limit = None
     self._internode_distances = [None] * (len(way.nodes) - 1)
     self._lenght = None
 
@@ -59,44 +62,62 @@ class WayRelation():
       self.update(location, bearing)
 
   def __repr__(self):
-    return f'Way: {self.way.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, ok: {self.valid}'
+    return f'Way: {self.way.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, on: {self.valid}'
 
-  def reset(self):
+  def reset_location_variables(self):
+    self.valid = False
     self.ahead_idx = None
     self.behind_idx = None
-    self.valid = False
-    self.direction = DIRECTION.NONE
-    self._speed_limit = None
     self._located_way_bearing = None
+
+  @property
+  def id(self):
+    return self.way.id
 
   def update(self, location, bearing):
     """Will update and validate the associated way with a given `location` and `bearing`.
        Specifically it will find the nodes behind and ahead of the current location and bearing.
        If no proper fit to the way geometry, the way relation is marked as invalid.
     """
-    self.reset()
-    if self.is_location_in_bbox(location):
-      # TODO: This can perhaps be done more efficient by starting from the closest node.
-      for idx, node in enumerate(self.way.nodes):
-        node_relation = NodeRelation(node, location, bearing)
-        if abs(node_relation.bearing_delta) > \
-           interp(node_relation.distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
-          continue
+    self.reset_location_variables()
 
-        if node_relation.direction == DIRECTION.AHEAD:
-          self.ahead_idx = idx
-          self.distance_to_node_ahead = node_relation.distance
-          if self.behind_idx is not None:
-            break
-        elif node_relation.direction == DIRECTION.BEHIND:
-          self.behind_idx = idx
-          if self.ahead_idx is not None:
-            break
+    if not self.is_location_in_bbox(location):
+      return
+
+    # TODO: This can perhaps be done more efficient by starting from the closest node.
+    for idx, node in enumerate(self.way.nodes):
+      node_relation = NodeRelation(node, location, bearing)
+      if abs(node_relation.bearing_delta) > \
+         interp(node_relation.distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
+        continue
+
+      if node_relation.direction == DIRECTION.AHEAD:
+        self.ahead_idx = idx
+        self.distance_to_node_ahead = node_relation.distance
+        if self.behind_idx is not None:
+          break
+      elif node_relation.direction == DIRECTION.BEHIND:
+        self.behind_idx = idx
+        if self.ahead_idx is not None:
+          break
+
     # Validate
     if self.ahead_idx is None or self.behind_idx is None or abs(self.ahead_idx - self.behind_idx) > 1:
+      self.reset_location_variables()
       return
+
     self.valid = True
+    self._speed_limit = None
     self.direction = DIRECTION.FORWARD if self.ahead_idx - self.behind_idx > 0 else DIRECTION.BACKWARD
+
+  def update_direction_from_starting_node(self, start_node_id):
+    self._speed_limit = None
+    if self.way.nodes[0].id == start_node_id:
+      self.direction = DIRECTION.FORWARD
+    elif self.way.nodes[-1].id == start_node_id:
+      self.direction = DIRECTION.BACKWARD
+    else:
+      self.direction = DIRECTION.NONE
 
   def update_bounding_box(self):
     nodes = self.way.nodes
@@ -183,7 +204,7 @@ class WayRelation():
   @property
   def distance_to_end(self):
     if not self.valid:
-      return None
+      return self.lenght
     if self.direction == DIRECTION.FORWARD:
       indices = range(self.ahead_idx, len(self.way.nodes) - 1)
     else:  # BACKWARDS
@@ -195,14 +216,127 @@ class WayRelation():
   def last_node(self):
     """Returns the last node on the way considering the traveling direction
     """
-    if not self.valid:
-      return None
-    return self.way.nodes[-1] if self.direction == DIRECTION.FORWARD else self.way.nodes[0]
+    if self.direction == DIRECTION.FORWARD:
+      return self.way.nodes[-1]
+    if self.direction == DIRECTION.BACKWARD:
+      return self.way.nodes[0]
+    return None
 
   def edge_on_node(self, node_id):
     """Indicates if the associated way starts or ends in the node with `node_id`
     """
     return self.way.nodes[0].id == node_id or self.way.nodes[-1].id == node_id
+
+  def next_wr(self, way_relations):
+    """Returns a tuple with the next way relation (if any) based on `location` and `bearing` and a copy of
+    the `way_relations` list excluding the found next way relation. (to help with recursion)
+    """
+    if self.direction not in [DIRECTION.FORWARD, DIRECTION.BACKWARD]:
+      return None, way_relations
+
+    possible_next_wr = list(filter(lambda wr: wr.id != self.id and wr.edge_on_node(self.last_node.id), way_relations))
+    possibles = len(possible_next_wr)
+
+    if possibles == 0:
+      return None, way_relations
+
+    if possibles == 1 or self.ref is None:
+      next_wr = possible_next_wr[0]
+    else:
+      next_wr = next((wr for wr in possible_next_wr if wr.ref == self.ref), possible_next_wr[0])
+
+    next_wr.update_direction_from_starting_node(self.last_node.id)
+    updated_way_relations = list(filter(lambda wr: wr.id != next_wr.id, way_relations))
+
+    return next_wr, updated_way_relations
+
+  def has_exact_state(self, way_relation):
+    """ Indicates if this instance is an exact match to `way_relation` on `id` and location in way.
+    """
+    return self.same_direction(way_relation) and self.ahead_idx == way_relation.ahead_idx \
+        and self.distance_to_node_ahead == way_relation.distance_to_node_ahead
+
+  def same_direction(self, way_relation):
+    """ Indicates if this instance and `way_relation` refer to the same way in the same direction
+    """
+    return way_relation is not None and self.id == way_relation.id and self.direction == way_relation.direction
+
+
+class SpeedLimitAhead():
+  """And object representing a speed limited road section ahead.
+  provides the start and end distance and the speed limit value
+  """
+  def __init__(self, start, end, value):
+    self.start = start
+    self.end = end
+    self.value = value
+
+  def __repr__(self):
+    return f'from: {self.start}, to: {self.end}, limit: {self.value}'
+
+
+class Route():
+  """A set of consecutive way relations forming a default driving route ahead.
+  """
+  def __init__(self):
+    self.ordered_way_relations = []
+
+  def __repr__(self):
+    return f'{self.ordered_way_relations}'
+
+  @property
+  def current(self):
+    return self.ordered_way_relations[0] if len(self.ordered_way_relations) else None
+
+  def update(self, current, way_relations):
+    # Nothing to update if `current` is None or if nothing has changed since last update.
+    if current is None or current.has_exact_state(self.current):
+      return
+    # If route is already populated and only change is the location inside the current way relation,
+    # then only update first element in route.
+    if len(self.ordered_way_relations) > 0 and current.same_direction(self.current):
+      self.ordered_way_relations[0] = current
+      return
+    # otherwise update the whole route.
+    self.ordered_way_relations = []
+    wr = current
+    while wr is not None:
+      self.ordered_way_relations.append(deepcopy(wr))
+      wr, way_relations = wr.next_wr(way_relations)
+
+  @property
+  def speed_limits_ahead(self):
+    """Returns and array of SpeedLimitAhead objects for the actual route
+    """
+    way_count = len(self.ordered_way_relations)
+    if way_count == 0:
+      return []
+
+    wr = self.ordered_way_relations[0]
+    section_start = 0
+    section_distance = wr.distance_to_end
+    section_speed_limit = wr.speed_limit
+
+    if way_count == 1:
+      return [SpeedLimitAhead(0, section_distance, section_speed_limit)]
+
+    limits_ahead = []
+    for wr in self.ordered_way_relations[1:]:
+      speed_limit = wr.speed_limit
+
+      if speed_limit == section_speed_limit:
+        section_distance += wr.distance_to_end
+      else:
+        # Close section
+        limits_ahead.append(SpeedLimitAhead(section_start, section_start + section_distance, section_speed_limit))
+        # New section
+        section_speed_limit = speed_limit
+        section_start = section_start + section_distance
+        section_distance = wr.distance_to_end
+
+    limits_ahead.append(SpeedLimitAhead(section_start, section_start + section_distance, section_speed_limit))
+
+    return limits_ahead
 
 
 class WayCollection():
@@ -211,12 +345,13 @@ class WayCollection():
   def __init__(self, ways):
     self.ways = ways
     self.way_relations = list(map(lambda way: WayRelation(way), ways))
+    self._route = Route()
     self.reset()
 
   def reset(self):
     self.location = None
     self.bearing = None
-    self.located_way_relations = []
+    self._current = None
 
   def locate(self, location, bearing):
     """Updates the driving location inside the collection based on given `location` and `bearing` for the
@@ -234,31 +369,33 @@ class WayCollection():
     for wr in self.way_relations:
       wr.update(location, bearing)
 
-    self.located_way_relations = list(filter(lambda wr: wr.valid, self.way_relations))
-    self.located_way_relations.sort(key=lambda wr: wr.located_bearing_delta(bearing))
+    located_way_relations = list(filter(lambda wr: wr.valid, self.way_relations))
+    located_way_relations.sort(key=lambda wr: wr.located_bearing_delta(bearing))
+
+    # the best matching way relation is the first one on the located_way_relations list.
+    # Assign to current and reset location variables for the rest.
+    self._current = located_way_relations[0] if len(located_way_relations) else None
+    if len(located_way_relations) > 1:
+      for wr in located_way_relations[1:]:
+        wr.reset_location_variables()
 
   @property
   def current(self):
     """Returns the current way relation if any based on current `location` and `bearing`
     """
-    # the best matching way relation is the first one on the located_way_relations list.
-    return self.located_way_relations[0] if len(self.located_way_relations) else None
+    return self._current
 
   @property
-  def next(self):
-    """Returns the next way relation if any based on current `location` and `bearing`
+  def route(self):
+    """Provides a route ahead using the way relations on the collection considering as starting point on
+    the current way relation
     """
-    current = self.current
-    if current is None:
-      return None
+    self._route.update(self.current, self.way_relations)
+    return self._route
 
-    last_node = current.last_node
-    possible_next_wr = list(filter(lambda wr: wr.edge_on_node(last_node.id), self.way_relations))
-    possibles = len(possible_next_wr)
-
-    if possibles == 0:
-      return None
-    if possibles == 1 or current.ref is None:
-      return possible_next_wr[0]
-
-    return next((wr for wr in possible_next_wr if wr.ref == current.ref), possible_next_wr[0])
+  def speed_limits_ahead(self, distance=500):
+    """Provides a dictionary of speed limits ahead from current location to given `distance`.
+    Keys are the distances where the speed limit value changes ahead.
+    When speed limit is not available for a specific section of the road ahead, `None` is returned as value.
+    """
+    return None
