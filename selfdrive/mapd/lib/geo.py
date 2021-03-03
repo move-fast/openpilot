@@ -34,7 +34,13 @@ def bearing(pointA, pointB):
   return bearing_rad(pointArad, pointBrad)
 
 
-def bearing_rad(pointArad, pointBrad):
+def xy(refPoint, point):
+  pointArad = coordToRad(refPoint)
+  pointBrad = coordToRad(point)
+  return xy_rad(pointArad, pointBrad)
+
+
+def x_y_bearing_rad(pointArad, pointBrad):
   (latA, lonA) = pointArad
   (latB, lonB) = pointBrad
 
@@ -43,7 +49,17 @@ def bearing_rad(pointArad, pointBrad):
   x = sin(dlon) * cos(latB)
   y = cos(latA) * sin(latB) - (sin(latA) * cos(latB) * cos(dlon))
   bearing = degrees(atan2(x, y))
+  return x * R, y * R, (bearing + 360) % 360
+
+
+def bearing_rad(pointArad, pointBrad):
+  _, _, bearing = x_y_bearing_rad(pointArad, pointBrad)
   return (bearing + 360) % 360
+
+
+def xy_rad(pointArad, pointBrad):
+  x, y, _ = x_y_bearing_rad(pointArad, pointBrad)
+  return x, y
 
 
 def distance_and_bearing(pointA, pointB):

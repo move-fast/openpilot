@@ -1,7 +1,7 @@
 import overpy
 from copy import deepcopy
 from common.numpy_fast import interp
-from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing, distance
+from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing, distance, xy
 
 
 _ACCEPTABLE_BEARING_DELTA_V = [40., 20, 10, 5]
@@ -27,23 +27,28 @@ class OSM():
       return self.api.query(q).ways
 
 
-class NodeRelation():
-  """A class that represent the relationship of an OSM node and a given `location` and `bearing` of a driving vehicle.
-  """
-  def __init__(self, node, location, bearing):
+class NodeReference():
+  def __init__(self, node):
     self.node = node
-    self.update(location, bearing)
+    self._ref_node_id = None
+    self.x = None
+    self.y = None
 
   def __repr__(self):
-    return f'NodeRelation: n: {self.node.id}, distance: {self.distance:.4f}, bearing_delta: {self.bearing_delta:.4f}, \
-      direction: {self.direction}'
+    return f'id: {self.id}, (x, y): {self.x}, {self.y}'
 
-  def update(self, location, bearing):
-    """Will update the associated node with a given `location` and `bearing`.
-       Specifically it will find the distance, bearing delta and direction between the node and the given location.
-    """
-    self.distance, self.bearing_to_node = distance_and_bearing(location, (self.node.lat, self.node.lon))
-    self.bearing_delta, self.direction = absoule_delta_with_direction(bearing_delta(bearing, self.bearing_to_node))
+  @property
+  def id(self):
+    return self.node.id
+
+  def xy(self, refNode):
+    if self._ref_node_id != refNode.id:
+      self._ref_node_id = refNode.id
+      refPoint = (refNode.lat, refNode.lon)
+      point = (self.node.lat, self.node.lon)
+      self.x, self.y = xy(refPoint, point)
+
+    return self.x, self.y
 
 
 class WayRelation():
@@ -56,6 +61,7 @@ class WayRelation():
     self.direction = DIRECTION.NONE
     self._speed_limit = None
     self._internode_distances = [None] * (len(way.nodes) - 1)
+    self._node_references = None
     self._lenght = None
 
     if location is not None and bearing is not None:
@@ -86,17 +92,18 @@ class WayRelation():
 
     # TODO: This can perhaps be done more efficient by starting from the closest node.
     for idx, node in enumerate(self.way.nodes):
-      node_relation = NodeRelation(node, location, bearing)
-      if abs(node_relation.bearing_delta) > \
-         interp(node_relation.distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
+      distance, bearing_to_node = distance_and_bearing(location, (node.lat, node.lon))
+      delta, direction = absoule_delta_with_direction(bearing_delta(bearing, bearing_to_node))
+
+      if abs(delta) > interp(distance, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
         continue
 
-      if node_relation.direction == DIRECTION.AHEAD:
+      if direction == DIRECTION.AHEAD:
         self.ahead_idx = idx
-        self.distance_to_node_ahead = node_relation.distance
+        self.distance_to_node_ahead = distance
         if self.behind_idx is not None:
           break
-      elif node_relation.direction == DIRECTION.BEHIND:
+      elif direction == DIRECTION.BEHIND:
         self.behind_idx = idx
         if self.ahead_idx is not None:
           break
@@ -183,6 +190,13 @@ class WayRelation():
     if self.located_bearing is None:
       return None
     return bearing_delta(bearing, self.located_bearing)
+
+  @property
+  def node_references(self):
+    if self._node_references is None:
+      self._node_references = [NodeReference(nd) for nd in self.way.nodes]
+
+    return self._node_references
 
   def internode_distance(self, idx):
     d = self._internode_distances[idx]
@@ -280,6 +294,7 @@ class Route():
   """
   def __init__(self):
     self.ordered_way_relations = []
+    self._node_references = None
 
   def __repr__(self):
     return f'{self.ordered_way_relations}'
@@ -299,6 +314,7 @@ class Route():
       return
     # otherwise update the whole route.
     self.ordered_way_relations = []
+    self._node_references = None
     wr = current
     while wr is not None:
       self.ordered_way_relations.append(deepcopy(wr))
@@ -337,6 +353,26 @@ class Route():
     limits_ahead.append(SpeedLimitAhead(section_start, section_start + section_distance, section_speed_limit))
 
     return limits_ahead
+
+  @property
+  def node_references(self):
+    if self._node_references is None:
+      node_references = []
+      for wr in self.ordered_way_relations:
+        wr_node_references = wr.node_references if wr.direction == DIRECTION.FORWARD else wr.node_references[::-1]
+        for nr in wr_node_references:
+          if len(node_references) == 0 or nr.id != node_references[-1].id:
+            node_references.append(nr)
+      self._node_references = node_references
+
+    return self._node_references
+
+  def xy_ahead(self, refNode):
+    return [nr.xy(refNode) for nr in self.node_references]
+
+  @property
+  def xy_path(self):
+    return self.xy_ahead(self.node_references[0].node)
 
 
 class WayCollection():
