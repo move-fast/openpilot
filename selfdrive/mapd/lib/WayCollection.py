@@ -12,19 +12,17 @@ class WayCollection():
     """Provides the best route found in the way collection based on provided `location` and `bearing`
     """
     if location is None or bearing is None:
-      return
-
+      return None
     for wr in self.way_relations:
       wr.update(location, bearing)
-
     active_way_relations = list(filter(lambda wr: wr.active, self.way_relations))
     active_way_relations.sort(key=lambda wr: wr.active_bearing_delta(bearing))
-
+    if len(active_way_relations) == 0:
+      return None
     # the best matching way relation is the first one on the active_way_relations list. Consider it current.
     # reset location for remaining located wr.
-    current = active_way_relations[0] if len(active_way_relations) else None
+    current = active_way_relations[0]
     if len(active_way_relations) > 1:
       for wr in active_way_relations[1:]:
         wr.reset_location_variables()
-
     return Route(current, self.way_relations)
