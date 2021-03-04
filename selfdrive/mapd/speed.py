@@ -42,8 +42,8 @@ if __name__ == '__main__':
     print(f'Distance To End: {route.current_wr.distance_to_end}')
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
-    print(f'curvatures: {route.curvatures}')
-    csv_out_curvatures('forward', route.curvatures)
+    print(f'curvatures: {route.curvatures_ahed}')
+    # csv_out_curvatures('forward', route.curvatures)
 
   # 4. Update on the oposit direction for testing
   route = way_collection.get_route(location, bearing - 180)
@@ -59,5 +59,5 @@ if __name__ == '__main__':
     print(f'Distance To End: {route.current_wr.distance_to_end}')
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
-    print(f'curvatures: {route.curvatures}')
-    csv_out_curvatures('backward', route.curvatures)
+    print(f'curvatures: {route.curvatures_ahed}')
+    # csv_out_curvatures('backward', route.curvatures)

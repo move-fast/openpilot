@@ -16,7 +16,6 @@ class WayRelation():
     self.direction = DIRECTION.NONE
     self._speed_limit = None
     self._internode_distances = [None] * (len(way.nodes) - 1)
-    self._node_references = None
     self._lenght = None
 
     if location is not None and bearing is not None:
@@ -179,6 +178,14 @@ class WayRelation():
     return sum(distances) + self.distance_to_node_ahead
 
   @property
+  def node_behind(self):
+    return self.way.nodes[self.behind_idx] if self.behind_idx is not None else None
+
+  @property
+  def node_ahead(self):
+    return self.way.nodes[self.ahead_idx] if self.ahead_idx is not None else None
+
+  @property
   def last_node(self):
     """Returns the last node on the way considering the traveling direction
     """
@@ -215,14 +222,3 @@ class WayRelation():
     updated_way_relations = list(filter(lambda wr: wr.id != next_wr.id, way_relations))
 
     return next_wr, updated_way_relations
-
-  def has_exact_state(self, way_relation):
-    """ Indicates if this instance is an exact match to `way_relation` on `id` and location in way.
-    """
-    return self.same_direction(way_relation) and self.ahead_idx == way_relation.ahead_idx \
-        and self.distance_to_node_ahead == way_relation.distance_to_node_ahead
-
-  def same_direction(self, way_relation):
-    """ Indicates if this instance and `way_relation` refer to the same way in the same direction
-    """
-    return way_relation is not None and self.id == way_relation.id and self.direction == way_relation.direction
