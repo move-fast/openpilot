@@ -23,13 +23,13 @@ class WayRelation():
       self.update(location, bearing)
 
   def __repr__(self):
-    return f'Way: {self.way.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, on: {self.valid}'
+    return f'id: {self.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, active: {self.active}'
 
   def reset_location_variables(self):
-    self.valid = False
+    self.active = False
     self.ahead_idx = None
     self.behind_idx = None
-    self._located_way_bearing = None
+    self._active_way_bearing = None
 
   @property
   def id(self):
@@ -68,7 +68,7 @@ class WayRelation():
       self.reset_location_variables()
       return
 
-    self.valid = True
+    self.active = True
     self._speed_limit = None
     self.direction = DIRECTION.FORWARD if self.ahead_idx - self.behind_idx > 0 else DIRECTION.BACKWARD
 
@@ -123,28 +123,28 @@ class WayRelation():
     return self.way.tags.get("ref", None)
 
   @property
-  def located_bearing(self):
+  def active_bearing(self):
     """Returns the exact bearing of the portion of way we are currentluy located at.
     """
-    if self._located_way_bearing is not None:
-      return self._located_way_bearing
+    if self._active_way_bearing is not None:
+      return self._active_way_bearing
 
-    if not self.valid:
+    if not self.active:
       return None
 
     ahead_node = self.way.nodes[self.ahead_idx]
     behind_node = self.way.nodes[self.behind_idx]
 
-    self._located_way_bearing = bearing((behind_node.lat, behind_node.lon), (ahead_node.lat, ahead_node.lon))
-    return self._located_way_bearing
+    self._active_way_bearing = bearing((behind_node.lat, behind_node.lon), (ahead_node.lat, ahead_node.lon))
+    return self._active_way_bearing
 
-  def located_bearing_delta(self, bearing):
+  def active_bearing_delta(self, bearing):
     """Returns the delta between the given bearing and the exact
        bearing of the portion of way we are currentluy located at.
     """
-    if self.located_bearing is None:
+    if self.active_bearing is None:
       return None
-    return bearing_delta(bearing, self.located_bearing)
+    return bearing_delta(bearing, self.active_bearing)
 
   def internode_distance(self, idx):
     d = self._internode_distances[idx]
@@ -165,7 +165,7 @@ class WayRelation():
 
   @property
   def distance_to_end(self):
-    if not self.valid:
+    if not self.active:
       return self.lenght
     if self.direction == DIRECTION.FORWARD:
       indices = range(self.ahead_idx, len(self.way.nodes) - 1)

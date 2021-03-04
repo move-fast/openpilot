@@ -17,14 +17,14 @@ class WayCollection():
     for wr in self.way_relations:
       wr.update(location, bearing)
 
-    located_way_relations = list(filter(lambda wr: wr.valid, self.way_relations))
-    located_way_relations.sort(key=lambda wr: wr.located_bearing_delta(bearing))
+    active_way_relations = list(filter(lambda wr: wr.active, self.way_relations))
+    active_way_relations.sort(key=lambda wr: wr.active_bearing_delta(bearing))
 
-    # the best matching way relation is the first one on the located_way_relations list. Consider it current.
+    # the best matching way relation is the first one on the active_way_relations list. Consider it current.
     # reset location for remaining located wr.
-    current = located_way_relations[0] if len(located_way_relations) else None
-    if len(located_way_relations) > 1:
-      for wr in located_way_relations[1:]:
+    current = active_way_relations[0] if len(active_way_relations) else None
+    if len(active_way_relations) > 1:
+      for wr in active_way_relations[1:]:
         wr.reset_location_variables()
 
     return Route(current, self.way_relations)

@@ -34,16 +34,16 @@ class Route():
       wr, way_relations = wr.next_wr(way_relations)
 
   @property
-  def current(self):
+  def current_wr(self):
     return self.ordered_way_relations[0] if len(self.ordered_way_relations) else None
 
   def update(self, current, way_relations):
     # Nothing to update if `current` is None or if nothing has changed since last update.
-    if current is None or current.has_exact_state(self.current):
+    if current is None or current.has_exact_state(self.current_wr):
       return
     # If route is already populated and only change is the location inside the current way relation,
     # then only update first element in route.
-    if len(self.ordered_way_relations) > 0 and current.same_direction(self.current):
+    if len(self.ordered_way_relations) > 0 and current.same_direction(self.current_wr):
       self.ordered_way_relations[0] = current
       return
     # otherwise update the whole route.

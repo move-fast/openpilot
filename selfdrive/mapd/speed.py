@@ -37,9 +37,9 @@ if __name__ == '__main__':
   if route is None:
     print('No valid routes found for given loaction and bearing.')
   else:
-    print(f'Current way: {route.current}')
-    print(f'Speed Limit: {route.current.speed_limit}')
-    print(f'Distance To End: {route.current.distance_to_end}')
+    print(f'Current way: {route.current_wr}')
+    print(f'Speed Limit: {route.current_wr.speed_limit}')
+    print(f'Distance To End: {route.current_wr.distance_to_end}')
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
     print(f'curvatures: {route.curvatures}')
@@ -54,9 +54,9 @@ if __name__ == '__main__':
   if route is None:
     print('No valid routes found for given loaction and bearing.')
   else:
-    print(f'Current way: {route.current}')
-    print(f'Speed Limit: {route.current.speed_limit}')
-    print(f'Distance To End: {route.current.distance_to_end}')
+    print(f'Current way: {route.current_wr}')
+    print(f'Speed Limit: {route.current_wr.speed_limit}')
+    print(f'Distance To End: {route.current_wr.distance_to_end}')
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
     print(f'curvatures: {route.curvatures}')
