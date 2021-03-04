@@ -1,8 +1,10 @@
-from math import sin, cos, sqrt, atan2, radians, degrees
+from math import sin, cos, sqrt, atan2, radians, degrees, pi
 from enum import Enum
 
 
 R = 6373.0  # approximate radius of earth in km
+CURVATURE_OFFSET = .3  # 300 mts. The distance offset for curvature calculation
+MAX_DIST_FOR_CURVATURE = 0.5  # Max distance between nodes for curvature calculation
 
 
 def coordToRad(point):
@@ -83,6 +85,53 @@ def absoule_delta_with_direction(bearing_delta):
     return (delta_behind, DIRECTION.BEHIND)
   else:
     return (delta_ahead, DIRECTION.NONE)
+
+
+def three_point_curvature_alt(ref, prev, next):
+  # https://math.stackexchange.com/questions/2507540/numerical-way-to-solve-for-the-curvature-of-a-curve
+  # https://en.wikipedia.org/wiki/Heron%27s_formula
+  prev_r = (prev[0] - ref[0], prev[1] - ref[1])
+  next_r = (next[0] - ref[0], next[1] - ref[1])
+
+  prev_ang = atan2(prev_r[0], prev_r[1])
+  next_ang = atan2(next_r[0], next_r[1])
+  a = CURVATURE_OFFSET
+  b = CURVATURE_OFFSET
+
+  prev_n = (a * cos(prev_ang), a * sin(prev_ang))
+  next_n = (b * cos(next_ang), b * sin(next_ang))
+
+  c = xy_distance(next_n, prev_n)
+  s = (a + b + c) / 2.
+  A = sqrt(s * (s - a) * (s - b) * (s - c))
+
+  return 4 * A / (a * b * c)
+
+
+def three_point_tangent_angle(ref, prev, next):
+  # https://www.math24.net/curvature-radius
+  prev_r = (prev[0] - ref[0], prev[1] - ref[1])
+  next_r = (next[0] - ref[0], next[1] - ref[1])
+
+  prev_ang = atan2(prev_r[0], prev_r[1]) - pi
+  next_ang = atan2(next_r[0], next_r[1])
+  return (prev_ang + next_ang) / 2.
+
+
+def three_point_curvature(ref_xy, prev_xy, next_xy, ref_tan, prev_tan, next_tan):
+  prev_tan_delta = ref_tan - prev_tan if prev_tan is not None else 0
+  prev_dist = max(xy_distance(prev_xy, ref_xy), MAX_DIST_FOR_CURVATURE)
+  next_tan_delta = next_tan - ref_tan if next_tan is not None else 0
+  next_dist = max(xy_distance(next_xy, ref_xy), MAX_DIST_FOR_CURVATURE)
+
+  prev_curv = prev_tan_delta / prev_dist
+  next_curv = next_tan_delta / next_dist
+
+  return (prev_curv + next_curv) / 2.
+
+
+def xy_distance(A, B):
+  return sqrt((A[0] - B[0])**2 + (A[1] - B[1])**2)
 
 
 class DIRECTION(Enum):
