@@ -40,6 +40,10 @@ class Route():
     self._ahead_idx = None
     self._distance_to_node_ahead = None
 
+  @property
+  def located(self):
+    return self._ahead_idx is not None
+
   def _build_node_list(self):
     route_nodes = []
     # Compile list of nodes from all way relations in order including speed limit from way relation.
@@ -161,6 +165,8 @@ class Route():
   def curvatures_ahed(self):
     """Provides a list of ordered tuples by distance including the distance ahead and the curvature.
     """
+    if not self.located:
+      return None
     if self._curvatures_ahead is not None:
       return self._curvatures_ahead
     curvatures_list = []
@@ -170,3 +176,9 @@ class Route():
       distance += rn.distance_to_next_node
     self._curvatures_ahead = curvatures_list
     return curvatures_list
+
+  @property
+  def distance_to_end(self):
+    if not self.located:
+      return None
+    return self._distance_to_node_ahead + sum([rn.distance_to_next_node for rn in self._route_nodes[self._ahead_idx:]])

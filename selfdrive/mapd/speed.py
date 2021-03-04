@@ -20,6 +20,7 @@ def csv_out_curvatures(name, curv_data):
 
 if __name__ == '__main__':
   location = (Decimal(sys.argv[1]), Decimal(sys.argv[2]))
+  location2 = Decimal(52.27791306120662), Decimal(13.90794088430264)
   bearing = float(sys.argv[4])
 
   # 1. Get ways around location
@@ -34,7 +35,7 @@ if __name__ == '__main__':
 
   # 4. Output
   print('_____ GIVEN DIRECTION')
-  if route is None:
+  if route is None or not route.valid:
     print('No valid routes found for given loaction and bearing.')
   else:
     print(f'Current way: {route.current_wr}')
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
     print(f'curvatures: {route.curvatures_ahed}')
+    print(f'Distance to end: {route.distance_to_end}')
     # csv_out_curvatures('forward', route.curvatures)
 
   # 4. Update on the oposit direction for testing
@@ -50,7 +52,7 @@ if __name__ == '__main__':
   # 5. Output in oposit direction
   print('      ')
   print('_____REVERSE DIRECTION')
-  if route is None:
+  if route is None or not route.valid:
     print('No valid routes found for given loaction and bearing.')
   else:
     print(f'Current way: {route.current_wr}')
@@ -58,4 +60,5 @@ if __name__ == '__main__':
     print(f'Route Ahead: {route}')
     print(f'Limits Ahead: {route.speed_limits_ahead}')
     print(f'curvatures: {route.curvatures_ahed}')
+    print(f'Distance to end: {route.distance_to_end}')
     # csv_out_curvatures('backward', route.curvatures)
