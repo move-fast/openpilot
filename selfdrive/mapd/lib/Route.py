@@ -36,6 +36,7 @@ class Route():
   def _reset(self):
     self._ordered_way_relations = []
     self._limits_ahead = None
+    self._curvatures_ahead = None
     self._ahead_idx = None
     self._distance_to_node_ahead = None
 
@@ -160,9 +161,12 @@ class Route():
   def curvatures_ahed(self):
     """Provides a list of ordered tuples by distance including the distance ahead and the curvature.
     """
-    data_list = []
+    if self._curvatures_ahead is not None:
+      return self._curvatures_ahead
+    curvatures_list = []
     distance = self._distance_to_node_ahead
     for rn in self._route_nodes[self._ahead_idx:]:
-      data_list.append((distance, rn.curvature))
+      curvatures_list.append((distance, rn.curvature))
       distance += rn.distance_to_next_node
-    return data_list
+    self._curvatures_ahead = curvatures_list
+    return curvatures_list
