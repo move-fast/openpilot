@@ -26,6 +26,8 @@ class WayRelation():
     return f'id: {self.id}, ahead: {self.ahead_idx}, behind: {self.behind_idx}, {self.direction}, active: {self.active}'
 
   def reset_location_variables(self):
+    self.location = None
+    self.bearing = None
     self.active = False
     self.ahead_idx = None
     self.behind_idx = None
@@ -69,6 +71,8 @@ class WayRelation():
       return
 
     self.active = True
+    self.location = location
+    self.bearing = bearing
     self._speed_limit = None
     self.direction = DIRECTION.FORWARD if self.ahead_idx - self.behind_idx > 0 else DIRECTION.BACKWARD
 
