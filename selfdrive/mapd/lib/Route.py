@@ -17,47 +17,74 @@ class SpeedLimitSection():
 
 
 class Route():
-  """A set of consecutive way relations forming a default driving route ahead.
+  """A set of consecutive way relations forming a default driving route.
   """
   def __init__(self, current, way_relations):
-    self._build_route(current, way_relations)
+    self._reset()
+    if not current.active:
+      return
 
-  def __repr__(self):
-    return f'{self.ordered_way_relations}'
-
-  def _build_route(self, current, way_relations):
-    self.ordered_way_relations = []
-    self._node_references = None
     wr = current
     while wr is not None:
-      self.ordered_way_relations.append(deepcopy(wr))
+      self._ordered_way_relations.append(deepcopy(wr))
       wr, way_relations = wr.next_wr(way_relations)
+
+  def __repr__(self):
+    return f'{self._ordered_way_relations}'
+
+  def _reset(self):
+    self._ordered_way_relations = []
+    self._node_references = None
+    self._limits_ahead = None
+
+  @property
+  def valid(self):
+    return self.current_wr is not None
 
   @property
   def current_wr(self):
-    return self.ordered_way_relations[0] if len(self.ordered_way_relations) else None
+    return self._ordered_way_relations[0] if len(self._ordered_way_relations) else None
 
-  def update(self, current, way_relations):
-    # Nothing to update if `current` is None or if nothing has changed since last update.
-    if current is None or current.has_exact_state(self.current_wr):
+  def update(self, location, bearing):
+    """Will update the route structure based on the given `location` and `bearing` assuming progress on the route
+    on the original direction. If direction has changed or active point on the route can not be found, the route
+    will become invalid.
+    """
+    if len(self._ordered_way_relations) == 0 or location is None or bearing is None:
       return
-    # If route is already populated and only change is the location inside the current way relation,
-    # then only update first element in route.
-    if len(self.ordered_way_relations) > 0 and current.same_direction(self.current_wr):
-      self.ordered_way_relations[0] = current
+
+    if self.current_wr.location == location and self.current_wr.bearing == bearing:
       return
-    # otherwise update the whole route.
-    self._build_route(current, way_relations)
+
+    # Transverse the way relations on the actual order until we find an active one. From there, rebuild the route
+    # with the way relations remaining ahead.
+    for idx, wr in enumerate(self._ordered_way_relations):
+      active_direction = wr.direction
+      wr.update(location, bearing)
+
+      if not wr.active:
+        continue
+
+      if wr.direction == active_direction:
+        # We have now the current, Repopulate from here till the end.
+        new = self._ordered_way_relations[idx:]
+        self._reset()
+        self._ordered_way_relations = new
+        return
+      # Driving direction on the route has changed. stop.
+      break
+    # if we got here, there is no new active way relation or driving direction has changed. Reset.
+    self._reset()
 
   @property
   def speed_limits_ahead(self):
     """Returns and array of SpeedLimitSection objects for the actual route
     """
-    way_count = len(self.ordered_way_relations)
+    way_count = len(self._ordered_way_relations)
     if way_count == 0:
       return []
 
-    wr = self.ordered_way_relations[0]
+    wr = self._ordered_way_relations[0]
     section_start = 0
     section_distance = wr.distance_to_end
     section_speed_limit = wr.speed_limit
@@ -66,7 +93,7 @@ class Route():
       return [SpeedLimitSection(0, section_distance, section_speed_limit)]
 
     limits_ahead = []
-    for wr in self.ordered_way_relations[1:]:
+    for wr in self._ordered_way_relations[1:]:
       speed_limit = wr.speed_limit
 
       if speed_limit == section_speed_limit:
@@ -88,7 +115,7 @@ class Route():
     if self._node_references is None:
       node_references = []
 
-      for wr in self.ordered_way_relations:
+      for wr in self._ordered_way_relations:
         wr_node_references = [NodeReference(nd) for nd in wr.way.nodes]
 
         if wr.direction == DIRECTION.BACKWARD:
