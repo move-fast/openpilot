@@ -4,7 +4,7 @@ from .geo import three_point_tangent_angle, three_point_curvature, xy, distance_
 class RouteNode():
   def __init__(self, node, speed_limit=None):
     self.node = node
-    self._ref_node_id = None
+    self._ref_node_id = None  # The id of the node used as refernce for xy calculation
     self.x = None
     self.y = None
     self.tangent_angle = None
