@@ -29,37 +29,35 @@ if __name__ == '__main__':
   # 2. Create the collection
   way_collection = WayCollection(ways)
 
-  # 3. Find the current way
-  way_collection.locate(location, bearing)
-  wr = way_collection.current
+  # 3. Find the current route
+  route = way_collection.get_route(location, bearing)
 
   # 4. Output
   print('_____ GIVEN DIRECTION')
-  if wr is None:
-    print('No valid ways found for given loaction and bearing.')
+  if route is None:
+    print('No valid routes found for given loaction and bearing.')
   else:
-    print(f'Best way: {wr}')
-    print(f'Speed Limit: {wr.speed_limit}')
-    print(f'Distance To End: {wr.distance_to_end}')
-    print(f'Route Ahead: {way_collection.route}')
-    print(f'Limits Ahead: {way_collection.route.speed_limits_ahead}')
-    print(f'curvatures: {way_collection.route.curvatures}')
-    csv_out_curvatures('forward', way_collection.route.curvatures)
+    print(f'Current way: {route.current}')
+    print(f'Speed Limit: {route.current.speed_limit}')
+    print(f'Distance To End: {route.current.distance_to_end}')
+    print(f'Route Ahead: {route}')
+    print(f'Limits Ahead: {route.speed_limits_ahead}')
+    print(f'curvatures: {route.curvatures}')
+    csv_out_curvatures('forward', route.curvatures)
 
   # 4. Update on the oposit direction for testing
-  way_collection.locate(location, bearing - 180)
-  wr = way_collection.current
+  route = way_collection.get_route(location, bearing - 180)
 
   # 5. Output in oposit direction
   print('      ')
   print('_____REVERSE DIRECTION')
-  if wr is None:
-    print('No valid ways found for given loaction and bearing.')
+  if route is None:
+    print('No valid routes found for given loaction and bearing.')
   else:
-    print(f'Best way: {wr}')
-    print(f'Speed Limit: {wr.speed_limit}')
-    print(f'Distance To End: {wr.distance_to_end}')
-    print(f'Route Ahead: {way_collection.route}')
-    print(f'Limits Ahead: {way_collection.route.speed_limits_ahead}')
-    print(f'curvatures: {way_collection.route.curvatures}')
-    csv_out_curvatures('backward', way_collection.route.curvatures)
+    print(f'Current way: {route.current}')
+    print(f'Speed Limit: {route.current.speed_limit}')
+    print(f'Distance To End: {route.current.distance_to_end}')
+    print(f'Route Ahead: {route}')
+    print(f'Limits Ahead: {route.speed_limits_ahead}')
+    print(f'curvatures: {route.curvatures}')
+    csv_out_curvatures('backward', route.curvatures)

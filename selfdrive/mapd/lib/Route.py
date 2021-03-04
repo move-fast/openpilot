@@ -19,12 +19,19 @@ class SpeedLimitSection():
 class Route():
   """A set of consecutive way relations forming a default driving route ahead.
   """
-  def __init__(self):
-    self.ordered_way_relations = []
-    self._node_references = None
+  def __init__(self, current, way_relations):
+    self._build_route(current, way_relations)
 
   def __repr__(self):
     return f'{self.ordered_way_relations}'
+
+  def _build_route(self, current, way_relations):
+    self.ordered_way_relations = []
+    self._node_references = None
+    wr = current
+    while wr is not None:
+      self.ordered_way_relations.append(deepcopy(wr))
+      wr, way_relations = wr.next_wr(way_relations)
 
   @property
   def current(self):
@@ -40,12 +47,7 @@ class Route():
       self.ordered_way_relations[0] = current
       return
     # otherwise update the whole route.
-    self.ordered_way_relations = []
-    self._node_references = None
-    wr = current
-    while wr is not None:
-      self.ordered_way_relations.append(deepcopy(wr))
-      wr, way_relations = wr.next_wr(way_relations)
+    self._build_route(current, way_relations)
 
   @property
   def speed_limits_ahead(self):
