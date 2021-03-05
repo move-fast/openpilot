@@ -2,8 +2,8 @@ from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, 
 from common.numpy_fast import interp
 
 
-_ACCEPTABLE_BEARING_DELTA_V = [40., 20, 10, 5]
-_ACCEPTABLE_BEARING_DELTA_BP = [.03, .1, .2, .3]
+_ACCEPTABLE_BEARING_DELTA_V = [40., 20., 10., 5.]
+_ACCEPTABLE_BEARING_DELTA_BP = [30., 100., 200., 300.]
 
 
 class WayRelation():

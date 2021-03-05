@@ -2,9 +2,9 @@ from math import sin, cos, sqrt, atan2, radians, degrees, pi
 from enum import Enum
 
 
-R = 6373.0  # approximate radius of earth in km
-CURVATURE_OFFSET = .3  # 300 mts. The distance offset for curvature calculation
-MAX_DIST_FOR_CURVATURE = 0.5  # Max distance between nodes for curvature calculation
+R = 6373000.0  # approximate radius of earth in mt
+CURVATURE_OFFSET = 300  # mts. The distance offset for curvature calculation
+MAX_DIST_FOR_CURVATURE = 500  # mts. Max distance between nodes for curvature calculation
 
 
 def coordToRad(point):
