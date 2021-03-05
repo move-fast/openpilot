@@ -3,6 +3,10 @@ from copy import deepcopy
 from .RouteNode import RouteNode
 
 
+DISTANCE_LIMIT_FOR_CURRENT_CURVATURE = 70.  # mts
+SUBSTANTIAL_CURVATURE_THRESHOLD = 0.0001  # 1/mts
+
+
 class SpeedLimitSection():
   """And object representing a speed limited road section ahead.
   provides the start and end distance and the speed limit value
@@ -19,7 +23,8 @@ class SpeedLimitSection():
 class Route():
   """A set of consecutive way relations forming a default driving route.
   """
-  def __init__(self, current, way_relations):
+  def __init__(self, current, way_relations, way_collection_id):
+    self.way_collection_id = way_collection_id
     self._reset()
     if not current.active:
       return
@@ -162,7 +167,29 @@ class Route():
     return limits_ahead
 
   @property
-  def curvatures_ahed(self):
+  def current_speed_limit(self):
+    if not self.located:
+      return None
+    limits_ahead = self.speed_limits_ahead
+    if not len(limits_ahead) or limits_ahead[0].start != 0:
+      return None
+    return limits_ahead[0].value
+
+  @property
+  def next_speed_limit_section(self):
+    if not self.located:
+      return None
+    limits_ahead = self.speed_limits_ahead
+    if not len(limits_ahead):
+      return None
+    # Find the first section that does not start in 0. i.e. the next section
+    for section in limits_ahead:
+      if section.start > 0:
+        return section
+    return None
+
+  @property
+  def curvatures_ahead(self):
     """Provides a list of ordered tuples by distance including the distance ahead and the curvature.
     """
     if not self.located:
@@ -176,6 +203,48 @@ class Route():
       distance += rn.distance_to_next_node
     self._curvatures_ahead = curvatures_list
     return curvatures_list
+
+  @property
+  def immediate_curvature(self):
+    """Provides the highest curvature value in the immediate region ahead.
+    """
+    if not self.located:
+      return None
+    curvatures = self.curvatures_ahead
+    if not len(curvatures):
+      return None
+    immediate_curvatures = list(filter(lambda c: c[0] <= DISTANCE_LIMIT_FOR_CURRENT_CURVATURE, curvatures))
+    immediate_curvatures.sort(key=lambda c: c[1], reverse=True)
+    if not len(immediate_curvatures):
+      return None
+    return immediate_curvatures[0][1]
+
+  @property
+  def max_curvature_ahead(self):
+    """Provides the maximum curvature on route ahead
+    """
+    if not self.located:
+      return None
+    curvatures = self.curvatures_ahead.copy()
+    if not len(curvatures):
+      return None
+    curvatures.sort(key=lambda c: c[1], reverse=True)
+    return curvatures[0]
+
+  @property
+  def next_substantial_curvature(self):
+    """Provides the next substantial curvature and the distance to it.
+    """
+    if not self.located:
+      return None
+    curvatures = self.curvatures_ahead
+    if not len(curvatures):
+      return None
+    substantial_curvatures_ahead = list(filter(
+        lambda c: c[0] > DISTANCE_LIMIT_FOR_CURRENT_CURVATURE and c[1] > SUBSTANTIAL_CURVATURE_THRESHOLD, curvatures))
+    if not len(substantial_curvatures_ahead):
+      return None
+    return substantial_curvatures_ahead[0]
 
   @property
   def distance_to_end(self):

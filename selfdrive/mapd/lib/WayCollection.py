@@ -1,11 +1,13 @@
 from .WayRelation import WayRelation
 from .Route import Route
+import uuid
 
 
 class WayCollection():
   """A collection of WayRelations to use for maps data analysis.
   """
   def __init__(self, ways):
+    self.id = uuid.uuid4()
     self.way_relations = list(map(lambda way: WayRelation(way), ways))
 
   def get_route(self, location, bearing):
@@ -25,4 +27,4 @@ class WayCollection():
     if len(active_way_relations) > 1:
       for wr in active_way_relations[1:]:
         wr.reset_location_variables()
-    return Route(current, self.way_relations)
+    return Route(current, self.way_relations, self.id)

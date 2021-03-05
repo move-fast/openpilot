@@ -8,7 +8,7 @@ class RouteNode():
     self.x = None
     self.y = None
     self.tangent_angle = None
-    self.curvature = None
+    self.curvature = 0
     self.distance_to_next_node = 0
     self.bearing_to_next_node = None
     self.speed_limit = speed_limit
