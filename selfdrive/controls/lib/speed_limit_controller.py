@@ -15,6 +15,8 @@ _LIMIT_ADAPT_TIME = 5.0  # Ideal time (s) to adapt to lower speed limit. i.e. br
 
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
+_SPEED_LIMIT_AHEAD_TIME = 5.0  # s Time to start adapting to new speed limit.
+
 SpeedLimitControlState = log.ControlsState.SpeedLimitControlState
 EventName = car.CarEvent.EventName
 
@@ -28,6 +30,29 @@ def _description_for_state(speed_limit_control_state):
     return 'ADAPTING'
   if speed_limit_control_state == SpeedLimitControlState.active:
     return 'ACTIVE'
+
+
+def _get_speed_limit_set_value(sm, v_ego):
+  """Get the speed limit to set from a combination of car state and live map data
+  """
+  cs_speed_limit = sm['carState'].cruiseState.speedLimit
+  sock = 'liveMapData'
+  # use only car state speed limit when no live map data available
+  if sm.logMonoTime[sock] is None:
+    return cs_speed_limit
+  # Process Live Map data.
+  map_data_age = sec_since_boot() - sm.logMonoTime[sock] * 1e-9
+  map_data = sm[sock]
+  map_data_speed_limit = map_data.speedLimit if map_data.speedLimitValid else cs_speed_limit
+  # estimate the time left to reach new speed limit ahead (if any) and use it if we are close
+  # enough while traveling.
+  if map_data.speedLimitAheadValid and v_ego > 0:
+    next_speed_limit = map_data.speedLimitAhead
+    next_speed_limit_time = (map_data.speedLimitAheadDistance / v_ego) - map_data_age
+    if next_speed_limit_time <= _SPEED_LIMIT_AHEAD_TIME:
+      map_data_speed_limit = next_speed_limit
+  # provide the minimum between cs and live map data
+  return min(map_data_speed_limit, cs_speed_limit) if cs_speed_limit > 0 else map_data_speed_limit
 
 
 class SpeedLimitController():
@@ -202,11 +227,12 @@ class SpeedLimitController():
     elif self._speed_limit_set_change < 0:
       events.add(EventName.speedLimitDecrease)
 
-  def update(self, enabled, v_ego, a_ego, CS, v_cruise_setpoint, accel_limits, jerk_limits, events=Events()):
+  def update(self, enabled, v_ego, a_ego, sm, v_cruise_setpoint, accel_limits, jerk_limits,
+             events=Events()):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
-    self._speed_limit_set = CS.cruiseState.speedLimit
+    self._speed_limit_set = _get_speed_limit_set_value(sm, v_ego)
     self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
