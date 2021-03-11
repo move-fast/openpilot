@@ -23,8 +23,10 @@ _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
 _EVAL_START = 0.  # start evaluating 0 mts ahead
-_EVAL_LENGHT = 195.  # evaluate curvature for 130mts
+_EVAL_LENGHT = 195.  # evaluate curvature for 195mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
+
+_MAX_DISTANCE_HORIZON = 200.  # horizon for curvature data from map data.
 
 _MAX_JERK_ACC_INCREASE = 0.5  # Maximum jerk allowed when increasing acceleration.
 
@@ -88,6 +90,105 @@ class TurnState(Enum):
       return 'LEAVING'
 
 
+class TurnCalculatorPolicy(Enum):
+  driving_path_priority = 'driving_path_priority'
+  map_data_priority = 'map_data_priority'
+  combined = 'combined'
+
+
+class TurnCalculator():
+  class Key(Enum):
+    driving_path = 'driving_path'
+    map_data = 'map_data'
+    max_curvature = 'max_curvature'
+    overshoot_ahead = 'overshoot_ahead'
+    v_target_distance = 'v_target_distance'
+
+  def __init__(self, v_ego, v_cruise_setpoint, d_poly, sm, policy=TurnCalculatorPolicy.map_data_priority):
+    self._v_cruise_setpoint = v_cruise_setpoint
+    self._v_ego = v_ego
+    self._d_poly = d_poly
+    self._sm = sm
+    self._a_lat_reg_max = interp(v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
+    self._max_curvature_for_vego = self._a_lat_reg_max / max(self._v_ego, 0.1)**2
+    self._policy = policy
+
+  def calculate(self):
+    self._results = {}
+
+    if self._policy == TurnCalculatorPolicy.combined:
+      self._calculate_from_driving_path()
+      self._calculate_from_map_data()
+    elif self._policy == TurnCalculatorPolicy.map_data_priority:
+      self._calculate_from_map_data()
+      if TurnCalculator.Key.map_data not in self._results:
+        self._calculate_from_driving_path()
+    elif self._policy == TurnCalculatorPolicy.driving_path_priority:
+        self._calculate_from_driving_path()
+    self._consolidate()
+
+  def _calculate_from_driving_path(self):
+    curvatures = eval_curvature(self._d_poly, _EVAL_RANGE)
+    max_curvature_idx = np.argmax(curvatures)
+    lat_acc_overshoot_idxs = np.nonzero(curvatures >= self._max_curvature_for_vego)[0]
+    overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
+    v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP) if overshoot_ahead \
+        else _MAX_DISTANCE_HORIZON
+    self._results[TurnCalculator.Key.driving_path] = {
+        TurnCalculator.Key.max_curvature: curvatures[max_curvature_idx],
+        TurnCalculator.Key.overshoot_ahead: overshoot_ahead,
+        TurnCalculator.Key.v_target_distance: v_target_distance
+    }
+
+  def _calculate_from_map_data(self):
+    sock = 'liveMapData'
+    # Ignore if no live map data
+    if self.sm.logMonoTime[sock] is None:
+      return
+
+    # Process Live Map data.
+    map_data_age = sec_since_boot() - self.sm.logMonoTime[sock] * 1e-9
+    map_data = self.sm[sock]
+    curvatures = np.abs(np.array(map_data.roadCurvature))
+    curvature_distances = np.array(map_data.roadCurvatureX)
+    # Ignore if not curvatures fetched.
+    if len(curvatures) == 0:
+      return
+
+    # Correct distances to curvature by estimation of distance traveled since map data was issued.
+    distance_correction = map_data_age * (self._v_ego - self._a_ego * map_data_age / 2.)
+    curvature_distances -= distance_correction
+    # Reshape data to only include positive distances not greater than horizon
+    condition = (curvature_distances > 0) & (curvature_distances <= _MAX_DISTANCE_HORIZON)
+    curvatures = curvatures[condition]
+    curvature_distances = curvature_distances[condition]
+    # Ignore if not curvatures fetched.
+    if len(curvatures) == 0:
+      return
+
+    # Calculate lateral accelerations overshoots.
+    max_curvature_idx = np.argmax(curvatures)
+    lat_acc_overshoot_idxs = np.nonzero(curvatures >= self._max_curvature_for_vego)[0]
+    overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
+    v_target_distance = curvature_distances[lat_acc_overshoot_idxs[0]] if overshoot_ahead else _MAX_DISTANCE_HORIZON
+    self._results[TurnCalculator.Key.map_data] = {
+        TurnCalculator.Key.max_curvature: curvatures[max_curvature_idx],
+        TurnCalculator.Key.overshoot_ahead: overshoot_ahead,
+        TurnCalculator.Key.v_target_distance: v_target_distance
+    }
+
+  def _consolidate(self):
+    # Get max map curvature and lat acc as the maximum from both solutions
+    self.max_pred_curvature = max(map(lambda k: self._results[k][TurnCalculator.Key.max_curvature], self._results))
+    self.max_pred_lat_acc = self._v_ego**2 * self.max_pred_curvature
+    # Overshoot ahead and target velocity and distance to it.
+    self.lat_acc_overshoot_ahead = bool(max(map(lambda k: self._results[k][TurnCalculator.Key.overshoot_ahead],
+                                                self._results)))
+    self.v_target_distance = min(map(lambda k: self._results[k][TurnCalculator.Key.v_target_distance], self._results))
+    self.v_target = min(math.sqrt(self._a_lat_reg_max / self.max_pred_curvature), self._v_cruise_setpoint) if \
+        self.lat_acc_overshoot_ahead else 0.
+
+
 class TurnController():
   def __init__(self, CP):
     self._params = Params()
@@ -128,28 +229,38 @@ class TurnController():
     self._d_poly = [0., 0., 0., 0.]
     self._max_pred_curvature = 0.0
     self._max_pred_lat_acc = 0.0
-    self._v_target_distance = 200.0
+    self._v_target_distance = _MAX_DISTANCE_HORIZON
     self._v_target = 0.0
     self._lat_acc_overshoot_ahead = False
 
     self.a_turn = 0.0
     self.v_turn = 0.0
 
-  def _update_calculations(self):
+  # TODO: Remove method below after validating new method spits same results
+  def _update_calculations_alt(self):
     pred_curvatures = eval_curvature(self._d_poly, _EVAL_RANGE)
     max_pred_curvature_idx = np.argmax(pred_curvatures)
-    self._max_pred_curvature = pred_curvatures[max_pred_curvature_idx]
-    self._max_pred_lat_acc = self._v_ego**2 * self._max_pred_curvature
+    max_pred_curvature = pred_curvatures[max_pred_curvature_idx]
+    max_pred_lat_acc = self._v_ego**2 * max_pred_curvature
 
     a_lat_reg_max = interp(self._v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
     max_curvature_for_vego = a_lat_reg_max / max(self._v_ego, 0.1)**2
     lat_acc_overshoot_idxs = np.nonzero(pred_curvatures >= max_curvature_for_vego)[0]
-    self._lat_acc_overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
+    lat_acc_overshoot_ahead = len(lat_acc_overshoot_idxs) > 0
 
-    if self._lat_acc_overshoot_ahead:
-      self._v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
-      self._v_target = min(math.sqrt(a_lat_reg_max / self._max_pred_curvature), self._v_cruise_setpoint)
-      print(f'High Lat Acc ahead. Distance: {self._v_target_distance:.2f}, target v: {self._v_target:.2f}')
+    if lat_acc_overshoot_ahead:
+      v_target_distance = max(lat_acc_overshoot_idxs[0] * _EVAL_STEP + _EVAL_START, _EVAL_STEP)
+      v_target = min(math.sqrt(a_lat_reg_max / max_pred_curvature), v_cruise_setpoint)
+      print(f'Tc: OLD CALC: High Lat Acc ahead. Distance: {v_target_distance:.2f}, target v: {v_target:.2f}')
+
+  def _update_calculations(self):
+    calculator = TurnCalculator(self._v_ego, self._v_cruise_setpoint, self._d_poly, self._sm)
+    calculator.calculate()
+    self._max_pred_curvature = calculator.max_pred_curvature
+    self._max_pred_lat_acc = calculator.max_pred_lat_acc
+    self._lat_acc_overshoot_ahead = calculator.lat_acc_overshoot_ahead
+    self._v_target_distance = calculator.v_target_distance
+    self._v_target = calculator.v_target
 
   def _state_transition(self):
     # In any case, if system is disabled or min braking param has been set to non negative value, disable.
@@ -219,14 +330,17 @@ class TurnController():
     self.v_turn = self._v_ego + self.a_turn * _LON_MPC_STEP  # speed in next Longitudinal control step.
     self._v_turn_future = self._v_ego + self.a_turn * 4.  # speed in 4 seconds.
 
-  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, d_poly, steering_angle):
+  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, d_poly, sm):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
     self._v_cruise_setpoint = v_cruise_setpoint
     self._d_poly = d_poly
-    self._current_curvature = abs(steering_angle * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
+    self._sm = sm
+    self._current_curvature = abs(sm['carState'].steeringAngle * CV.DEG_TO_RAD / (self._CP.steerRatio *
+                                                                                  self._CP.wheelbase))
 
     self._update_calculations()
+    self._update_calculations_alt()
     self._state_transition()
     self._update_solution()

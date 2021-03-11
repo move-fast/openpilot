@@ -184,7 +184,7 @@ class Planner():
     self.mpc1.update(pm, sm['carState'], lead_1)
     self.mpc2.update(pm, sm['carState'], lead_2)
     self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint,
-                                [float(x) for x in PP.LP.d_poly], sm['carState'].steeringAngle)
+                                [float(x) for x in PP.LP.d_poly], sm)
 
     self.choose_solution(v_cruise_setpoint, enabled)
 
