@@ -225,6 +225,7 @@ if not PC:
     'logcatd',
     'tombstoned',
     'sensord',
+    'mapd',
   ]
 
 car_started_processes = [
@@ -238,7 +239,6 @@ car_started_processes = [
   'proclogd',
   'locationd',
   'clocksd',
-  'mapd',
 ]
 
 driver_view_processes = [

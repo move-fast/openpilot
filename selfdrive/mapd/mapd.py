@@ -52,6 +52,12 @@ class MapD():
     self.accuracy = log.accuracy
     self.bearingAccuracy = log.bearingAccuracy
 
+    string = ('Mapd: ********* Got GPS fix'
+              f'Pos - Acc: {log.latitude}, {log.longitude} - {log.accuracy}.\n'
+              f'Bearing - Acc: {log.bearing} - {log.bearingAccuracy},\n'
+              f'*******')
+    print(string)
+
   def updated_osm_data(self):
     if self.route is not None:
       distance_to_end = self.route.distance_to_end
@@ -71,6 +77,7 @@ class MapD():
     ways = self.osm.fetch_road_ways_around_location(self.location, QUERY_RADIUS)
     self.way_collection = WayCollection(ways)
     self.last_fetch_location = self.location
+    print(f'Mapd: Updated map data @ {self.location} - got {len(ways)} ways')
 
   def update_route(self):
     if self.way_collection is None or self.location is None or self.bearing is None:
@@ -90,6 +97,7 @@ class MapD():
       # if an old route did not mange to locate, attempt to regenerate form way collection.
       if not self.route.located:
         self.route = self.way_collection.get_route(self.location, self.bearing)
+    print(f'Mapd *****: Route updated: \n{self.route}\n********')
 
   def publish(self, pm, sm):
     # Ensure we have the data and is current before publishing.
@@ -124,6 +132,7 @@ class MapD():
     map_data_msg.liveMapData.distToTurn = float(next_curvature_tuple[0] if next_curvature_tuple is not None else 0.0)
 
     pm.send('liveMapData', map_data_msg)
+    print(f'Mapd *****: Publish: \n{map_data_msg}\n********')
 
 
 # provides live map data information

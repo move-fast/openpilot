@@ -39,6 +39,7 @@ def _get_speed_limit_set_value(sm, v_ego):
   sock = 'liveMapData'
   # use only car state speed limit when no live map data available
   if sm.logMonoTime[sock] is None:
+    print(f'SL: No map data for speed limit, using car state: #{cs_speed_limit}')
     return cs_speed_limit
   # Process Live Map data.
   map_data_age = sec_since_boot() - sm.logMonoTime[sock] * 1e-9
@@ -52,7 +53,16 @@ def _get_speed_limit_set_value(sm, v_ego):
     if next_speed_limit_time <= _SPEED_LIMIT_AHEAD_TIME:
       map_data_speed_limit = next_speed_limit
   # provide the minimum between cs and live map data
-  return min(map_data_speed_limit, cs_speed_limit) if cs_speed_limit > 0 else map_data_speed_limit
+  speed_limit = min(map_data_speed_limit, cs_speed_limit) if cs_speed_limit > 0 else map_data_speed_limit
+  string = ('SL: *********'
+            f'Speed Limit set: #{speed_limit}.\n'
+            f'Car state sl: #{cs_speed_limit}.\n'
+            f'MapSL: {map_data.speedLimit} - {map_data.speedLimitValid},\n'
+            f'MapSLAhead: {map_data.speedLimitAhead} - {map_data.speedLimitAheadValid} '
+            f'- dist: {map_data.speedLimitAheadDistance}\n'
+            f'*******')
+  print(string)
+  return speed_limit
 
 
 class SpeedLimitController():

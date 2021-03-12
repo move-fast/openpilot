@@ -139,6 +139,9 @@ class TurnCalculator():
         TurnCalculator.Key.overshoot_ahead: overshoot_ahead,
         TurnCalculator.Key.v_target_distance: v_target_distance
     }
+    print(f'TC: ********* Driving Path Result:\n{self._results[TurnCalculator.Key.driving_path]}\n'
+          f'Max curv distance: {max_curvature_idx * _EVAL_STEP + _EVAL_START}.\n'
+          f'Overshoot curv: {curvatures[lat_acc_overshoot_idxs[0]] if len(lat_acc_overshoot_idxs) else None}.\n')
 
   def _calculate_from_map_data(self):
     sock = 'liveMapData'
@@ -176,6 +179,9 @@ class TurnCalculator():
         TurnCalculator.Key.overshoot_ahead: overshoot_ahead,
         TurnCalculator.Key.v_target_distance: v_target_distance
     }
+    print(f'TC: ********* Map Data Result:\n{self._results[TurnCalculator.Key.map_data]}\n'
+          f'Max curv distance: {curvature_distances[max_curvature_idx]}.\n'
+          f'Overshoot curv: {curvatures[lat_acc_overshoot_idxs[0]] if len(lat_acc_overshoot_idxs) else None}.\n')
 
   def _consolidate(self):
     # Get max map curvature and lat acc as the maximum from both solutions
@@ -187,6 +193,12 @@ class TurnCalculator():
     self.v_target_distance = min(map(lambda k: self._results[k][TurnCalculator.Key.v_target_distance], self._results))
     self.v_target = min(math.sqrt(self._a_lat_reg_max / self.max_pred_curvature), self._v_cruise_setpoint) if \
         self.lat_acc_overshoot_ahead else 0.
+    print('TC: ********* Consolidated Turn Calculator result:\n'
+          f'Max curv: {self.max_pred_curvature}.\n'
+          f'Max lat a: {self.max_pred_lat_acc}.\n'
+          f'overshoot ahead: {self.lat_acc_overshoot_ahead}.\n'
+          f'v target distance: {self.v_target_distance}.\n'
+          f'v target: {self.v_target}.\n')
 
 
 class TurnController():
