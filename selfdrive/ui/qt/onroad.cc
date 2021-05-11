@@ -45,7 +45,10 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
 void OnroadWindow::updateState(const UIState &s) {
   SubMaster &sm = *(s.sm);
   QColor bgColor = bg_colors[s.status];
-  if (sm.updated("controlsState")) {
+  if ((sm.frame - s.scene.display_debug_alert_frame) <= 1 * UI_FREQ) {
+    alerts->updateAlert(DEBUG_SNAPSHOT_ALERT, bgColor);
+  } 
+  else if (sm.updated("controlsState")) {
     const cereal::ControlsState::Reader &cs = sm["controlsState"].getControlsState();
     alerts->updateAlert({QString::fromStdString(cs.getAlertText1()),
                  QString::fromStdString(cs.getAlertText2()),
