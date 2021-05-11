@@ -68,17 +68,74 @@ void HomeWindow::showDriverView(bool show) {
 
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Toggle speed limit control enabled
-  Rect touch_rect = QUIState::ui_state.scene.speed_limit_sign_touch_rect;
-  if (sidebar->isVisible()) {
-    touch_rect.x += sidebar->width();
-  }
   SubMaster &sm = *(QUIState::ui_state.sm);
-  if (sm["longitudinalPlan"].getLongitudinalPlan().getSpeedLimit() > 0.0 &&
-      touch_rect.ptInRect(e->x(), e->y())) {
+  auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
+  Rect speed_limit_touch_rect = QUIState::ui_state.scene.speed_limit_sign_touch_rect;
+  Rect debug_tap_rect = {rect().center().x() - 200, rect().center().y() - 200, 400, 400};
+  if (sidebar->isVisible()) {
+    speed_limit_touch_rect.x += sidebar->width();
+    debug_tap_rect.x += sidebar->width();
+    debug_tap_rect.w -= sidebar->width();
+  }
+
+  if (onroad->isVisible() && longitudinal_plan.getSpeedLimit() > 0.0 &&
+      speed_limit_touch_rect.ptInRect(e->x(), e->y())) {
     // If touching the speed limit sign area when visible
     QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
     QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
     Params().putBool("SpeedLimitControl", QUIState::ui_state.scene.speed_limit_control_enabled);
+  }
+
+  // Issue a debug print.
+  else if (onroad->isVisible() && debug_tap_rect.ptInRect(e->x(), e->y())) {
+    char param_name[64] = {'\0'};
+    time_t rawtime = time(NULL);
+    struct tm timeinfo;
+    localtime_r(&rawtime, &timeinfo);
+    strftime(param_name, sizeof(param_name), "%Y-%m-%d--%H-%M-%S", &timeinfo);
+
+    auto live_map_data = sm["liveMapData"].getLiveMapData();
+    auto car_state = sm["carState"].getCarState();
+
+    char turn_speeds_ahead_s[512] = "-\t-\t-\n";
+    const auto speeds = live_map_data.getTurnSpeedLimitsAhead();
+    const auto distances = live_map_data.getTurnSpeedLimitsAheadDistances();
+    const auto signs = live_map_data.getTurnSpeedLimitsAheadSigns();
+    int wrote = 0;
+
+    for(int i = 0; i < speeds.size(); i++) {
+      wrote += snprintf(turn_speeds_ahead_s + wrote, sizeof(turn_speeds_ahead_s) - wrote, "%.1f\t%.1f\t%d\n",
+                        speeds[i] * 3.6, distances[i], signs[i]);
+    }
+
+    char s[1024];
+    int size = snprintf(s, sizeof(s), 
+      "Datetime: %s, vEgo: %.2f\n"
+      "Pos, Bearing: (%.6f, %.6f), %.2f; GPSSpeed: %.1f\n"
+      "sl: %.1f, valid: %d\n"
+      "sl_ahead: %.1f, valid: %d, dist: %.1f\n"
+      "tsl: %.1f, valid: %d, end dist: %.1f, sign: %d\n\n"
+      "tsl ahead:\n"
+      "VALUE\tDIST\tSIGN\n"
+      "%s\n\n"
+      "SPEED LIMIT CONTROLLER:\n"
+      "sl: %.1f, state: %hu, isMap: %d\n\n"
+      "TURN SPEED CONTROLLER:\n"
+      "speed: %.1f, state: %hu\n\n"
+      "VISIOn TURN CONTROLLER:\n"
+      "speed: %.1f, state: %hu", 
+      param_name, car_state.getVEgo() * 3.6,
+      live_map_data.getLastGpsLatitude(), live_map_data.getLastGpsLongitude(), live_map_data.getLastGpsBearingDeg(), live_map_data.getLastGpsSpeed() * 3.6,
+      live_map_data.getSpeedLimit() * 3.6, live_map_data.getSpeedLimitValid(),
+      live_map_data.getSpeedLimitAhead() * 3.6, live_map_data.getSpeedLimitAheadValid(), live_map_data.getSpeedLimitAheadDistance(),
+      live_map_data.getTurnSpeedLimit() * 3.6, live_map_data.getTurnSpeedLimitValid(), live_map_data.getTurnSpeedLimitEndDistance(), live_map_data.getTurnSpeedLimitSign(),
+      turn_speeds_ahead_s,
+      longitudinal_plan.getSpeedLimit() * 3.6, longitudinal_plan.getSpeedLimitControlState(), longitudinal_plan.getIsMapSpeedLimit(),
+      longitudinal_plan.getTurnSpeed() * 3.6, longitudinal_plan.getTurnSpeedControlState(),
+      longitudinal_plan.getVisionTurnSpeed() * 3.6, longitudinal_plan.getVisionTurnControllerState());
+
+    Params().put(param_name, s, size < sizeof(s) ? size : sizeof(s));
+    QUIState::ui_state.scene.display_debug_alert_frame = sm.frame;
   }
 
   // Handle sidebar collapsing
