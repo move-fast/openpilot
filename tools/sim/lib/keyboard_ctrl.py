@@ -45,6 +45,22 @@ def keyboard_poll_thread(q: 'Queue[str]'):
       q.put("cruise_down")
     elif c == '3':
       q.put("cruise_cancel")
+    elif c == 't':
+      q.put("speedlimit_30")
+    elif c == '4':
+      q.put("speedlimit_40")
+    elif c == '5':
+      q.put("speedlimit_50")
+    elif c == '6':
+      q.put("speedlimit_60")
+    elif c == '7':
+      q.put("speedlimit_70")
+    elif c == '8':
+      q.put("speedlimit_80")
+    elif c == '9':
+      q.put("speedlimit_90")
+    elif c == '0':
+      q.put("speedlimit_0")
     elif c == 'w':
       q.put("throttle_%f" % 1.0)
     elif c == 'a':
