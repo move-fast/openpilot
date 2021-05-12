@@ -43,6 +43,9 @@ def parse_args(add_args=None):
   return parser.parse_args(add_args)
 
 
+_RECORD_GPS = "RECORD_GPS" in os.environ
+
+
 class VehicleState:
   def __init__(self):
     self.speed = 0.0
