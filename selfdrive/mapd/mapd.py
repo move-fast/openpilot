@@ -2,6 +2,8 @@
 import threading
 from traceback import print_exception
 import numpy as np
+import signal
+import os
 from time import strftime, gmtime
 import cereal.messaging as messaging
 from common.realtime import Ratekeeper
@@ -14,6 +16,7 @@ from selfdrive.swaglog import cloudlog
 
 _DEBUG = False
 _CLOUDLOG_DEBUG = True
+_RECORD_GPS = "SIMULATION" in os.environ and "RECORD_GPS" in os.environ
 
 
 def _debug(msg, log_to_cloud=True):
@@ -78,6 +81,9 @@ class MapD():
     self.bearing_rad = np.radians(log.bearingDeg, dtype=float)
     self.gps_speed = log.speed
     self.location_stdev = log.accuracy  # log accuracies are presumably 1 standard deviation.
+
+    if _RECORD_GPS:
+      gnss_file.write(f'{log.timestamp * 1e-3},{log.latitude},{log.longitude},{log.verticalAccuracy * 10.:.0f}\n')
 
     _debug('Mapd: ********* Got GPS fix'
            + f'Pos: {self.location_deg} +/- {self.location_stdev * 2.} mts.\n'
@@ -239,6 +245,10 @@ class MapD():
 
 # provides live map data information
 def mapd_thread(sm=None, pm=None):
+  if _RECORD_GPS:
+    global gnss_file
+    gnss_file = open('./gnss_data.csv', 'w')
+
   mapd = MapD()
   rk = Ratekeeper(1., print_delay_threshold=None)  # Keeps rate at 1 hz
 
@@ -258,9 +268,19 @@ def mapd_thread(sm=None, pm=None):
     rk.keep_time()
 
 
+gnss_file = None
+
+
 def main(sm=None, pm=None):
   mapd_thread(sm, pm)
 
 
+def sigint_handler(signal, frame):
+  if _RECORD_GPS:
+    gnss_file.close()
+  exit(0)
+
+
 if __name__ == "__main__":
+  signal.signal(signal.SIGINT, sigint_handler)
   main()
