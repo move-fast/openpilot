@@ -4,6 +4,7 @@ import carla # pylint: disable=import-error
 import math
 import numpy as np
 import time
+import os
 import threading
 from cereal import log
 from multiprocessing import Process, Queue
@@ -32,6 +33,10 @@ STEER_RATIO = 15.
 
 pm = messaging.PubMaster(['roadCameraState', 'sensorEvents', 'can', "gpsLocationExternal"])
 sm = messaging.SubMaster(['carControl','controlsState'])
+
+
+_RECORD_GPS = "RECORD_GPS" in os.environ
+
 
 class VehicleState:
   def __init__(self):
@@ -240,7 +245,7 @@ def bridge(q):
   brake_manual_multiplier = 0.7 #keyboard signal is always 1
   steer_manual_multiplier = 45 * STEER_RATIO  #keyboard signal is always 1
 
-
+  global speed_limit
   while 1:
     # 1. Read the throttle, steer and brake from op or manual controls
     # 2. Set instructions in Carla
@@ -264,7 +269,9 @@ def bridge(q):
       elif m[0] == "brake":
         brake_manual = float(m[1])
         is_openpilot_engaged = False
-      elif m[0] == "reverse":
+      if m[0] == "speedlimit":
+        speed_limit = float(m[1])
+      if m[0] == "reverse":
         #in_reverse = not in_reverse
         cruise_button = CruiseButtons.CANCEL
         is_openpilot_engaged = False
