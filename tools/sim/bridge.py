@@ -40,6 +40,10 @@ pm = messaging.PubMaster(['roadCameraState', 'sensorEvents', 'can', "gpsLocation
 sm = messaging.SubMaster(['carControl', 'controlsState'])
 
 
+
+_RECORD_GPS = "RECORD_GPS" in os.environ
+
+
 class VehicleState:
   def __init__(self):
     self.speed = 0
@@ -310,6 +314,7 @@ def bridge(q):
   brake_manual_multiplier = 0.7  # keyboard signal is always 1
   steer_manual_multiplier = 45 * STEER_RATIO  # keyboard signal is always 1
 
+  global speed_limit
   while True:
     # 1. Read the throttle, steer and brake from op or manual controls
     # 2. Set instructions in Carla
@@ -333,6 +338,8 @@ def bridge(q):
       elif m[0] == "brake":
         brake_manual = float(m[1])
         is_openpilot_engaged = False
+      elif m[0] == "speedlimit":
+        speed_limit = float(m[1])
       elif m[0] == "reverse":
         cruise_button = CruiseButtons.CANCEL
         is_openpilot_engaged = False
