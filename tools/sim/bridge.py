@@ -174,6 +174,8 @@ def bridge(q):
     world.unload_map_layer(carla.MapLayer.StreetLights)
 
   blueprint_library = world.get_blueprint_library()
+  
+  world.set_weather(carla.WeatherParameters.CloudyNoon)
 
   world_map = world.get_map()
 
