@@ -292,7 +292,7 @@ class CarlaBridge:
     settings.fixed_delta_seconds = 0.05
     world.apply_settings(settings)
 
-    world.set_weather(carla.WeatherParameters.ClearSunset)
+    world.set_weather(carla.WeatherParameters.CloudyNoon)
 
     if not self._args.high_quality:
       world.unload_map_layer(carla.MapLayer.Foliage)
