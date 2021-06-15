@@ -194,7 +194,7 @@ def ui_thread(addr):
 
     lines = [
       info_font.render("ENABLED", True, GREEN if sm['controlsState'].enabled else BLACK),
-      info_font.render("SPEED: " + str(round(sm['carState'].vEgo, 1)) + " m/s", True, YELLOW),
+      info_font.render("SPEED: " + str(round(sm['carState'].vEgo * 3.6, 1)) + " km/h", True, YELLOW),
       info_font.render("LONG CONTROL STATE: " + str(sm['controlsState'].longControlState), True, YELLOW),
       info_font.render("LONG MPC SOURCE: " + str(sm['longitudinalPlan'].longitudinalPlanSource), True, YELLOW),
       None,
