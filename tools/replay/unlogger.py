@@ -87,6 +87,9 @@ class UnloggerWorker(object):
       if typ not in pub_types:
         continue
 
+      if typ == "liveMapData":
+        print(msg)
+
       # **** special case certain message types ****
       if typ == "roadEncodeIdx" and msg.roadEncodeIdx.type == fullHEVC:
         # this assumes the roadEncodeIdx always comes before the frame
