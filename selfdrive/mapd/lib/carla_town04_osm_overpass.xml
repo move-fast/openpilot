@@ -9,8 +9,8 @@
   <node id='-101809' action='modify' visible='true' lat='-0.00300100945' lon='-0.00009586531' />
   <node id='-101810' action='modify' visible='true' lat='-0.00306466951' lon='-0.00015952537' />
   <node id='-101811' action='modify' visible='true' lat='-0.00310061872' lon='-0.0001939767' />
-  <node id='1' visible='true' version='1' lat='0.001478' lon='-0.000104' />
-  <node id='2' visible='true' version='1' lat='0.0005' lon='-0.000102' />
+  <node id='1' action='modify' visible='true' version='1' lat='0.00064023658' lon='-0.00009935016' />
+  <node id='2' action='modify' visible='true' version='1' lat='-0.00022076628' lon='-0.00009935016' />
   <node id='3' visible='true' version='1' lat='-0.000738' lon='-0.000095' />
   <node id='4' visible='true' version='1' lat='-0.001139' lon='-0.000092' />
   <node id='5' visible='true' version='1' lat='-0.001937' lon='-0.000085' />
@@ -174,10 +174,10 @@
   <node id='165' visible='true' version='1' lat='0.00162748532' lon='0.00013265348' />
   <node id='166' visible='true' version='1' lat='0.00172426901' lon='0.00013194303' />
   <node id='167' visible='true' version='1' lat='0.00180450769' lon='0.00012707134' />
-  <node id='168' visible='true' version='1' lat='0.00186051463' lon='0.00012219803' />
-  <node id='169' visible='true' version='1' lat='0.00190590809' lon='0.00011901916' />
-  <node id='170' visible='true' version='1' lat='0.0019802498' lon='0.00011856489' />
-  <node id='171' visible='true' version='1' lat='0.00207273586' lon='0.00012535373' />
+  <node id='168' action='modify' visible='true' version='1' lat='0.00186051463' lon='0.00012771728' />
+  <node id='169' action='modify' visible='true' version='1' lat='0.00190590809' lon='0.00012821791' />
+  <node id='170' action='modify' visible='true' version='1' lat='0.0019839293' lon='0.00012776363' />
+  <node id='171' action='modify' visible='true' version='1' lat='0.00207457561' lon='0.00013271273' />
   <node id='172' visible='true' version='1' lat='0.0021683824' lon='0.00014122814' />
   <node id='173' visible='true' version='1' lat='0.00226153505' lon='0.00016143731' />
   <node id='174' visible='true' version='1' lat='0.00235644591' lon='0.00018773096' />
@@ -406,7 +406,7 @@
   <node id='397' visible='true' version='1' lat='-0.00015894431' lon='0.00364311533' />
   <node id='398' visible='true' version='1' lat='-0.00008083714' lon='0.00365628165' />
   <node id='399' visible='true' version='1' lat='-0.00000253124' lon='0.00366936655' />
-  <node id='400' action='modify' visible='true' version='1' lat='0.00008139783' lon='0.00367617233' />
+  <node id='400' visible='true' version='1' lat='0.00007690418' lon='0.00368216386' />
   <node id='401' action='modify' visible='true' version='1' lat='0.00015639749' lon='0.00367953792' />
   <node id='402' visible='true' version='1' lat='0.00237496161' lon='-0.00015677072' />
   <node id='403' visible='true' version='1' lat='0.00229724862' lon='-0.0002053057' />
@@ -447,6 +447,37 @@
   <node id='438' action='modify' visible='true' version='1' lat='-0.00028654266' lon='-0.00330972364' />
   <node id='439' action='delete' visible='true' version='1' lat='-0.00034047847' lon='-0.00324896689' />
   <node id='440' action='delete' visible='true' version='1' lat='-0.0003416772' lon='-0.003193402' />
+  <way id='-101974' action='modify' visible='true'>
+    <nd ref='1' />
+    <nd ref='2' />
+    <nd ref='3' />
+    <tag k='bridge' v='yes' />
+    <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
+    <tag k='maxspeed' v='90' />
+    <tag k='oneway' v='yes' />
+  </way>
+  <way id='-101979' action='modify' visible='true'>
+    <nd ref='142' />
+    <nd ref='143' />
+    <nd ref='144' />
+    <nd ref='145' />
+    <nd ref='146' />
+    <nd ref='147' />
+    <nd ref='148' />
+    <nd ref='149' />
+    <nd ref='150' />
+    <nd ref='151' />
+    <nd ref='152' />
+    <nd ref='153' />
+    <nd ref='154' />
+    <nd ref='155' />
+    <tag k='bridge' v='yes' />
+    <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
+    <tag k='maxspeed' v='90' />
+    <tag k='oneway' v='yes' />
+  </way>
   <way id='1001' action='modify' visible='true' version='1'>
     <nd ref='30' />
     <nd ref='31' />
@@ -464,20 +495,20 @@
     <nd ref='42' />
     <nd ref='43' />
     <nd ref='1' />
-    <nd ref='2' />
-    <nd ref='3' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1002' visible='true' version='1'>
+  <way id='1002' action='modify' visible='true' version='1'>
     <nd ref='3' />
     <nd ref='4' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='60' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1003' visible='true' version='1'>
+  <way id='1003' action='modify' visible='true' version='1'>
     <nd ref='4' />
     <nd ref='5' />
     <nd ref='6' />
@@ -494,15 +525,17 @@
     <nd ref='17' />
     <nd ref='18' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1004' visible='true' version='1'>
+  <way id='1004' action='modify' visible='true' version='1'>
     <nd ref='18' />
     <nd ref='19' />
     <nd ref='20' />
     <nd ref='21' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='60' />
     <tag k='oneway' v='yes' />
   </way>
@@ -512,25 +545,28 @@
     <nd ref='438' />
     <nd ref='23' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1006' visible='true' version='1'>
+  <way id='1006' action='modify' visible='true' version='1'>
     <nd ref='23' />
     <nd ref='24' />
     <nd ref='25' />
     <nd ref='26' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1007' visible='true' version='1'>
+  <way id='1007' action='modify' visible='true' version='1'>
     <nd ref='26' />
     <nd ref='27' />
     <nd ref='28' />
     <nd ref='29' />
     <nd ref='30' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='60' />
     <tag k='oneway' v='yes' />
   </way>
@@ -632,34 +668,23 @@
     <nd ref='140' />
     <nd ref='141' />
     <nd ref='142' />
-    <nd ref='143' />
-    <nd ref='144' />
-    <nd ref='145' />
-    <nd ref='146' />
-    <nd ref='147' />
-    <nd ref='148' />
-    <nd ref='149' />
-    <nd ref='150' />
-    <nd ref='151' />
-    <nd ref='152' />
-    <nd ref='153' />
-    <nd ref='154' />
-    <nd ref='155' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1009' visible='true' version='1'>
+  <way id='1009' action='modify' visible='true' version='1'>
     <nd ref='155' />
     <nd ref='156' />
     <nd ref='157' />
     <nd ref='158' />
     <nd ref='159' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1010' visible='true' version='1'>
+  <way id='1010' action='modify' visible='true' version='1'>
     <nd ref='159' />
     <nd ref='160' />
     <nd ref='161' />
@@ -667,10 +692,11 @@
     <nd ref='163' />
     <nd ref='164' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='50' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1011' visible='true' version='1'>
+  <way id='1011' action='modify' visible='true' version='1'>
     <nd ref='164' />
     <nd ref='165' />
     <nd ref='166' />
@@ -699,10 +725,11 @@
     <nd ref='189' />
     <nd ref='190' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1012' visible='true' version='1'>
+  <way id='1012' action='modify' visible='true' version='1'>
     <nd ref='190' />
     <nd ref='191' />
     <nd ref='192' />
@@ -710,10 +737,11 @@
     <nd ref='194' />
     <nd ref='195' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1013' visible='true' version='1'>
+  <way id='1013' action='modify' visible='true' version='1'>
     <nd ref='195' />
     <nd ref='196' />
     <nd ref='197' />
@@ -741,10 +769,11 @@
     <nd ref='219' />
     <nd ref='220' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1014' visible='true' version='1'>
+  <way id='1014' action='modify' visible='true' version='1'>
     <nd ref='220' />
     <nd ref='221' />
     <nd ref='222' />
@@ -753,40 +782,44 @@
     <nd ref='225' />
     <nd ref='226' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1015' visible='true' version='1'>
+  <way id='1015' action='modify' visible='true' version='1'>
     <nd ref='226' />
     <nd ref='227' />
     <nd ref='228' />
     <nd ref='229' />
     <nd ref='230' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1016' visible='true' version='1'>
+  <way id='1016' action='modify' visible='true' version='1'>
     <nd ref='230' />
     <nd ref='231' />
     <nd ref='232' />
     <nd ref='233' />
     <nd ref='234' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1017' visible='true' version='1'>
+  <way id='1017' action='modify' visible='true' version='1'>
     <nd ref='234' />
     <nd ref='235' />
     <nd ref='236' />
     <nd ref='237' />
     <nd ref='238' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1018' visible='true' version='1'>
+  <way id='1018' action='modify' visible='true' version='1'>
     <nd ref='238' />
     <nd ref='239' />
     <nd ref='240' />
@@ -857,6 +890,7 @@
     <nd ref='305' />
     <nd ref='306' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
@@ -874,6 +908,7 @@
     <nd ref='435' />
     <nd ref='316' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
@@ -902,6 +937,7 @@
     <nd ref='337' />
     <nd ref='46' />
     <tag k='highway' v='motorway' />
+    <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
     <tag k='oneway' v='yes' />
   </way>
@@ -1016,7 +1052,7 @@
     <tag k='maxspeed' v='60' />
     <tag k='oneway' v='yes' />
   </way>
-  <way id='1024' visible='true' version='1'>
+  <way id='1024' action='modify' visible='true' version='1'>
     <nd ref='422' />
     <nd ref='423' />
     <nd ref='424' />
@@ -1029,19 +1065,20 @@
     <nd ref='431' />
     <nd ref='432' />
     <nd ref='433' />
+    <nd ref='434' />
+    <nd ref='435' />
     <tag k='highway' v='motorway_link' />
     <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
   <way id='1025' action='modify' visible='true' version='1'>
-    <nd ref='433' />
-    <nd ref='434' />
     <nd ref='435' />
     <nd ref='436' />
     <nd ref='437' />
     <nd ref='438' />
     <tag k='highway' v='motorway_link' />
-    <tag k='maxspeed' v='40' />
+    <tag k='lanes' v='1' />
+    <tag k='maxspeed' v='30' />
     <tag k='oneway' v='yes' />
   </way>
 </osm>
