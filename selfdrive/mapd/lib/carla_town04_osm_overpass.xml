@@ -541,7 +541,6 @@
   <node id='398' visible='true' version='1' lat='-0.00008083714' lon='0.00365628165' />
   <node id='399' action='modify' visible='true' version='1' lat='-0.00000055865' lon='0.00365818854' />
   <node id='400' action='modify' visible='true' version='1' lat='0.00008084936' lon='0.00365980784' />
-  <node id='401' action='delete' visible='true' version='1' lat='0.00015639749' lon='0.00367953792' />
   <node id='402' visible='true' version='1' lat='0.00237496161' lon='-0.00015677072' />
   <node id='403' visible='true' version='1' lat='0.00229724862' lon='-0.0002053057' />
   <node id='404' visible='true' version='1' lat='0.00218220831' lon='-0.00028216309' />
@@ -579,8 +578,6 @@
   <node id='436' visible='true' version='1' lat='-0.00016424091' lon='-0.00344713687' />
   <node id='437' action='modify' visible='true' version='1' lat='-0.00023871365' lon='-0.00339978774' />
   <node id='438' action='modify' visible='true' version='1' lat='-0.00028654266' lon='-0.00330972364' />
-  <node id='439' action='delete' visible='true' version='1' lat='-0.00034047847' lon='-0.00324896689' />
-  <node id='440' action='delete' visible='true' version='1' lat='-0.0003416772' lon='-0.003193402' />
   <way id='-102002' action='modify' visible='true'>
     <nd ref='154' />
     <nd ref='-101830' />
@@ -1050,12 +1047,6 @@
     <nd ref='150' />
     <nd ref='151' />
     <nd ref='152' />
-    <tag k='highway' v='motorway' />
-    <tag k='lanes' v='4' />
-    <tag k='maxspeed' v='90' />
-    <tag k='oneway' v='yes' />
-  </way>
-  <way id='1009' action='delete' visible='true' version='1'>
     <tag k='highway' v='motorway' />
     <tag k='lanes' v='4' />
     <tag k='maxspeed' v='90' />
