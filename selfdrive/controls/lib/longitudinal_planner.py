@@ -65,6 +65,7 @@ class Planner():
     self.speed_limit_controller = SpeedLimitController()
     self.events = Events()
     self.turn_speed_controller = TurnSpeedController()
+    self.prev_cruise = 0.0
 
   def update(self, sm, CP):
     v_ego = sm['carState'].vEgo
@@ -74,11 +75,14 @@ class Planner():
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
 
+    self.cruise_changed = v_cruise != self.prev_cruise
+    self.prev_cruise = v_cruise
+
     long_control_state = sm['controlsState'].longControlState
     force_slow_decel = sm['controlsState'].forceDecel
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
-    if not enabled or sm['carState'].gasPressed:
+    if not enabled or sm['carState'].gasPressed or self.cruise_changed:
       self.v_desired = v_ego
       self.a_desired = a_ego
 
@@ -156,7 +160,7 @@ class Planner():
     self.vision_turn_controller.update(enabled, v_ego, a_ego, v_cruise, sm)
     self.events = Events()
     self.speed_limit_controller.update(enabled, v_ego, a_ego, sm, v_cruise, self.events)
-    self.turn_speed_controller.update(enabled, v_ego, a_ego, sm)
+    self.turn_speed_controller.update(enabled, v_ego, a_ego, sm, self.cruise_changed)
 
     # Pick solution with lowest acceleration target.
     a_solutions = {'cruise': float("inf") if v_cruise > v_ego else CRUISE_CONFORT_DECEL}
