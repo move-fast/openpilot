@@ -181,7 +181,7 @@ class TurnSpeedController():
 
     # In any case, we deactivate the speed limit controller temporarily
     # if gas is pressed (to support gas override implementations).
-    if sm['carState'].gasPressed:
+    if sm['carState'].gasPressed or self._cruise_changed:
       self.state = TurnSpeedControlState.tempInactive
       return
 
@@ -230,10 +230,11 @@ class TurnSpeedController():
     # update solution values.
     self._a_target = a_target
 
-  def update(self, enabled, v_ego, a_ego, sm):
+  def update(self, enabled, v_ego, a_ego, sm, cruise_changed):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
+    self._cruise_changed = cruise_changed
 
     # Get the speed limit from Map Data
     self._speed_limit, self._distance, self._turn_sign = self._get_limit_from_map_data(sm)
