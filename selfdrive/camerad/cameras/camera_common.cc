@@ -205,6 +205,8 @@ kj::Array<uint8_t> get_frame_image(const CameraBuf *b) {
   const int new_height = (y_max - y_min + 1) / scale;
   const uint8_t *dat = (const uint8_t *)b->cur_rgb_buf->addr;
 
+  LOGW("FRAME IMAGE SIZE width %d, height %d", new_width, new_height);
+
   kj::Array<uint8_t> frame_image = kj::heapArray<uint8_t>(new_width*new_height*3);
   uint8_t *resized_dat = frame_image.begin();
   int goff = x_min*3 + y_min*b->rgb_stride;

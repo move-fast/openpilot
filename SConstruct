@@ -408,6 +408,7 @@ SConscript(['common/transformations/SConscript'])
 
 SConscript(['selfdrive/camerad/SConscript'])
 SConscript(['selfdrive/modeld/SConscript'])
+SConscript(['selfdrive/signsd/SConscript'])
 
 SConscript(['selfdrive/controls/lib/cluster/SConscript'])
 SConscript(['selfdrive/controls/lib/lateral_mpc/SConscript'])
