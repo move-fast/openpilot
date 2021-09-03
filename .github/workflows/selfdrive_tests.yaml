@@ -2,8 +2,9 @@ name: selfdrive
 
 on:
   push:
-    branches-ignore:
-      - 'testing-closet*'
+    branches:
+      - 'release_**'
+      - 'develop'
   pull_request:
 
 concurrency:
@@ -13,8 +14,8 @@ concurrency:
 env:
   BASE_IMAGE: openpilot-base
   CL_BASE_IMAGE: openpilot-base-cl
-  DOCKER_REGISTRY: ghcr.io/commaai
   AZURE_TOKEN: ${{ secrets.AZURE_COMMADATACI_OPENPILOTCI_TOKEN }}
+  DOCKER_REGISTRY: ghcr.io/move-fast
 
   DOCKER_LOGIN: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
   BUILD: |
@@ -32,6 +33,8 @@ jobs:
   build_release:
     name: build release
     runs-on: ubuntu-20.04
+    timeout-minutes: 50
+    if: github.repository == 'commaai/openpilot'
     env:
       STRIPPED_DIR: /tmp/releasepilot
     steps:
@@ -232,6 +235,8 @@ jobs:
   process_replay:
     name: process replay
     runs-on: ubuntu-20.04
+    timeout-minutes: 25
+    if: github.repository == 'commaai/openpilot' # Do not run on move-fast repo.
     steps:
     - uses: actions/checkout@v3
       with:
