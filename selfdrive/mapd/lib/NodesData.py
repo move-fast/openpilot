@@ -24,8 +24,8 @@ _DIVERTION_SEARCH_RANGE = [-200., 50.]  # mt. Range of distance to current locat
 def nodes_raw_data_array_for_wr(wr, drop_last=False):
   """Provides an array of raw node data (id, lat, lon, speed_limit) for all nodes in way relation
   """
-  sl = wr.speed_limit if wr.speed_limit is not None else 0.
-  data = np.array(list(map(lambda n: (n.id, n.lat, n.lon, sl), wr.way.nodes)), dtype=float)
+  sl = wr.speed_limit
+  data = np.array([(n.id, n.lat, n.lon, sl) for n in wr.way.nodes], dtype=float)
 
   # reverse the order if way direction is backwards
   if wr.direction == DIRECTION.BACKWARD:
@@ -206,6 +206,18 @@ def speed_limits_for_curvatures_data(curv, dist):
   # [start, end, speed_limit, curvature_sign]
   return np.array([speed_section(cs) for cs in curv_secs])
 
+def is_wr_a_valid_divertion_from_node(wr, node_id, wr_ids):
+  """
+  Evaluates if the way relation `wr` is a valid divertion from node with id `node_id`.
+  A valid divertion is a way relation with an edge node with the given `node_id` that is not already included
+  in the list of way relations in the route (`wr_ids`) and that can be travaled in the direction as if starting 
+  from node with id `node_id`
+  """
+  if wr.id in wr_ids:
+    return False
+  wr.update_direction_from_starting_node(node_id)
+  return not wr.is_prohibited
+
 
 class SpeedLimitSection():
   """And object representing a speed limited road section ahead.
@@ -249,7 +261,7 @@ class NodesData:
   """
   def __init__(self, way_relations, wr_index):
     self._nodes_data = np.array([])
-    self._divertions = np.array([])
+    self._divertions = [[]]
     self._curvature_speed_sections_data = np.array([])
 
     way_count = len(way_relations)
@@ -262,7 +274,7 @@ class NodesData:
     # For the ways before the last in the route we want all the nodes but the last, as that one is the first on
     # the next section. Collect them, append last way node data and concatenate the numpy arrays.
     if way_count > 1:
-      wrs_data = tuple(map(lambda wr: nodes_raw_data_array_for_wr(wr, True), way_relations[:-1]))
+      wrs_data = tuple([nodes_raw_data_array_for_wr(wr, drop_last=True) for wr in way_relations[:-1]])
       wrs_data += (nodes_data,)
       nodes_data = np.concatenate(wrs_data)
 
@@ -270,7 +282,7 @@ class NodesData:
     lat_lon_array = nodes_data[:, [1, 2]]
     points = np.radians(lat_lon_array)
     # Ensure we have more than 3 points, if not calculations are not possible.
-    if len(points) < 3:
+    if len(points) <= 3:
       return
     vect, dist_prev, dist_next, dist_route, bearing = node_calculations(points)
 
@@ -278,18 +290,10 @@ class NodesData:
     # nodes_data structure: [id, lat, lon, speed_limit, x, y, dist_prev, dist_next, dist_route, bearing]
     self._nodes_data = np.column_stack((nodes_data, vect, dist_prev, dist_next, dist_route, bearing))
 
-    # Build route divertion options data from the wr_index. These are the list of way_relations different to
-    # any way relation in the route that have and edge node on the route and can be traveled in the direction
-    # of the route.
-    wr_ids = list(map(lambda wr: wr.id, way_relations))
-
-    def _is_valid_divertion(wr, node_id):
-      if wr.id in wr_ids:
-        return False
-      wr.update_direction_from_starting_node(node_id)
-      return not wr.is_prohibited
-
-    self._divertions = [[wr for wr in wr_index.get(node_id, []) if _is_valid_divertion(wr, node_id)]
+    # Build route divertion options data from the wr_index.
+    wr_ids = [wr.id for wr in way_relations]
+    self._divertions = [[wr for wr in wr_index.get(node_id, [])
+                        if is_wr_a_valid_divertion_from_node(wr, node_id, wr_ids)]
                         for node_id in nodes_data[:, 0]]
 
     # Store calculcations for curvature sections speed limits. We need more than 3 points to be able to process.
