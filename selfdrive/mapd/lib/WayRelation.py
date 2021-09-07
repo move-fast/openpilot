@@ -342,6 +342,9 @@ class WayRelation():
 
   @property
   def is_prohibited(self):
+    # Direction must be defined to asses this property. Default to `True` if not.
+    if self.direction == DIRECTION.NONE:
+      return True
     return self.is_one_way and self.direction == DIRECTION.BACKWARD
 
   @property
