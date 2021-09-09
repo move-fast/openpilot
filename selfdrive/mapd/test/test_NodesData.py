@@ -10,7 +10,7 @@ from selfdrive.mapd.lib.NodesData import nodes_raw_data_array_for_wr, node_calcu
 from selfdrive.mapd.test.mock_data import mockOSMWay_01_01_LongCurvy, mockNodesData01, mockCurveSectionSin, \
   mockCurveSteepCurvChange, mockCurveSteepCurvChangeShort, mockCurveSmoothCurveChange, \
   mockOSMWay_02_01_CurvyTownWithIntersections, mockOSMWay_02_02_Divertion_34785115, mockOSMWay_02_03_Short_3_node_way, \
-  mockRouteData_02_01, mockRouteData_02_02_single_wr, mockRouteData_02_03
+  mockRouteData_02_01, mockRouteData_02_02_single_wr, mockRouteData_02_03, mockRouteData_03_01
 from numpy.testing import assert_array_almost_equal
 
 
@@ -319,5 +319,17 @@ class TestNodesData(unittest.TestCase):
     # From the node next to last
     expected = nd.get(NodeDataIdx.dist_next)[-2]
     self.assertAlmostEqual(nd.distance_to_end(nd.count - 2, 0.), expected)
+
+  def test_test(self):
+    mockRouteData_03_01.reset()
+    way_relations = mockRouteData_03_01.wrs
+    wr_index = mockRouteData_03_01.way_collection.wr_index
+
+    nd = NodesData(way_relations, wr_index)
+
+    print(nd._nodes_data[:, 0])
+
+    all_limits = nd.curvatures_speed_limit_sections_ahead(16, 0.)
+    print(all_limits)
 
 # TODO: Missing tests for curvatures_speed_limit_sections_ahead and possible_divertions

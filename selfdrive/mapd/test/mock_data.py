@@ -222,8 +222,13 @@ mockOSMResponse01 = MockOSMQueryResponse('selfdrive/mapd/test/mock_osm_response_
 mockOSMResponse02 = MockOSMQueryResponse('selfdrive/mapd/test/mock_osm_response_02.xml',
                                          [48.16573269276522, 9.81418473659117])
 
+# OSM Query around Frankfurter alle in bErlin
+mockOSMResponse03 = MockOSMQueryResponse('selfdrive/mapd/test/mock_osm_response_03.xml',
+                                         [52.516974999999995, 13.4432827])
+
 mockWayCollection01 = WayCollection(mockOSMResponse01.ways, mockOSMResponse01.query_center)
 mockWayCollection02 = WayCollection(mockOSMResponse02.ways, mockOSMResponse02.query_center)
+mockWayCollection03 = WayCollection(mockOSMResponse03.ways, mockOSMResponse02.query_center)
 
 # Normal curvy Way. way id: 179532213 with 35 Nodes.
 mockOSMWay_01_01_LongCurvy = next(way for way in mockOSMResponse01.ways if way.id == 179532213)
@@ -251,6 +256,9 @@ mockRouteData_02_02_single_wr = MockRouteData([178450395], mockWayCollection02, 
 mockRouteData_02_03 = MockRouteData([158799549, 798805532, 28707704, 158797898, 602249535, 602249536, 825823509,
                                      178449088, 916462523, 158796386], mockWayCollection02,
                                     first_node_id=252601829)
+
+# data composing route 01 in way collection 03. Sharp turns
+mockRouteData_03_01 = MockRouteData([4782480, 316869458, 4782482], mockWayCollection03, first_node_id=29271691)
 
 # 1000mt section with one full sin cycle as curv values.
 mockCurveSectionSin = MockCurveSection(lambda x: np.sin(x * 2 * np.pi))
