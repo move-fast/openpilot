@@ -151,4 +151,4 @@ class CarController():
       if frame % fr_step == 0 and CS.CP.enableDsu and CS.CP.carFingerprint in cars:
         can_sends.append(make_can_msg(addr, vl, bus))
 
-    return can_sends
+    return can_sends, new_steer, apply_steer

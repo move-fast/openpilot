@@ -56,7 +56,7 @@ class Controls:
     self.pm = pm
     if self.pm is None:
       self.pm = messaging.PubMaster(['sendcan', 'controlsState', 'carState',
-                                     'carControl', 'carEvents', 'carParams'])
+                                     'carControl', 'carEvents', 'carParams', 'mfDebug'])
 
     self.camera_packets = ["roadCameraState", "driverCameraState"]
     if TICI:
@@ -568,9 +568,11 @@ class Controls:
     self.AM.process_alerts(self.sm.frame, clear_event)
     CC.hudControl.visualAlert = self.AM.visual_alert
 
+    new_steer = 0.
+    apply_steer = 0.
     if not self.read_only and self.initialized:
       # send car controls over can
-      can_sends = self.CI.apply(CC)
+      can_sends, new_steer, apply_steer = self.CI.apply(CC)
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
 
     force_decel = (self.sm['driverMonitoringState'].awarenessStatus < 0.) or \
@@ -652,6 +654,16 @@ class Controls:
 
     # copy CarControl to pass to CarInterface on the next iteration
     self.CC = CC
+
+    # mfDebug
+    if (self.sm.frame % int(.2 / DT_CTRL) == 0):  # 5 times per secons
+      mf_send = messaging.new_message('mfDebug')
+      mf_send.mfDebug.steeringTorqueEps = int(CS.steeringTorqueEps)
+      mf_send.mfDebug.actSteer = float(actuators.steer)
+      mf_send.mfDebug.newSteer = int(new_steer)
+      mf_send.mfDebug.applySteer = int(apply_steer)
+      self.pm.send('mfDebug', mf_send)
+      print(f'MFDebug *****: Publish: \n{mf_send}\n********')
 
   def step(self):
     start_time = sec_since_boot()

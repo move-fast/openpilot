@@ -458,7 +458,7 @@ class CarInterface(CarInterfaceBase):
     else:
       hud_v_cruise = 255
 
-    can_sends = self.CC.update(c.enabled, self.CS, self.frame,
+    can_sends, new_steer, apply_steer = self.CC.update(c.enabled, self.CS, self.frame,
                                c.actuators,
                                c.cruiseControl.speedOverride,
                                c.cruiseControl.override,
@@ -470,4 +470,4 @@ class CarInterface(CarInterfaceBase):
                                hud_alert=c.hudControl.visualAlert)
 
     self.frame += 1
-    return can_sends
+    return can_sends, new_steer, apply_steer

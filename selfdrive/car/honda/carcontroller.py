@@ -220,4 +220,4 @@ class CarController():
       idx = (frame//10) % 4
       can_sends.extend(hondacan.create_ui_commands(self.packer, pcm_speed, hud, CS.CP.carFingerprint, CS.is_metric, idx, CS.CP.openpilotLongitudinalControl, CS.stock_hud))
 
-    return can_sends
+    return can_sends, 0., apply_steer
