@@ -30,6 +30,13 @@ static void ui_draw_text(const UIState *s, float x, float y, const char *string,
   nvgText(s->vg, x, y, string, NULL);
 }
 
+static void ui_draw_text_multiline(const UIState *s, float x, float y, float max_width, const char *string, float size, NVGcolor color, const char *font_name) {
+  nvgFontFace(s->vg, font_name);
+  nvgFontSize(s->vg, size);
+  nvgFillColor(s->vg, color);
+  nvgTextBox(s->vg, x, y, max_width, string, NULL);
+}
+
 static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor color) {
   nvgBeginPath(s->vg);
   nvgCircle(s->vg, x, y, size);
@@ -395,6 +402,37 @@ static void ui_draw_vision_event(UIState *s) {
       ui_draw_circle_image(s, center_x, wheel_y, radius, "hands_on_wheel", color, 1.0f);
     }
   }
+
+  auto mf_debug = (*s->sm)["mfDebug"].getMfDebug();
+  // draw a rectangle with colors indicating the state with the value of the acceleration inside.
+  const int size = 184;
+  const Rect rect = {s->fb_w - size - bdr_s, int(bdr_s * 1.5 + size + bdr_s), size, size};
+  ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
+  ui_draw_rect(s->vg, rect, COLOR_RED, 10, 20.);
+  
+  const float act_steer = mf_debug.getActSteer();
+  const float new_steer = mf_debug.getNewSteer();
+  const float apply_steer = mf_debug.getApplySteer();
+  const float steering_torque = mf_debug.getSteeringTorqueEps();
+
+  std::string num_text = std::to_string(act_steer);
+  std::string act_steer_str = num_text.substr(0, num_text.find(".") + 3);
+  // std::string act_steer_str =  std::to_string((int)std::nearbyint(act_steer));
+  std::string new_steer_str = std::to_string((int)std::nearbyint(new_steer));
+  std::string apply_steer_str = std::to_string((int)std::nearbyint(apply_steer));
+  std::string steering_torque_str = std::to_string((int)std::nearbyint(steering_torque));
+
+  std::string final_str = "A: ";
+  final_str.append(act_steer_str);
+  final_str.append("\nN: ");
+  final_str.append(new_steer_str);
+  final_str.append("\nR: ");
+  final_str.append(apply_steer_str);
+  final_str.append("\nM: ");
+  final_str.append(steering_torque_str);
+
+  nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+  ui_draw_text_multiline(s, rect.x + 15., rect.y + 15., size - 30, final_str.c_str(), 40, COLOR_WHITE, "sans-bold");
 }
 
 static void ui_draw_vision_face(UIState *s) {
