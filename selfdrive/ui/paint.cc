@@ -406,7 +406,7 @@ static void ui_draw_vision_event(UIState *s) {
   auto mf_debug = (*s->sm)["mfDebug"].getMfDebug();
   // draw a rectangle with colors indicating the state with the value of the acceleration inside.
   const int size = 184;
-  const Rect rect = {s->fb_w - size - bdr_s, int(bdr_s * 1.5 + size + bdr_s), size, size};
+  Rect rect = {s->fb_w - size - bdr_s, int(bdr_s * 1.5 + size + bdr_s), size, size};
   ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
   ui_draw_rect(s->vg, rect, COLOR_RED, 10, 20.);
   
@@ -417,7 +417,6 @@ static void ui_draw_vision_event(UIState *s) {
 
   std::string num_text = std::to_string(act_steer);
   std::string act_steer_str = num_text.substr(0, num_text.find(".") + 3);
-  // std::string act_steer_str =  std::to_string((int)std::nearbyint(act_steer));
   std::string new_steer_str = std::to_string((int)std::nearbyint(new_steer));
   std::string apply_steer_str = std::to_string((int)std::nearbyint(apply_steer));
   std::string steering_torque_str = std::to_string((int)std::nearbyint(steering_torque));
@@ -430,6 +429,46 @@ static void ui_draw_vision_event(UIState *s) {
   final_str.append(apply_steer_str);
   final_str.append("\nM: ");
   final_str.append(steering_torque_str);
+
+  nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+  ui_draw_text_multiline(s, rect.x + 15., rect.y + 15., size - 30, final_str.c_str(), 40, COLOR_WHITE, "sans-bold");
+
+  rect.x -= size + bdr_s;
+  rect.h += 40 * 2;
+  ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
+  ui_draw_rect(s->vg, rect, COLOR_YELLOW, 10, 20.);
+  
+  const float gas = mf_debug.getGas();
+  const float brake = mf_debug.getBrake();
+  const float pcm_accel_cmd_norm = mf_debug.getPcmAccelCmdNorm();
+  const float pcm_accel_cmd = mf_debug.getPcmAccelCmd();
+  const float meas_gas = mf_debug.getMeasGas();
+
+  num_text = std::to_string(gas);
+  std::string gas_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(brake);
+  std::string brake_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(gas - brake);
+  std::string diff_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(pcm_accel_cmd_norm);
+  std::string pcm_accel_cmd_norm_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(pcm_accel_cmd);
+  std::string pcm_accel_cmd_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(meas_gas);
+  std::string meas_gas_str = num_text.substr(0, num_text.find(".") + 3);
+
+  final_str = "G: ";
+  final_str.append(gas_str);
+  final_str.append("\nB: ");
+  final_str.append(brake_str);
+  final_str.append("\nD: ");
+  final_str.append(diff_str);
+  final_str.append("\nN: ");
+  final_str.append(pcm_accel_cmd_norm_str);
+  final_str.append("\nC: ");
+  final_str.append(pcm_accel_cmd_str);
+  final_str.append("\nM: ");
+  final_str.append(meas_gas_str);
 
   nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
   ui_draw_text_multiline(s, rect.x + 15., rect.y + 15., size - 30, final_str.c_str(), 40, COLOR_WHITE, "sans-bold");
