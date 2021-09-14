@@ -570,9 +570,11 @@ class Controls:
 
     new_steer = 0.
     apply_steer = 0.
+    pcm_accel_cmd_norm = 0.
+    pcm_accel_cmd = 0.
     if not self.read_only and self.initialized:
       # send car controls over can
-      can_sends, new_steer, apply_steer = self.CI.apply(CC)
+      can_sends, new_steer, apply_steer, pcm_accel_cmd_norm, pcm_accel_cmd = self.CI.apply(CC)
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
 
     force_decel = (self.sm['driverMonitoringState'].awarenessStatus < 0.) or \
@@ -662,6 +664,11 @@ class Controls:
       mf_send.mfDebug.actSteer = float(actuators.steer)
       mf_send.mfDebug.newSteer = int(new_steer)
       mf_send.mfDebug.applySteer = int(apply_steer)
+      mf_send.mfDebug.gas = float(actuators.gas)
+      mf_send.mfDebug.brake = float(actuators.brake)
+      mf_send.mfDebug.pcmAccelCmdNorm = float(pcm_accel_cmd_norm)
+      mf_send.mfDebug.pcmAccelCmd = float(pcm_accel_cmd)
+      mf_send.mfDebug.measGas = float(CS.gas)
       self.pm.send('mfDebug', mf_send)
       print(f'MFDebug *****: Publish: \n{mf_send}\n********')
 

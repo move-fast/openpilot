@@ -61,6 +61,7 @@ class CarController():
         pcm_accel_cmd = 0.06 - actuators.brake
 
     pcm_accel_cmd, self.accel_steady = accel_hysteresis(pcm_accel_cmd, self.accel_steady, enabled)
+    pcm_accel_cmd_norm = pcm_accel_cmd
     pcm_accel_cmd = clip(pcm_accel_cmd * CarControllerParams.ACCEL_SCALE, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
 
     # steer torque
@@ -151,4 +152,4 @@ class CarController():
       if frame % fr_step == 0 and CS.CP.enableDsu and CS.CP.carFingerprint in cars:
         can_sends.append(make_can_msg(addr, vl, bus))
 
-    return can_sends, new_steer, apply_steer
+    return can_sends, new_steer, apply_steer, pcm_accel_cmd_norm, pcm_accel_cmd
