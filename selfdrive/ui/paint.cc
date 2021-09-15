@@ -20,6 +20,7 @@
 #include "selfdrive/common/timing.h"
 #include "selfdrive/common/util.h"
 #include "selfdrive/hardware/hw.h"
+#include "selfdrive/sensord/sensors/constants.h"
 
 #include "selfdrive/ui/ui.h"
 
@@ -433,8 +434,33 @@ static void ui_draw_vision_event(UIState *s) {
   nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
   ui_draw_text_multiline(s, rect.x + 15., rect.y + 15., size - 30, final_str.c_str(), 40, COLOR_WHITE, "sans-bold");
 
+  auto log = (*s->sm)["sensorEvents"];
+  auto sensor_events = log.getSensorEvents();
+  const double current_time = log.getLogMonoTime() * 1e-9;
+  double z_acc = 0.;
+
+  for (int i = 0; i < sensor_events.size(); i++) {
+    const cereal::SensorEventData::Reader& sensor_reading = sensor_events[i];
+    // Ignore empty readings (e.g. in case the magnetometer had no data ready)
+    if (sensor_reading.getTimestamp() == 0) {
+      continue;
+    }
+    // sensor time and log time should be close
+    double sensor_time = 1e-9 * sensor_reading.getTimestamp();
+    if (std::abs(current_time - sensor_time) > 0.1) {
+      LOGE("Sensor reading ignored, sensor timestamp more than 100ms off from log time");
+      break;
+    }
+    // Accelerometer
+    if (sensor_reading.getSensor() == SENSOR_ACCELEROMETER && sensor_reading.getType() == SENSOR_TYPE_ACCELEROMETER) {
+      auto v = sensor_reading.getAcceleration().getV();
+      z_acc = -v[2];
+      break;
+    }
+  }
+
   rect.x -= size + bdr_s;
-  rect.h += 40 * 2;
+  rect.h += 40 * 3;
   ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
   ui_draw_rect(s->vg, rect, COLOR_YELLOW, 10, 20.);
   
@@ -456,6 +482,8 @@ static void ui_draw_vision_event(UIState *s) {
   std::string pcm_accel_cmd_str = num_text.substr(0, num_text.find(".") + 3);
   num_text = std::to_string(meas_gas);
   std::string meas_gas_str = num_text.substr(0, num_text.find(".") + 3);
+  num_text = std::to_string(z_acc);
+  std::string z_acc_str = num_text.substr(0, num_text.find(".") + 3);
 
   final_str = "G: ";
   final_str.append(gas_str);
@@ -469,6 +497,8 @@ static void ui_draw_vision_event(UIState *s) {
   final_str.append(pcm_accel_cmd_str);
   final_str.append("\nM: ");
   final_str.append(meas_gas_str);
+  final_str.append("\nP: ");
+  final_str.append(z_acc_str);
 
   nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
   ui_draw_text_multiline(s, rect.x + 15., rect.y + 15., size - 30, final_str.c_str(), 40, COLOR_WHITE, "sans-bold");
