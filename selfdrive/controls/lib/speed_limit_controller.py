@@ -12,11 +12,12 @@ from selfdrive.modeld.constants import T_IDXS
 
 
 _PARAMS_UPDATE_PERIOD = 2.  # secs. Time between parameter updates.
-_TEMP_INACTIVE_GUARD_PERIOD = 1.  # secs. Time to wait after activation before considering temp deactivation signal.
+_TEMP_INACTIVE_GUARD_PERIOD = 1000.  # secs. Time to wait after activation before considering temp deactivation signal.
 
 # Lookup table for speed limit percent offset depending on speed.
-_LIMIT_PERC_OFFSET_V = [0.1, 0.05, 0.038]  # 55, 105, 135 km/h
-_LIMIT_PERC_OFFSET_BP = [13.9, 27.8, 36.1]  # 50, 100, 130 km/h
+_LIMIT_PERC_OFFSET_V = [0.316, 0.19, 0.133, 0.118, 0.105, 0.095, 0.455, 0.24, 0.21] # 4.75mph offset below 55mph, 14.75mph offset above 55mph
+_LIMIT_PERC_OFFSET_BP = [6.7, 11.18, 15.8, 17.88, 20.12, 22.35, 24.58, 26.8, 31.29] # 4.75mph offset below 55mph, 14.75mph offset above 55mph
+
 
 SpeedLimitControlState = log.LongitudinalPlan.SpeedLimitControlState
 EventName = car.CarEvent.EventName
