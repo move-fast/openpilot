@@ -10,6 +10,8 @@ from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 
 
 _MIN_V = 5.6  # Do not operate under 20km/h
+#add a MAX V # Do not operate above 60mph
+#add a aggressiveness parameter, example 0.0 is normal, 10.0 is 10% more aggressive, -10.0 is 10% less aggressive
 
 _ENTERING_PRED_LAT_ACC_TH = 1.3  # Predicted Lat Acc threshold to trigger entering turn state.
 _ABORT_ENTERING_PRED_LAT_ACC_TH = 1.1  # Predicted Lat Acc threshold to abort entering state if speed drops.
