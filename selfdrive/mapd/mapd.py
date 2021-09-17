@@ -5,7 +5,7 @@ import numpy as np
 from time import strftime, gmtime
 import cereal.messaging as messaging
 from common.realtime import Ratekeeper
-from selfdrive.mapd.lib.osm import OSM
+from selfdrive.mapd.lib.dp_osm import DPOSM as OSM
 from selfdrive.mapd.lib.geo import distance_to_points
 from selfdrive.mapd.lib.WayCollection import WayCollection
 from selfdrive.mapd.config import QUERY_RADIUS, MIN_DISTANCE_FOR_NEW_QUERY, FULL_STOP_MAX_SPEED, LOOK_AHEAD_HORIZON_TIME
@@ -71,7 +71,8 @@ class MapD():
 
     self.last_gps_fix_timestamp = log.timestamp  # Unix TS. Milliseconds since January 1, 1970.
     self.location_rad = np.radians(np.array([log.latitude, log.longitude], dtype=float))
-    self.location_deg = (log.latitude, log.longitude)
+    self.location_deg = (log.latitude, log.longitude, log.bearingDeg)
+    _debug(f'self.location_deg: {self.location_deg}')
     self.bearing_rad = np.radians(log.bearingDeg, dtype=float)
     self.gps_speed = log.speed
     # log accuracies are presumably 1 sigma. To work with an accuracy that gives us >95% confidence and working
@@ -87,8 +88,8 @@ class MapD():
   def _query_osm_not_blocking(self):
     def query(osm, location_deg, location_rad, radius):
       _debug(f'Mapd: Start query for OSM map data at {location_deg}')
-      lat, lon = location_deg
-      ways = osm.fetch_road_ways_around_location(lat, lon, radius)
+      lat, lon, bearing = location_deg
+      ways = osm.fetch_road_ways_around_location(lat, lon, bearing, radius)
       _debug(f'Mapd: Query to OSM finished with {len(ways)} ways')
 
       # Only issue an update if we received some ways. Otherwise it is most likely a conectivity issue.
@@ -195,9 +196,11 @@ class MapD():
     turn_speed_limit_section = self.route.current_curvature_speed_limit_section
     horizon_mts = self.gps_speed * LOOK_AHEAD_HORIZON_TIME
     next_turn_speed_limit_sections = self.route.next_curvature_speed_limit_sections(horizon_mts)
+    road_name = self.route.current_road_name()
 
     map_data_msg = messaging.new_message('liveMapData')
     map_data_msg.valid = sm.all_alive_and_valid(service_list=['gpsLocationExternal'])
+    map_data_msg.liveMapData.currentRoadName = str(road_name if road_name is not None else "")
 
     map_data_msg.liveMapData.lastGpsTimestamp = self.last_gps.timestamp
     map_data_msg.liveMapData.speedLimitValid = bool(speed_limit is not None)
