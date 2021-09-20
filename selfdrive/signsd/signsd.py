@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import cereal.messaging as messaging
 from common.realtime import Ratekeeper
-from .detect import Detector
+from selfdrive.signsd.detect import Detector
 import numpy as np
-import pygame  # pylint: disable=import-error
 import cv2
 import os
 
@@ -15,15 +14,19 @@ SCALE = float(os.getenv("SCALE", "1"))
 
 _DEBUG = True
 
+SIMULATION = "SIMULATION" in os.environ
+
+if SIMULATION:
+  import pygame  # pylint: disable=import-error
+
+  def pygame_modules_have_loaded():
+    return pygame.display.get_init() and pygame.font.get_init()
+
 
 def _debug(msg):
   if not _DEBUG:
     return
   print(msg)
-
-
-def pygame_modules_have_loaded():
-  return pygame.display.get_init() and pygame.font.get_init()
 
 
 class SingsD():
@@ -33,17 +36,18 @@ class SingsD():
     self.imgbgr = np.zeros((_FULL_FRAME_SIZE[1], _FULL_FRAME_SIZE[0], 3), dtype='uint8')
     self.imgff = np.zeros((_FULL_FRAME_SIZE[1], _FULL_FRAME_SIZE[0], 3), dtype=np.uint8)
 
-    # Init frame viewer
-    pygame.init()
-    pygame.font.init()
-    assert pygame_modules_have_loaded()
+    if SIMULATION:
+      # Init frame viewer
+      pygame.init()
+      pygame.font.init()
+      assert pygame_modules_have_loaded()
 
-    size = (int(_FULL_FRAME_SIZE[0] * SCALE), int(_FULL_FRAME_SIZE[1] * SCALE))
-    pygame.display.set_caption("comma one debug UI")
-    self.screen = pygame.display.set_mode(size, pygame.DOUBLEBUF)
+      size = (int(_FULL_FRAME_SIZE[0] * SCALE), int(_FULL_FRAME_SIZE[1] * SCALE))
+      pygame.display.set_caption("comma one debug UI")
+      self.screen = pygame.display.set_mode(size, pygame.DOUBLEBUF)
 
-    self.camera_surface = pygame.surface.Surface((_FULL_FRAME_SIZE[0] * SCALE, _FULL_FRAME_SIZE[1] * SCALE),
-                                                 0, 24).convert()
+      self.camera_surface = pygame.surface.Surface((_FULL_FRAME_SIZE[0] * SCALE, _FULL_FRAME_SIZE[1] * SCALE),
+                                                   0, 24).convert()
 
     # Detector
     self.detector = Detector(debug=_DEBUG)

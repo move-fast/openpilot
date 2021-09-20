@@ -1,20 +1,18 @@
-from re import L
 import sys
-import os
 import time
 from pathlib import Path
-from common.basedir import BASEDIR
 
 import numpy as np
 import torch
 
-FILE = Path(__file__).absolute()
-sys.path.append(os.path.join(BASEDIR, "yolov5"))
+from selfdrive.signsd.libs.yolov5.models.experimental import attempt_load
+from selfdrive.signsd.libs.yolov5.utils.augmentations import letterbox
+from selfdrive.signsd.libs.yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
+from selfdrive.signsd.libs.yolov5.utils.torch_utils import select_device, time_sync
 
-from yolov5.models.experimental import attempt_load
-from yolov5.utils.augmentations import letterbox
-from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
-from yolov5.utils.torch_utils import select_device, time_sync
+
+FILE = Path(__file__).absolute()
+sys.path.append(FILE.parents[0].as_posix())  # add yolov5/ to path
 
 
 class Detector():
