@@ -15,6 +15,8 @@ class Conversions:
   RAD_TO_DEG = 1. / DEG_TO_RAD
   #Mass
   LB_TO_KG = 0.453592
+  #Distance
+  MT_TO_FT = 3.28084
 
 
 RADAR_TO_CENTER = 2.7   # (deprecated) RADAR is ~ 2.7m ahead from center of car
