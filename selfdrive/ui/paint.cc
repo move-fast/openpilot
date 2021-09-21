@@ -397,6 +397,19 @@ static void ui_draw_vision_event(UIState *s) {
   }
 }
 
+static void ui_draw_vision_bottom_bar(UIState *s) {
+  auto liveMapData = (*s->sm)["liveMapData"].getLiveMapData();
+  const std::string road_name = liveMapData.getCurrentRoadName();
+
+  if (!road_name.empty()) {
+    const int h = 60;
+    const Rect rect = {0, s->fb_h - h, s->fb_w, h};
+    ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 0.);
+    nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+    ui_draw_text(s, rect.centerX(), rect.centerY(), road_name.c_str(), 52., COLOR_WHITE_ALPHA(200), "sans-bold");
+  }
+}
+
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 96;
   const int center_x = radius + (bdr_s * 2);
@@ -413,6 +426,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_vision_speed(s);
   ui_draw_vision_turnspeed(s);
   ui_draw_vision_event(s);
+  ui_draw_vision_bottom_bar(s);
 }
 
 static void ui_draw_vision(UIState *s) {
