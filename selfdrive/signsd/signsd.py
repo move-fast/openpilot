@@ -113,6 +113,7 @@ def signd_thread(sm=None, pm=None):
     signd.detect()
     rk.keep_time()
 
+
 def main(sm=None, pm=None):
   signd_thread(sm, pm)
 
