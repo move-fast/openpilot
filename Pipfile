@@ -118,6 +118,7 @@ onnx = "*"
 onnxruntime = "*"
 timezonefinder = "*"
 sentry-sdk = "*"
+overpy = "*"
 
 [requires]
 python_version = "3.8"
