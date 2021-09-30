@@ -30,6 +30,13 @@ class OnroadHud : public QWidget {
 
   Q_PROPERTY(QString roadName MEMBER roadName NOTIFY valueChanged);
 
+  Q_PROPERTY(bool showSpeedLimit MEMBER showSpeedLimit NOTIFY valueChanged);
+  Q_PROPERTY(QString speedLimit MEMBER speedLimit NOTIFY valueChanged);
+  Q_PROPERTY(QString slcSubText MEMBER slcSubText NOTIFY valueChanged);
+  Q_PROPERTY(float slcSubTextSize MEMBER slcSubTextSize NOTIFY valueChanged);
+  Q_PROPERTY(bool mapSourcedSpeedLimit MEMBER mapSourcedSpeedLimit NOTIFY valueChanged);
+  Q_PROPERTY(bool slcActive MEMBER slcActive NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -40,6 +47,9 @@ private:
   void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
   void drawVisionTurnControllerUI(QPainter &p, int x, int y, int size, const QColor &color, const QString &speed, 
                                   int alpha);
+  void drawCircle(QPainter &p, int x, int y, int r, QBrush bg);
+  void drawSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int subtext_size, 
+                     bool is_map_sourced, bool is_active);
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap engage_img;
@@ -67,6 +77,13 @@ private:
   bool showDebugUI = false;
   
   QString roadName;
+
+  bool showSpeedLimit = false;
+  QString speedLimit;
+  QString slcSubText;
+  float slcSubTextSize = 0.0;
+  bool mapSourcedSpeedLimit = false;
+  bool slcActive = false;
 
 signals:
   void valueChanged();

@@ -78,6 +78,18 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_road.png",
     },
     {
+      "SpeedLimitControl",
+      "Enable Speed Limit Control",
+      "Use speed limit signs information from map data and car interface to automatically adapt cruise speed to road limits.",
+      "../assets/offroad/icon_speed_limit.png",
+    },
+    {
+      "SpeedLimitPercOffset",
+      "Enable Speed Limit Offset",
+      "Set speed limit slightly higher than actual speed limit for a more natural drive.",
+      "../assets/offroad/icon_speed_limit.png",
+    },
+    {
       "ShowDebugUI",
       "Show debug UI elements",
       "Show UI elements that aid debugging.",
