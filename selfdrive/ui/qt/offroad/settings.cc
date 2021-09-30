@@ -82,6 +82,16 @@ TogglesPanel::TogglesPanel(QWidget *parent) : ListWidget(parent) {
                                   "Use vision path predictions to estimate the appropiate speed to drive through turns ahead.",
                                   "../assets/offroad/icon_road.png",
                                   this));
+  addItem(new ParamControl("SpeedLimitControl",
+                                  "Enable Speed Limit Control",
+                                  "Use speed limit signs information from map data and car interface to automatically adapt cruise speed to road limits.",
+                                  "../assets/offroad/icon_speed_limit.png",
+                                  this));
+  addItem(new ParamControl("SpeedLimitPercOffset",
+                                  "Enable Speed Limit Offset",
+                                  "Set speed limit slightly higher than actual speed limit for a more natural drive.",
+                                  "../assets/offroad/icon_speed_limit.png",
+                                  this));
   addItem(new ParamControl("ShowDebugUI",
                                   "Show debug UI elements",
                                   "Show UI elements that aid debugging.",

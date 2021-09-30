@@ -68,12 +68,30 @@ void OnroadWindow::updateState(const UIState &s) {
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
-  if (map != nullptr) {
-    bool sidebarVisible = geometry().x() > 0;
+  bool sidebarVisible = geometry().x() > 0;
+  bool propagate_event = true;
+
+    // Toggle speed limit control enabled
+  SubMaster &sm = *(QUIState::ui_state.sm);
+  auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
+  
+  Rect speed_limit_touch_rect = QUIState::ui_state.scene.speed_limit_sign_touch_rect;
+
+  if (longitudinal_plan.getSpeedLimit() > 0.0 && speed_limit_touch_rect.ptInRect(e->x(), e->y())) {
+    // If touching the speed limit sign area when visible
+    QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
+    QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
+    Params().putBool("SpeedLimitControl", QUIState::ui_state.scene.speed_limit_control_enabled);
+    propagate_event = false;
+  }
+  else if (map != nullptr) {
     map->setVisible(!sidebarVisible && !map->isVisible());
   }
+
   // propagation event to parent(HomeWindow)
-  QWidget::mousePressEvent(e);
+  if (propagate_event) {
+    QWidget::mousePressEvent(e);
+  }
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {
