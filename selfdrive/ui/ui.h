@@ -18,6 +18,8 @@ const int bdr_s = 30;
 const int header_h = 420;
 const int footer_h = 280;
 
+const QRect speed_sgn_rc(bdr_s * 2, bdr_s * 2.5 + 202, 184, 184);
+
 const int UI_FREQ = 20;   // Hz
 typedef cereal::CarControl::HUDControl::AudibleAlert AudibleAlert;
 
@@ -94,6 +96,12 @@ typedef struct UIScene {
 
   // Debug UI
   bool show_debug_ui;
+  // Speed limit control
+  bool speed_limit_control_enabled;
+  bool speed_limit_perc_offset;
+
+  double last_speed_limit_sign_tap;
+
   cereal::PandaState::PandaType pandaType;
 
   // modelV2

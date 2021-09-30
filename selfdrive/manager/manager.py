@@ -40,6 +40,8 @@ def manager_init():
     ("HasAcceptedTerms", "0"),
     ("OpenpilotEnabledToggle", "1"),
     ("ShowDebugUI", "1"),
+    ("SpeedLimitControl", "1"),
+    ("SpeedLimitPercOffset", "1"),
     ("TurnVisionControl", "1"),
   ]
   if not PC:
