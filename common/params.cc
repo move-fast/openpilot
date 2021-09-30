@@ -154,6 +154,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"ReleaseNotes", PERSISTENT},
     {"ReplayControlsState", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON},
     {"ShouldDoUpdate", CLEAR_ON_MANAGER_START},
+    {"ShowDebugUI", PERSISTENT},
     {"SnoozeUpdate", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_OFF},
     {"SshEnabled", PERSISTENT},
     {"SubscriberInfo", PERSISTENT},
