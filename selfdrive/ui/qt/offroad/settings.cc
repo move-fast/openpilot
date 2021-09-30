@@ -82,6 +82,11 @@ TogglesPanel::TogglesPanel(QWidget *parent) : ListWidget(parent) {
                                   "Use vision path predictions to estimate the appropiate speed to drive through turns ahead.",
                                   "../assets/offroad/icon_road.png",
                                   this));
+  addItem(new ParamControl("ShowDebugUI",
+                                  "Show debug UI elements",
+                                  "Show UI elements that aid debugging.",
+                                  "../assets/offroad/icon_calibration.png",
+                                  this));
 #ifdef ENABLE_MAPS
   addItem(new ParamControl("NavSettingTime24h",
                                   "Show ETA in 24h format",
