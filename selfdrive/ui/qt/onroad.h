@@ -23,6 +23,10 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(bool showHowAlert MEMBER showHowAlert NOTIFY valueChanged);
   Q_PROPERTY(bool howWarning MEMBER howWarning NOTIFY valueChanged);
 
+  Q_PROPERTY(bool showVTC MEMBER showVTC NOTIFY valueChanged);
+  Q_PROPERTY(QString vtcSpeed MEMBER vtcSpeed NOTIFY valueChanged);
+  Q_PROPERTY(QColor vtcColor MEMBER vtcColor NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -30,6 +34,9 @@ public:
 private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
+  void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
+  void drawVisionTurnControllerUI(QPainter &p, int x, int y, int size, const QColor &color, const QString &speed, 
+                                  int alpha);
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap engage_img;
@@ -48,6 +55,10 @@ private:
 
   bool showHowAlert = false;
   bool howWarning = false;
+
+  bool showVTC = false;
+  QString vtcSpeed;
+  QColor vtcColor;
 
 signals:
   void valueChanged();
