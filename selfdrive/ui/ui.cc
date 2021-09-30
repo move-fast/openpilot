@@ -210,6 +210,7 @@ static void update_status(UIState *s) {
       s->scene.started_frame = s->sm->frame;
       s->scene.end_to_end = Params().getBool("EndToEndToggle");
       s->wide_camera = Hardware::TICI() ? Params().getBool("EnableWideCamera") : false;
+      s->scene.show_debug_ui = Params().getBool("ShowDebugUI");
     }
     // Invisible until we receive a calibration message.
     s->scene.world_objects_visible = false;
