@@ -102,6 +102,11 @@ TogglesPanel::TogglesPanel(QWidget *parent) : ListWidget(parent) {
                                   "Show UI elements that aid debugging.",
                                   "../assets/offroad/icon_calibration.png",
                                   this));
+  addItem(new ParamControl("DisableDisengageOnGas",
+                                  "Disable disengage on gas",
+                                  "Disable default comma stock disengage on gas feature",
+                                  "../assets/offroad/icon_openpilot.png",
+                                  this));
 #ifdef ENABLE_MAPS
   addItem(new ParamControl("NavSettingTime24h",
                                   "Show ETA in 24h format",
