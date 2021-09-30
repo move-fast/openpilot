@@ -63,8 +63,12 @@ struct Alert {
     return text1 == a2.text1 && text2 == a2.text2 && type == a2.type && sound == a2.sound;
   }
 
-  static Alert get(const SubMaster &sm, uint64_t started_frame) {
-    if (sm.updated("controlsState")) {
+  static Alert get(const SubMaster &sm, uint64_t started_frame, uint64_t display_debug_alert_frame = 0) {
+    if (display_debug_alert_frame > 0 && (sm.frame - display_debug_alert_frame) <= 1 * UI_FREQ) {
+      return {"Debug snapshot collected", "",
+              "debugTapDetected", cereal::ControlsState::AlertSize::SMALL, 
+              AudibleAlert::CHIME_WARNING1};
+    } else if (sm.updated("controlsState")) {
       const cereal::ControlsState::Reader &cs = sm["controlsState"].getControlsState();
       return {cs.getAlertText1().cStr(), cs.getAlertText2().cStr(),
               cs.getAlertType().cStr(), cs.getAlertSize(),
@@ -126,6 +130,9 @@ typedef struct UIScene {
 
   // Debug UI
   bool show_debug_ui;
+  bool debug_snapshot_enabled;
+  uint64_t display_debug_alert_frame;
+
   // Speed limit control
   bool speed_limit_control_enabled;
   bool speed_limit_perc_offset;

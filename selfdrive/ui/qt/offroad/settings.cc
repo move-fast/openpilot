@@ -118,6 +118,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "Disable default comma stock disengage on gas feature",
       "../assets/offroad/icon_openpilot.png",
     },
+    {
+      "EnableDebugSnapshot",
+      "Debug snapshot on screen center tap",
+      "Stores snapshot file with current state of some modules.",
+      "../assets/offroad/icon_calibration.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
