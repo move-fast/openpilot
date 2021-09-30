@@ -198,6 +198,7 @@ void UIState::updateStatus() {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
       wide_cam_only = Params().getBool("WideCameraOnly");
+      scene.show_debug_ui = Params().getBool("ShowDebugUI");
     }
     started_prev = scene.started;
     emit offroadTransition(!scene.started);
