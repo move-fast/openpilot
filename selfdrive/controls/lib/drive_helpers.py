@@ -29,6 +29,8 @@ CRUISE_INTERVAL_SIGN = {
   car.CarState.ButtonEvent.Type.decelCruise: -1,
 }
 
+CRUISE_CONFORT_DECEL = -1.  # Confortable deceleration for cruise.
+
 
 class MPC_COST_LAT:
   PATH = 1.0
