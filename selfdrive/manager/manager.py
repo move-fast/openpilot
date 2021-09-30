@@ -43,6 +43,7 @@ def manager_init() -> None:
     ("LanguageSetting", "main_en"),
     ("HandsOnWheelMonitoring", "0"),
     ("OpenpilotEnabledToggle", "1"),
+    ("ShowDebugUI", "1"),
     ("TurnVisionControl", "1"),
   ]
   if not PC:

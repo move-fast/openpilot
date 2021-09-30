@@ -300,6 +300,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     setProperty("showVTC", vtcState > cereal::LongitudinalPlan::VisionTurnControllerState::DISABLED);
     setProperty("vtcSpeed", QString::number(std::nearbyint(vtc_speed)));
     setProperty("vtcColor", vtc_color);
+    setProperty("showDebugUI", s.scene.show_debug_ui);
   }
 
   // DM icon transition
@@ -453,7 +454,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   configFont(p, "Inter", 66, "Regular");
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
-  if (showVTC) {
+  if (showDebugUI && showVTC) {
     drawVisionTurnControllerUI(p, set_speed_rect.left(), set_speed_rect.bottom() + bdr_s, set_speed_rect.width(), 
                                vtcColor, vtcSpeed, 100);
   }

@@ -234,6 +234,7 @@ void UIState::updateStatus() {
     if (scene.started) {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
+      scene.show_debug_ui = Params().getBool("ShowDebugUI");
     }
     started_prev = scene.started;
     emit offroadTransition(!scene.started);
