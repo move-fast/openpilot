@@ -47,6 +47,7 @@ class NvgWindow : public CameraViewWidget {
   Q_PROPERTY(bool showVTC MEMBER showVTC);
   Q_PROPERTY(QString vtcSpeed MEMBER vtcSpeed);
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor);
+  Q_PROPERTY(bool showDebugUI MEMBER showDebugUI);
 
 public:
   explicit NvgWindow(VisionStreamType type, QWidget* parent = 0);
@@ -83,6 +84,8 @@ private:
   bool showVTC = false;
   QString vtcSpeed;
   QColor vtcColor;
+  
+  bool showDebugUI = false;
 
 protected:
   void paintGL() override;
