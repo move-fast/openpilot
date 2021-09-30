@@ -101,6 +101,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "Show UI elements that aid debugging.",
       "../assets/offroad/icon_calibration.png",
     },
+    {
+      "DisableDisengageOnGas",
+      "Disable disengage on gas",
+      "Disable default comma stock disengage on gas feature",
+      "../assets/offroad/icon_openpilot.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
