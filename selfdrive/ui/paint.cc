@@ -182,7 +182,7 @@ static void ui_draw_vision_speed(UIState *s) {
 static void ui_draw_vision_event(UIState *s) {
   auto longitudinal_plan = (*s->sm)["longitudinalPlan"].getLongitudinalPlan();
   auto visionTurnControllerState = longitudinal_plan.getVisionTurnControllerState();
-  if (s->scene.show_debug_ui && 
+  if (s->scene.show_debug_ui &&
       visionTurnControllerState > cereal::LongitudinalPlan::VisionTurnControllerState::DISABLED && 
       s->scene.engageable) {
     // draw a rectangle with colors indicating the state with the value of the acceleration inside.
