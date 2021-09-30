@@ -78,6 +78,7 @@ tqdm = "*"
 urllib3 = "*"
 utm = "*"
 websocket_client = "*"
+overpy = "*"
 
 [requires]
 python_version = "3.8"

@@ -28,6 +28,8 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor NOTIFY valueChanged);
   Q_PROPERTY(bool showDebugUI MEMBER showDebugUI NOTIFY valueChanged);
 
+  Q_PROPERTY(QString roadName MEMBER roadName NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -43,8 +45,10 @@ private:
   QPixmap engage_img;
   QPixmap dm_img;
   QPixmap how_img;
+  QPixmap map_img;
   const int radius = 192;
   const int img_size = (radius / 2) * 1.5;
+  const int subsign_img_size = 35;
   QString speed;
   QString speedUnit;
   QString maxSpeed;
@@ -61,6 +65,8 @@ private:
   QString vtcSpeed;
   QColor vtcColor;
   bool showDebugUI = false;
+  
+  QString roadName;
 
 signals:
   void valueChanged();
