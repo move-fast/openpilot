@@ -214,6 +214,7 @@ void UIState::updateStatus() {
       scene.started_frame = sm->frame;
       scene.end_to_end = Params().getBool("EndToEndToggle");
       wide_camera = Hardware::TICI() ? Params().getBool("EnableWideCamera") : false;
+      scene.show_debug_ui = Params().getBool("ShowDebugUI");
     }
     started_prev = scene.started;
     emit offroadTransition(!scene.started);

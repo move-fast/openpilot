@@ -41,6 +41,7 @@ def manager_init() -> None:
     ("HasAcceptedTerms", "0"),
     ("HandsOnWheelMonitoring", "0"),
     ("OpenpilotEnabledToggle", "1"),
+    ("ShowDebugUI", "1"),
     ("TurnVisionControl", "1"),
   ]
   if not PC:
