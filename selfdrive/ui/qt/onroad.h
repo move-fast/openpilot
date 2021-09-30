@@ -25,6 +25,8 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor NOTIFY valueChanged);
   Q_PROPERTY(bool showDebugUI MEMBER showDebugUI NOTIFY valueChanged);
 
+  Q_PROPERTY(QString roadName MEMBER roadName NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -54,6 +56,8 @@ private:
   QString vtcSpeed;
   QColor vtcColor;
   bool showDebugUI = false;
+  
+  QString roadName;
 
 signals:
   void valueChanged();

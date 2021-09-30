@@ -223,7 +223,8 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-    "longitudinalPlan",
+    "longitudinalPlan", "liveMapData",
+  });
 
   Params params;
   ui_state.wide_camera = Hardware::TICI() ? params.getBool("EnableWideCamera") : false;
