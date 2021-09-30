@@ -141,6 +141,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"DisableDisengageOnGas", PERSISTENT},
     {"DongleId", PERSISTENT},
     {"DoUninstall", CLEAR_ON_MANAGER_START},
+    {"EnableDebugSnapshot", PERSISTENT},
     {"EnableWideCamera", CLEAR_ON_MANAGER_START},
     {"EndToEndToggle", PERSISTENT},
     {"ForcePowerDown", CLEAR_ON_MANAGER_START},

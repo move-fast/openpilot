@@ -62,6 +62,10 @@ const Alert CONTROLS_WAITING_ALERT = {"openpilot Unavailable", "Waiting for cont
 const Alert CONTROLS_UNRESPONSIVE_ALERT = {"TAKE CONTROL IMMEDIATELY", "Controls Unresponsive",
                                            "controlsUnresponsive", cereal::ControlsState::AlertSize::FULL,
                                            AudibleAlert::CHIME_WARNING_REPEAT};
+
+const Alert DEBUG_SNAPSHOT_ALERT = {"Debug snapshot collected", "",
+                                    "debugTapDetected", cereal::ControlsState::AlertSize::SMALL, 
+                                    AudibleAlert::CHIME_WARNING2};
 const int CONTROLS_TIMEOUT = 5;
 
 const int bdr_s = 30;
@@ -111,6 +115,9 @@ typedef struct UIScene {
 
   // Debug UI
   bool show_debug_ui;
+  bool debug_snapshot_enabled;
+  uint64_t display_debug_alert_frame;
+
   // Speed limit control
   bool speed_limit_control_enabled;
   bool speed_limit_perc_offset;

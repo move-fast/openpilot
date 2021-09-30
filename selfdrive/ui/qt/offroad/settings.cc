@@ -107,6 +107,11 @@ TogglesPanel::TogglesPanel(QWidget *parent) : ListWidget(parent) {
                                   "Disable default comma stock disengage on gas feature",
                                   "../assets/offroad/icon_openpilot.png",
                                   this));
+  addItem(new ParamControl("EnableDebugSnapshot",
+                                  "Debug snapshot on screen center tap",
+                                  "Stores snapshot file with current state of some modules.",
+                                  "../assets/offroad/icon_calibration.png",
+                                  this));
 #ifdef ENABLE_MAPS
   addItem(new ParamControl("NavSettingTime24h",
                                   "Show ETA in 24h format",

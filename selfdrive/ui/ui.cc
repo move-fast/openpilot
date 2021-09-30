@@ -217,6 +217,7 @@ static void update_status(UIState *s) {
       s->scene.show_debug_ui = Params().getBool("ShowDebugUI");
       s->scene.speed_limit_control_enabled = Params().getBool("SpeedLimitControl");
       s->scene.speed_limit_perc_offset = Params().getBool("SpeedLimitPercOffset");
+      s->scene.debug_snapshot_enabled = Params().getBool("EnableDebugSnapshot");
     }
     // Invisible until we receive a calibration message.
     s->scene.world_objects_visible = false;
