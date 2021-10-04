@@ -118,7 +118,7 @@ class TurnSpeedController():
     distance_since_fix = self._v_ego * gps_fix_age
     distances_to_sections_ahead = np.maximum(0., np.array(map_data.turnSpeedLimitsAheadDistances) - distance_since_fix)
     speed_limit_in_sections_ahead = map_data.turnSpeedLimitsAhead
-    turn_sings_in_sections_ahead = map_data.turnSpeedLimitsAheadSigns
+    turn_signs_in_sections_ahead = map_data.turnSpeedLimitsAheadSigns
 
     # Ensure current speed limit is considered only if we are inside the section.
     if map_data.turnSpeedLimitValid and self._v_ego > 0.:
@@ -143,7 +143,7 @@ class TurnSpeedController():
     next_idx = np.argmin(distance_gaps)
     next_speed_limit = speed_limit_in_sections_ahead[next_idx]
     distance_to_section_ahead = distances_to_sections_ahead[next_idx]
-    next_turn_sign = turn_sings_in_sections_ahead[next_idx]
+    next_turn_sign = turn_signs_in_sections_ahead[next_idx]
     distance_gap = distance_gaps[next_idx]
 
     # When we have a next_speed_limit value that has not changed from a provided next speed limit value
