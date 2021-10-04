@@ -1,4 +1,5 @@
 from selfdrive.mapd.lib.geo import DIRECTION, R, vectors, bearing_to_points, distance_to_points
+from selfdrive.mapd.lib.osm import create_way
 from selfdrive.config import Conversions as CV
 from selfdrive.mapd.config import LANE_WIDTH
 from common.basedir import BASEDIR
@@ -159,8 +160,9 @@ class WayRelation():
     except Exception:
       self.lanes = 2
 
-    # Create a numpy array with nodes data to support calculations.
+    # Create numpy arrays with nodes data to support calculations.
     self._nodes_np = np.radians(np.array([[nd.lat, nd.lon] for nd in way.nodes], dtype=float))
+    self._nodes_ids = np.array([nd.id for nd in way .nodes], dtype=int)
 
     # Get the vectors representation of the segments betwheen consecutive nodes. (N-1, 2)
     v = vectors(self._nodes_np) * R
@@ -393,3 +395,21 @@ class WayRelation():
       return self._nodes_np[-2]
 
     return np.array([0., 0.])
+
+  def split(self, node_id, way_ids=None):
+    """ Returns and array with the way relations resulting from spliting the current way relation at node_id
+    """
+    idxs = np.nonzero(self._nodes_ids == node_id)[0]
+    if len(idxs) == 0:
+      return []
+
+    idx = idxs[0]
+    if idx == 0 or idx == len(self._nodes_ids) - 1:
+      return [self]
+
+    if not isinstance(way_ids, list):
+      way_ids = [-1, -2]  # Default id values.
+
+    ways = [create_way(way_ids[0], node_ids=self._nodes_ids[:idx + 1], from_way=self.way),
+            create_way(way_ids[1], node_ids=self._nodes_ids[idx:], from_way=self.way)]
+    return [WayRelation(way) for way in ways]

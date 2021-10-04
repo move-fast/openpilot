@@ -292,7 +292,7 @@ class NodesData:
 
     # Build route divertion options data from the wr_index.
     wr_ids = [wr.id for wr in way_relations]
-    self._divertions = [[wr for wr in wr_index.get(node_id, [])
+    self._divertions = [[wr for wr in wr_index.way_relations_with_edge_node_id(node_id)
                         if is_wr_a_valid_divertion_from_node(wr, node_id, wr_ids)]
                         for node_id in nodes_data[:, 0]]
 

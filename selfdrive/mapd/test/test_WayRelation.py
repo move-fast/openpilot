@@ -565,6 +565,46 @@ class TestWayRelation(unittest.TestCase):
     coords_e = np.radians(np.array([wayRelation.way.nodes[-2].lat, wayRelation.way.nodes[-2].lon], dtype=float))
     assert_array_almost_equal(coords, coords_e)
 
+  def test_way_relation_split_no_matching_node(self):
+    wayRelation = WayRelation(mockOSMWay_01_01_LongCurvy)
+
+    wrs = wayRelation.split(0)
+    self.assertEqual(len(wrs), 0)
+
+  def test_way_relation_split_use_correct_ids(self):
+    wayRelation = WayRelation(mockOSMWay_01_01_LongCurvy)
+
+    wrs = wayRelation.split(wayRelation._nodes_ids[5], [-100, -200])
+    self.assertEqual(wrs[0].id, -100)
+    self.assertEqual(wrs[1].id, -200)
+
+  def test_way_relation_split_on_edge_node(self):
+    wayRelation = WayRelation(mockOSMWay_01_01_LongCurvy)
+    edge_node_ids = wayRelation.edge_nodes_ids
+
+    for edge_node_id in edge_node_ids:
+      wrs = wayRelation.split(edge_node_id)
+      self.assertEqual(len(wrs), 1)
+      self.assertEqual(wrs[0], wayRelation)
+      self.assertEqual(wrs[0].way.tags, wayRelation.way.tags)
+
+  def test_way_relation_split_on_internal_node(self):
+    wayRelation = WayRelation(mockOSMWay_01_01_LongCurvy)
+    way_ids = [-10, -20]
+
+    for idx, node_id in enumerate(wayRelation._nodes_ids):
+      if idx == 0 or idx == len(wayRelation._nodes_ids) - 1:
+        continue
+      wrs = wayRelation.split(node_id, way_ids)
+      self.assertEqual(len(wrs), 2)
+      assert_array_almost_equal(wrs[0]._nodes_ids, wayRelation._nodes_ids[:idx + 1])
+      assert_array_almost_equal(wrs[1]._nodes_ids, wayRelation._nodes_ids[idx:])
+      self.assertIn(node_id, wrs[0].edge_nodes_ids)
+      self.assertIn(node_id, wrs[1].edge_nodes_ids)
+      self.assertEqual(wrs[0].way.tags, wayRelation.way.tags)
+      self.assertEqual(wrs[1].way.tags, wayRelation.way.tags)
+      self.assertEqual(way_ids, [wr.id for wr in wrs])
+
   # Helpers
   def make_wayRelation_location_dirty(self, wayRelation):
     wayRelation.distance_to_node_ahead = 10.

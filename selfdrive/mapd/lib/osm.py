@@ -3,6 +3,14 @@ import numpy as np
 from selfdrive.mapd.lib.geo import R
 
 
+def create_way(way_id, node_ids, from_way):
+  """
+  Creates and OSM Way with the given `way_id` and list of `node_ids`, copying attributes and tags from `from_way`
+  """
+  return overpy.Way(way_id, node_ids=node_ids, attributes=from_way.attributes, result=from_way._result,
+                    tags=from_way.tags)
+
+
 class OSM():
   def __init__(self):
     self.api = overpy.Overpass()

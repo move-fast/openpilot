@@ -1,4 +1,5 @@
 from selfdrive.mapd.lib.WayRelation import WayRelation
+from selfdrive.mapd.lib.WayRelationIndex import WayRelationIndex
 from selfdrive.mapd.lib.Route import Route
 from selfdrive.mapd.config import LANE_WIDTH
 import uuid
@@ -21,11 +22,7 @@ class WayCollection():
     self.way_relations = [WayRelation(way) for way in ways]
     self.query_center = query_center
 
-    # Create the index by edge node ids.
-    self.wr_index = {}
-    for wr in self.way_relations:
-      for node_id in wr.edge_nodes_ids:
-        self.wr_index[node_id] = self.wr_index.get(node_id, []) + [wr]
+    self.wr_index = WayRelationIndex(self.way_relations)
 
   def get_route(self, location_rad, bearing_rad, location_stdev):
     """Provides the best route found in the way collection based on current location and bearing.
