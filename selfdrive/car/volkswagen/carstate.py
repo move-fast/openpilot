@@ -248,7 +248,7 @@ class CarState(CarStateBase):
 
     # Update ACC radar status.
     #ret.cruiseState.available = bool(pt_cp.vl["GRA_Neu"]['GRA_Hauptschalt'])
-    ret.cruiseState.enabled = True if pt_cp.vl["Motor_2"]['GRA_Status'] in [1, 2] else False
+    ret.cruiseState.enabled = True  # if pt_cp.vl["Motor_2"]['GRA_Status'] in [1, 2] else False
     ret.cruiseState.available = ret.cruiseState.enabled  # Test hax for e-up!
 
     # Update ACC setpoint. When the setpoint reads as 255, the driver has not
