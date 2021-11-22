@@ -10,7 +10,7 @@ from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.longcontrol import LongCtrlState
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, CRUISE_CONFORT_DECEL
+from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N
 from selfdrive.controls.lib.vision_turn_controller import VisionTurnController
 from selfdrive.controls.lib.speed_limit_controller import SpeedLimitController, SpeedLimitResolver
 from selfdrive.controls.lib.turn_speed_controller import TurnSpeedController
@@ -159,7 +159,7 @@ class Planner():
     self.turn_speed_controller.update(enabled, v_ego, a_ego, sm)
 
     # Pick solution with lowest acceleration target.
-    a_solutions = {'cruise': float("inf") if v_cruise > v_ego else CRUISE_CONFORT_DECEL}
+    a_solutions = {'cruise': float("inf")}
     v_solutions = {'cruise': v_cruise}
 
     if self.vision_turn_controller.is_active:
