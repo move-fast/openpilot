@@ -55,9 +55,12 @@ class Route():
       # if we do, we replace such way relation with the split of it and continue.
       if len(way_relations) == 1:
         way_relations = wr_index.way_relations_with_node_id(last_node_id)
-        # If no more way_relations than last_wr, we got to the end.
+        # If no more way_relations than last_wr or its parent, we got to the end.
         if len(way_relations) == 1:
           break
+
+        # If last_wr is a split, replace its parent with last_wr
+        way_relations = [last_wr if wr is last_wr.parent else wr for wr in way_relations]
 
         # If we join a wr on an internal node, then we artificially split the wr in two and pass both wrs as
         # candidates to the wr selection code below.

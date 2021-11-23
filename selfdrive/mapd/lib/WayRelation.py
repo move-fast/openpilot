@@ -147,6 +147,7 @@ class WayRelation():
   """
   def __init__(self, way, parent=None):
     self.way = way
+    self.parent = parent
     self.parent_wr_id = parent.id if parent is not None else None  # For WRs created as splits of other WRs
     self.reset_location_variables()
     self.direction = DIRECTION.NONE
