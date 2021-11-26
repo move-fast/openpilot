@@ -174,9 +174,6 @@ class Planner():
       a_solutions['turnlimit'] = self.turn_speed_controller.a_target
       v_solutions['turnlimit'] = self.turn_speed_controller.speed_limit
 
-    source = min(a_solutions, key=a_solutions.get)
-    if source == 'cruise':
-      # Override cruise a_solution so that we do not affect the min acc limit when cruise is the source.
-      a_solutions[source] = float("inf")
+    source = min(v_solutions, key=v_solutions.get)
 
     return source, a_solutions[source], v_solutions[source]
