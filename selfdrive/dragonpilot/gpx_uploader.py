@@ -24,7 +24,7 @@
 import os
 import time
 from common.params import Params
-from selfdrive.version import version
+from selfdrive.version import get_version
 
 # for uploader
 from selfdrive.loggerd.xattr_cache import getxattr, setxattr
@@ -56,7 +56,7 @@ class GpxUploader():
   def __init__(self):
     self._delete_after_upload = not Params().get_bool('dp_gpxd')
     self._car_model = Params().get("dp_last_candidate", encoding='utf8')
-    self._dp_version = version
+    self._dp_version = get_version()
     _debug("GpxUploader init - _delete_after_upload = %s" % self._delete_after_upload)
     _debug("GpxUploader init - _car_model = %s" % self._car_model)
 

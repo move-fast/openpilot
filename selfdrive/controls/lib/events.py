@@ -269,7 +269,7 @@ def alca_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool) -> Aler
     _("Auto Lane Change starts in %.1f secs") % float(sm['lateralPlan'].dpALCAStartIn),
     _("Monitor Other Vehicles"),
     AlertStatus.normal, AlertSize.mid,
-    Priority.LOWER, VisualAlert.steerRequired, AudibleAlert.none, 0., .1, .1, alert_rate=0.1)
+    Priority.LOWER, VisualAlert.steerRequired, AudibleAlert.none, 0., alert_rate=0.1)
 
 
 
@@ -848,7 +848,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       _("STEERING REQUIRED: Lane Keeping OFF"),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, alert_rate=0.25),
   },
 
   EventName.manualSteeringRequiredBlinkersOn: {
@@ -856,6 +856,6 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       _("STEERING REQUIRED: Blinkers ON"),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, alert_rate=0.25),
   },
 }

@@ -81,7 +81,6 @@ class LateralPlanner:
     self.lat_mpc.reset(x0=self.x0)
 
   def update(self, sm):
-  def update(self, sm, CP):
     self.use_lanelines = not sm['dragonConf'].dpLaneLessModeCtrl
     self.laneless_mode = sm['dragonConf'].dpLaneLessMode
     v_ego = sm['carState'].vEgo
