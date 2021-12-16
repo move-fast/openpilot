@@ -27,12 +27,16 @@ signals:
   void offroadTransition(bool offroad);
   void reviewTrainingGuide();
   void showDriverView();
+  void showDisclaimer();
+  void updateIpAddr(QString addr);
 
 private:
   QPushButton *sidebar_alert_widget;
   QWidget *sidebar_widget;
   QButtonGroup *nav_btns;
   QStackedWidget *panel_widget;
+  DPGeneralPanel *dp_general_panel;
+  DPMapsPanel *dp_maps_panel;
 };
 
 class DevicePanel : public ListWidget {

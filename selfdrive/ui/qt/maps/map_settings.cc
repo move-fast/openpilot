@@ -159,7 +159,7 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
 void MapPanel::showEvent(QShowEvent *event) {
   if (dp_otisserv) {
     QString list = QString::fromStdString((params.get("ApiCache_NavDestinations")).c_str());
-    parseResponse(list.toUtf8());
+    parseResponse(list.toUtf8(), true);
   }
   updateCurrentRoute();
 }
