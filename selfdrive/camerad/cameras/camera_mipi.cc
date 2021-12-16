@@ -92,7 +92,7 @@ void run_camera(CameraState *s, cv::VideoCapture &video_cap, float *ts) {
 }
 
 static void road_camera_thread(CameraState *s) {
-  set_thread_name("mipi_road_camera_thread");
+    util::set_thread_name("mipi_road_camera_thread");
 
   std::string pipeline = gstreamer_pipeline(
     1, // sensor mode
@@ -112,7 +112,7 @@ static void road_camera_thread(CameraState *s) {
 
 void cameras_init(VisionIpcServer *v, MultiCameraState *s, cl_device_id device_id, cl_context ctx) {
   camera_init(v, &s->road_cam, CAMERA_ID_IMX477, 20, device_id, ctx,
-              VISION_STREAM_RGB_BACK, VISION_STREAM_YUV_BACK);
+              VISION_STREAM_RGB_BACK, VISION_STREAM_ROAD);
   s->pm = new PubMaster({"roadCameraState", "thumbnail"});
 }
 
@@ -142,7 +142,7 @@ void cameras_run(MultiCameraState *s) {
   threads.push_back(start_process_thread(s, &s->road_cam, process_road_camera));
 
   std::thread t_rear = std::thread(road_camera_thread, &s->road_cam);
-  set_thread_name("mipi_thread");
+  util::set_thread_name("mipi_thread");
 
   t_rear.join();
 

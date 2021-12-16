@@ -86,8 +86,8 @@ class Jetson(HardwareBase):
     # 2 = AUX
     # 3 = AO (always on rail)
     # 4 = PMIC-Die
-    # 5 = Thermal-fan-est
-    return ThermalConfig(cpu=((0,), 1000), gpu=((1,), 1000), mem=(4, 1000), bat=(None, 1), ambient=(3, 1000))
+    # I can't find mem, so mem use pmic val
+    return ThermalConfig(cpu=((0,), 1000), gpu=((1,), 1000), mem=(4, 1000), bat=(None, 1), ambient=(3, 1000), pmic=((4,), 1000))
 
   def set_screen_brightness(self, percentage):
     pass
