@@ -23,6 +23,39 @@ A_CRUISE_MAX_BP = [0., 15., 25., 40.]
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
+DP_FOLLOWING_DIST = {
+  0: 1.2,
+  1: 1.5,
+  2: 1.8,
+  3: 2.2,
+}
+
+DP_ACCEL_ECO = 0
+DP_ACCEL_NORMAL = 1
+DP_ACCEL_SPORT = 2
+
+# accel profile by @arne182 modified by @wer5lcy
+_DP_CRUISE_MIN_V = [-2.0, -1.8, -1.6, -1.4, -1.2]
+_DP_CRUISE_MIN_V_ECO = [-2.0, -1.6, -1.4, -1.2, -1.0]
+_DP_CRUISE_MIN_V_SPORT = [-3.0, -2.6, -2.3, -2.0, -1.0]
+_DP_CRUISE_MIN_BP = [0.0, 5.0, 10.0, 20.0, 55.0]
+
+_DP_CRUISE_MAX_V = [1.6, 1.4, 1.0, 0.6, 0.3]
+_DP_CRUISE_MAX_V_ECO = [1.5, 1.3, 0.8, 0.4, 0.2]
+_DP_CRUISE_MAX_V_SPORT = [3.0, 3.5, 3.0, 2.0, 2.0]
+_DP_CRUISE_MAX_BP = [0., 5., 10., 20., 55.]
+
+def dp_calc_cruise_accel_limits(v_ego, dp_profile):
+  if dp_profile == DP_ACCEL_ECO:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V_ECO)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V_ECO)
+  elif dp_profile == DP_ACCEL_SPORT:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V_SPORT)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V_SPORT)
+  else:
+    a_cruise_min = interp(v_ego, _DP_CRUISE_MIN_BP, _DP_CRUISE_MIN_V)
+    a_cruise_max = interp(v_ego, _DP_CRUISE_MAX_BP, _DP_CRUISE_MAX_V)
+  return a_cruise_min, a_cruise_max
 
 def get_max_accel(v_ego):
   return interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
@@ -56,9 +89,21 @@ class Planner:
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
 
+    # dp
+    self.dp_accel_profile_ctrl = False
+    self.dp_accel_profile = DP_ACCEL_ECO
+    # self.dp_following_profile_ctrl = False
+    # self.dp_following_profile = 2
+    # self.dp_following_dist = 1.8 # default val
+
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
+    # dp
+    self.dp_accel_profile_ctrl = sm['dragonConf'].dpAccelProfileCtrl
+    self.dp_accel_profile = sm['dragonConf'].dpAccelProfile
+    self.dp_following_profile_ctrl = sm['dragonConf'].dpFollowingProfileCtrl
+    self.dp_following_profile = sm['dragonConf'].dpFollowingProfile
 
     v_cruise_kph = sm['controlsState'].vCruise
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
@@ -78,7 +123,10 @@ class Planner:
     self.v_desired = self.alpha * self.v_desired + (1 - self.alpha) * v_ego
     self.v_desired = max(0.0, self.v_desired)
 
-    accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+    if not self.dp_accel_profile_ctrl:
+      accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+    else:
+      accel_limits = dp_calc_cruise_accel_limits(v_cruise, self.dp_accel_profile)
     accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     if force_slow_decel:
       # if required so, force a smooth deceleration

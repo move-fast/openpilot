@@ -9,6 +9,14 @@ source "$BASEDIR/launch_env.sh"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 function two_init {
+  python /data/openpilot/scripts/installers/language_installer.py
+  python /data/openpilot/scripts/installers/sshkey_installer.py
+  python /data/openpilot/scripts/installers/font_installer.py
+  mount -o remount,rw /system
+  if [ ! -f /LEECO ]; then
+    touch /LEECO
+  fi
+  mount -o remount,r /system
 
   # set IO scheduler
   setprop sys.io.scheduler noop
@@ -145,10 +153,10 @@ function launch {
   #    that completed successfully and synced to disk.
 
   if [ -f "${BASEDIR}/.overlay_init" ]; then
-    find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
-    if [ $? -eq 0 ]; then
-      echo "${BASEDIR} has been modified, skipping overlay update installation"
-    else
+#    find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
+#    if [ $? -eq 0 ]; then
+#      echo "${BASEDIR} has been modified, skipping overlay update installation"
+#    else
       if [ -f "${STAGING_ROOT}/finalized/.overlay_consistent" ]; then
         if [ ! -d /data/safe_staging/old_openpilot ]; then
           echo "Valid overlay update found, installing"
@@ -167,13 +175,20 @@ function launch {
           # TODO: restore backup? This means the updater didn't start after swapping
         fi
       fi
-    fi
+#    fi
   fi
 
   # handle pythonpath
   ln -sfn $(pwd) /data/pythonpath
   export PYTHONPATH="$PWD:$PWD/pyextra"
 
+  # dp - ignore chmod changes
+  git -C $DIR config core.fileMode false
+
+  # dp - apply custom patch
+  if [ -f "/data/media/0/dp_patcher.py" ]; then
+    python /data/media/0/dp_patcher.py
+  fi
   # hardware specific init
   if [ -f /EON ]; then
     two_init

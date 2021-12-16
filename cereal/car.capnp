@@ -127,6 +127,11 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     modelLagWarningDEPRECATED @93;
     startupOneplusDEPRECATED @82;
     startupFuzzyFingerprintDEPRECATED @97;
+
+    #dp
+    autoLaneChange @107;
+    manualSteeringRequired @108;
+    manualSteeringRequiredBlinkersOn @109;
   }
 }
 
@@ -194,6 +199,11 @@ struct CarState {
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
 
+  # dp
+  lkMode @39 :Bool;
+  engineRPM @40 :Float32;
+  cruiseActualEnabled @41 :Bool;
+
   struct WheelSpeeds {
     # optional wheel speeds
     fl @0 :Float32;
@@ -246,7 +256,7 @@ struct CarState {
   }
 
   errorsDEPRECATED @0 :List(CarEvent.EventName);
-  brakeLightsDEPRECATED @19 :Bool;
+  brakeLights @19 :Bool;
 }
 
 # ******* radar state @ 20hz *******

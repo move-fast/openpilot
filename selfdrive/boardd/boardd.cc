@@ -114,11 +114,12 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
   if (pandas.size() == 0) {
     return false;
   }
-
+  if (!pandas[0]->disable_relay) {
   pandas[0]->set_safety_model(cereal::CarParams::SafetyModel::ELM327);
-
+  }
   Params p = Params();
 
+  if (!pandas[0]->disable_relay && !pandas[0]->is_old_panda) {
   // switch to SILENT when CarVin param is read
   while (true) {
     if (do_exit || !check_all_connected(pandas) || !ignition) {
@@ -136,7 +137,7 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
   }
 
   pandas[0]->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
-
+  }
   std::string params;
   LOGW("waiting for params to set safety model");
   while (true) {
@@ -175,7 +176,7 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
 
     LOGW("panda %d: setting safety model: %d with param %d", i, (int)safety_model, safety_param);
 
-    panda->set_unsafe_mode(0);  // see safety_declarations.h for allowed values
+    panda->set_unsafe_mode(9);  // see safety_declarations.h for allowed values
     panda->set_safety_model(safety_model, safety_param);
   }
 
@@ -318,21 +319,22 @@ bool send_panda_states(PubMaster *pm, const std::vector<Panda *> &pandas, bool s
   for (uint32_t i=0; i<pandas.size(); i++) {
     auto panda = pandas[i];
     const auto &pandaState = pandaStates[i];
-
+    if (!panda->disable_relay) {
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
-
+    }
   #ifndef __x86_64__
     bool power_save_desired = !ignition_local && !pigeon_active;
     if (pandaState.power_save_enabled != power_save_desired) {
       panda->set_power_saving(power_save_desired);
     }
-
+    if (!panda->disable_relay) {
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
     if (!ignition_local && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
       panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+    }
     }
   #endif
 
@@ -456,7 +458,7 @@ void panda_state_thread(PubMaster *pm, std::vector<Panda *> pandas, bool spoofin
 void peripheral_control_thread(Panda *panda) {
   util::set_thread_name("boardd_peripheral_control");
 
-  SubMaster sm({"deviceState", "driverCameraState"});
+  SubMaster sm({"deviceState", "driverCameraState", "dragonConf"});
 
   uint64_t last_front_frame_t = 0;
   uint16_t prev_fan_speed = 999;
@@ -496,7 +498,7 @@ void peripheral_control_thread(Panda *panda) {
         prev_fan_speed = fan_speed;
       }
     }
-    if (sm.updated("driverCameraState")) {
+    if (!panda->is_old_panda && sm.updated("driverCameraState")) {
       auto event = sm["driverCameraState"];
       int cur_integ_lines = event.getDriverCameraState().getIntegLines();
       float cur_gain = event.getDriverCameraState().getGain();
@@ -541,6 +543,12 @@ static void pigeon_publish_raw(PubMaster &pm, const std::string &dat) {
 
 void pigeon_thread(Panda *panda) {
   util::set_thread_name("boardd_pigeon");
+  // dp - use toyota directly
+  if (panda->disable_relay) {
+    panda->set_safety_model(cereal::CarParams::SafetyModel::TOYOTA);
+  }
+
+  if (!panda->has_gps) return;
 
   PubMaster pm({"ubloxRaw"});
   bool ignition_last = false;
@@ -617,6 +625,8 @@ void pigeon_thread(Panda *panda) {
 
 int main(int argc, char *argv[]) {
   LOGW("starting boardd");
+  Params params;
+  bool disable_relay = params.getBool("dp_toyota_disable_relay");
 
   if (!Hardware::PC()) {
     int err;
@@ -634,6 +644,7 @@ int main(int argc, char *argv[]) {
 
   // connect to all provided serials
   std::vector<Panda *> pandas;
+  bool first_panda = true;
   for (int i = 0; i < serials.size() && !do_exit; /**/) {
     Panda *p = usb_connect(serials[i], i);
     if (!p) {
@@ -642,6 +653,10 @@ int main(int argc, char *argv[]) {
       send_empty_peripheral_state(&pm);
       util::sleep_for(500);
       continue;
+    }
+    if (first_panda) {
+      p->disable_relay = disable_relay;
+      first_panda = false;
     }
 
     pandas.push_back(p);

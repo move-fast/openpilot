@@ -40,6 +40,11 @@ procs = [
   # EON only
   PythonProcess("rtshield", "selfdrive.rtshield", enabled=EON),
   PythonProcess("androidd", "selfdrive.hardware.eon.androidd", enabled=EON, persistent=True),
+
+  # dp
+  PythonProcess("systemd", "selfdrive.dragonpilot.systemd", persistent=True),
+  PythonProcess("gpxd", "selfdrive.dragonpilot.gpxd"),
+  PythonProcess("otisserv", "selfdrive.dragonpilot.otisserv", persistent=True),
 ]
 
 managed_processes = {p.name: p for p in procs}

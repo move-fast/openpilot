@@ -64,14 +64,30 @@ class LateralPlanner:
     self.lat_mpc = LateralMpc()
     self.reset_mpc(np.zeros(6))
 
+    self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    # dp
+    self.dp_torque_apply_length = 1.5 # secs of torque we apply for
+    self.dp_lc_auto_start = 0. # time to start alc
+    self.dp_lc_auto_start_in = 0. # remaining time to start alc
+    self.dp_lc_auto_torque_end = 0. # time to end applying torque
+    self.dp_torque_apply = False # should we apply torque?
+
+    self.laneless_mode = 2 # AUTO
+    self.laneless_mode_status = False
+    self.laneless_mode_status_buffer = False
+
   def reset_mpc(self, x0=np.zeros(6)):
     self.x0 = x0
     self.lat_mpc.reset(x0=self.x0)
 
   def update(self, sm):
+  def update(self, sm, CP):
+    self.use_lanelines = not sm['dragonConf'].dpLaneLessModeCtrl
+    self.laneless_mode = sm['dragonConf'].dpLaneLessMode
     v_ego = sm['carState'].vEgo
     active = sm['controlsState'].active
     measured_curvature = sm['controlsState'].curvature
+    self.LP.update_dp_set_offsets(sm['dragonConf'].dpCameraOffset, sm['dragonConf'].dpPathOffset)
 
     md = sm['modelV2']
     self.LP.parse_model(sm['modelV2'])
@@ -84,12 +100,36 @@ class LateralPlanner:
 
     # Lane change logic
     one_blinker = sm['carState'].leftBlinker != sm['carState'].rightBlinker
-    below_lane_change_speed = v_ego < LANE_CHANGE_SPEED_MIN
+    below_lane_change_speed = v_ego < (sm['dragonConf'].dpLcMinMph * CV.MPH_TO_MS)
 
     if (not active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX):
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
     else:
+      reset = False
+      if one_blinker:
+        cur_time = sec_since_boot()
+        # reach auto lc condition
+        if not below_lane_change_speed and sm['dragonConf'].dpLateralMode == 2 and v_ego >= (sm['dragonConf'].dpLcAutoMinMph * CV.MPH_TO_MS):
+          # work out alc start time and torque apply end time
+          if self.dp_lc_auto_start == 0.:
+            self.dp_lc_auto_start = cur_time + sm['dragonConf'].dpLcAutoDelay
+            self.dp_lc_auto_torque_end = self.dp_lc_auto_start + self.dp_torque_apply_length
+          else:
+            # work out how long til alc start
+            # for display only
+            self.dp_lc_auto_start_in = self.dp_lc_auto_start - cur_time
+            self.dp_torque_apply = True if self.dp_lc_auto_start < cur_time <= self.dp_lc_auto_torque_end else False
+      else:
+        reset = True
+
+      # reset all vals
+      if not active or reset:
+        self.dp_lc_auto_start = 0.
+        self.dp_lc_auto_start_in = 0.
+        self.dp_lc_auto_torque_end = 0.
+        self.dp_torque_apply = False
+
       # LaneChangeState.off
       if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed:
         self.lane_change_state = LaneChangeState.preLaneChange
@@ -112,6 +152,9 @@ class LateralPlanner:
         blindspot_detected = ((sm['carState'].leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                               (sm['carState'].rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
 
+        # if human made lane change prior alca, we should stop alca until new blinker (off -> on)
+        self.dp_lc_auto_start = self.dp_lc_auto_torque_end if torque_applied else self.dp_lc_auto_start
+        torque_applied = self.dp_torque_apply if self.dp_torque_apply else torque_applied
         if not one_blinker or below_lane_change_speed:
           self.lane_change_state = LaneChangeState.off
         elif torque_applied and not blindspot_detected:
@@ -161,15 +204,48 @@ class LateralPlanner:
     if self.desire == log.LateralPlan.Desire.laneChangeRight or self.desire == log.LateralPlan.Desire.laneChangeLeft:
       self.LP.lll_prob *= self.lane_change_ll_prob
       self.LP.rll_prob *= self.lane_change_ll_prob
+    self.d_path_w_lines_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
     if self.use_lanelines:
+      d_path_xyz = self.d_path_w_lines_xyz
+      self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+      self.laneless_mode_status = False
+    elif self.laneless_mode == 0:
       d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
-    else:
+      self.laneless_mode_status = False
+    elif self.laneless_mode == 1:
+      d_path_xyz = self.path_xyz
+      path_cost = np.clip(abs(self.path_xyz[0,1]/self.path_xyz_stds[0,1]), 0.5, 5.0) * MPC_COST_LAT.PATH
+      # Heading cost is useful at low speed, otherwise end of plan can be off-heading
+      heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
+      self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
+      self.laneless_mode_status = True
+    elif self.laneless_mode == 2 and ((self.LP.lll_prob + self.LP.rll_prob)/2 < 0.3) and self.lane_change_state == LaneChangeState.off:
+      d_path_xyz = self.path_xyz
+      path_cost = np.clip(abs(self.path_xyz[0,1]/self.path_xyz_stds[0,1]), 0.5, 5.0) * MPC_COST_LAT.PATH
+      # Heading cost is useful at low speed, otherwise end of plan can be off-heading
+      heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
+      self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
+      self.laneless_mode_status = True
+      self.laneless_mode_status_buffer = True
+    elif self.laneless_mode == 2 and ((self.LP.lll_prob + self.LP.rll_prob)/2 > 0.5) and \
+     self.laneless_mode_status_buffer and self.lane_change_state == LaneChangeState.off:
+      d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+      self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+      self.laneless_mode_status = False
+      self.laneless_mode_status_buffer = False
+    elif self.laneless_mode == 2 and self.laneless_mode_status_buffer == True and self.lane_change_state == LaneChangeState.off:
       d_path_xyz = self.path_xyz
       path_cost = np.clip(abs(self.path_xyz[0, 1] / self.path_xyz_stds[0, 1]), 0.5, 1.5) * MPC_COST_LAT.PATH
       # Heading cost is useful at low speed, otherwise end of plan can be off-heading
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
       self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
+      self.laneless_mode_status = True
+    else:
+      d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+      self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+      self.laneless_mode_status = False
+      self.laneless_mode_status_buffer = False
     y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
     heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
     self.y_pts = y_pts
@@ -203,7 +279,7 @@ class LateralPlanner:
   def publish(self, sm, pm):
     plan_solution_valid = self.solution_invalid_cnt < 2
     plan_send = messaging.new_message('lateralPlan')
-    plan_send.valid = sm.all_alive_and_valid(service_list=['carState', 'controlsState', 'modelV2'])
+    plan_send.valid = sm.all_alive_and_valid(service_list=['carState', 'controlsState', 'modelV2', 'dragonConf'])
     plan_send.lateralPlan.laneWidth = float(self.LP.lane_width)
     plan_send.lateralPlan.dPathPoints = [float(x) for x in self.y_pts]
     plan_send.lateralPlan.psis = [float(x) for x in self.lat_mpc.x_sol[0:CONTROL_N, 2]]
@@ -219,5 +295,8 @@ class LateralPlanner:
     plan_send.lateralPlan.useLaneLines = self.use_lanelines
     plan_send.lateralPlan.laneChangeState = self.lane_change_state
     plan_send.lateralPlan.laneChangeDirection = self.lane_change_direction
+    # dp
+    plan_send.lateralPlan.dpLaneLessModeStatus = bool(self.laneless_mode_status)
+    plan_send.lateralPlan.dpALCAStartIn = self.dp_lc_auto_start_in
 
     pm.send('lateralPlan', plan_send)

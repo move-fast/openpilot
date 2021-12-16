@@ -340,7 +340,7 @@ class CarInterface(CarInterfaceBase):
       disable_ecu(logcan, sendcan, bus=1, addr=0x18DAB0F1, com_cont_req=b'\x28\x83\x03')
 
   # returns a car.CarState
-  def update(self, c, can_strings):
+  def update(self, c, can_strings, dragonconf):
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)

@@ -72,7 +72,7 @@ def get_comma_remote() -> bool:
   if origin is None:
     return False
 
-  return origin.startswith('git@github.com:commaai') or origin.startswith('https://github.com/commaai')
+  return origin.startswith('git@github.com:eFiniLan') or origin.startswith('https://github.com/eFiniLan')
 
 
 @cache
@@ -102,7 +102,7 @@ def get_dirty() -> bool:
       # Log dirty files
       if dirty and get_comma_remote():
         try:
-          dirty_files = run_cmd(["git", "diff-index", branch, "--"])
+          dirty_files = ""#run_cmd(["git", "diff-index", branch, "--"])
           cloudlog.event("dirty comma branch", version=get_version(), dirty=dirty, origin=origin, branch=branch,
                           dirty_files=dirty_files, commit=get_commit(), origin_commit=get_commit(branch))
         except subprocess.CalledProcessError:

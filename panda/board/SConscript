@@ -23,6 +23,11 @@ if os.getenv("PEDAL"):
     ],
   }
 
+  if FindFile('dp_vw_panda', '/data/params/d') != None:
+    with open('/data/params/d/dp_vw_panda') as f:
+      if (int(f.read().strip())) == 1:
+        build_projects["pedal_usb"]["PROJECT_FLAGS"].append('-Dvw')
+
   if os.getenv("PEDAL_USB"):
     build_projects["pedal_usb"] = build_projects.pop("pedal")
     build_projects["pedal_usb"]["PROJECT_FLAGS"].append("-DPEDAL_USB")

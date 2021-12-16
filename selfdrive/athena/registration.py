@@ -5,7 +5,7 @@ import jwt
 from pathlib import Path
 
 from datetime import datetime, timedelta
-from common.api import api_get
+from common.api import api_get, API_HOST
 from common.params import Params
 from common.spinner import Spinner
 from common.basedir import PERSIST
@@ -19,6 +19,10 @@ UNREGISTERED_DONGLE_ID = "UnregisteredDevice"
 
 def register(show_spinner=False) -> str:
   params = Params()
+  if "commadotai" in API_HOST and (Params().get_bool("dp_jetson") or Params().get_bool("dp_atl")):
+    return UNREGISTERED_DONGLE_ID
+  if not params.get_bool('dp_reg'):
+    return UNREGISTERED_DONGLE_ID
   params.put("SubscriberInfo", HARDWARE.get_subscriber_info())
 
   IMEI = params.get("IMEI", encoding='utf8')
@@ -75,11 +79,13 @@ def register(show_spinner=False) -> str:
         break
       except Exception:
         cloudlog.exception("failed to authenticate")
-        backoff = min(backoff + 1, 15)
-        time.sleep(backoff)
+        return UNREGISTERED_DONGLE_ID
 
-      if time.monotonic() - start_time > 60 and show_spinner:
-        spinner.update(f"registering device - serial: {serial}, IMEI: ({imei1}, {imei2})")
+        # backoff = min(backoff + 1, 15)
+        # time.sleep(backoff)
+
+      # if time.monotonic() - start_time > 60 and show_spinner:
+      #   spinner.update(f"registering device - serial: {serial}, IMEI: ({imei1}, {imei2})")
 
     if show_spinner:
       spinner.close()

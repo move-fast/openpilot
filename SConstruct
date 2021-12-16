@@ -110,7 +110,8 @@ if arch == "aarch64" or arch == "larch64":
     libpath += [
       "#third_party/snpe/aarch64",
       "#third_party/libyuv/lib",
-      "/system/vendor/lib64"
+      "/system/vendor/lib64",
+      "#third_party/mapbox-gl-native-qt/aarch64",
     ]
     cflags = ["-DQCOM", "-D_USING_LIBCXX", "-mcpu=cortex-a57"]
     cxxflags = ["-DQCOM", "-D_USING_LIBCXX", "-mcpu=cortex-a57"]
