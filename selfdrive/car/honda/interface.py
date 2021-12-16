@@ -8,6 +8,7 @@ from selfdrive.car import STD_CARGO_KG, CivicParams, scale_rot_inertia, scale_ti
 from selfdrive.car.interfaces import CarInterfaceBase
 from selfdrive.car.disable_ecu import disable_ecu
 from selfdrive.config import Conversions as CV
+from common.dp_common import common_interface_atl, common_interface_get_params_lqr
 
 
 ButtonType = car.CarState.ButtonEvent.Type
@@ -31,6 +32,7 @@ class CarInterface(CarInterfaceBase):
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), car_fw=[]):  # pylint: disable=dangerous-default-value
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint)
     ret.carName = "honda"
+    ret.lateralTuning.init('pid')
 
     if candidate in HONDA_BOSCH:
       ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.hondaBosch)]
@@ -49,8 +51,9 @@ class CarInterface(CarInterfaceBase):
       ret.pcmCruise = not ret.enableGasInterceptor
       ret.communityFeature = ret.enableGasInterceptor
 
-    if candidate == CAR.CRV_5G:
-      ret.enableBsm = 0x12f8bfa7 in fingerprint[0]
+    ret.enableBsm = True
+    #if candidate in (CAR.CRV_5G, CAR.CRV_HYBRID, ):
+      #ret.enableBsm = 0x12f8bfa7 in fingerprint[0]
 
     # Detect Bosch cars with new HUD msgs
     if any(0x33DA in f for f in fingerprint.values()):
@@ -300,6 +303,20 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.82
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.18]] # TODO: can probably use some tuning
 
+    elif candidate == CAR.JADE:
+      stop_and_go = False
+      ret.mass = 1557. + STD_CARGO_KG
+      ret.wheelbase = 2.76
+      ret.centerToFront = ret.wheelbase * 0.41
+      ret.steerRatio = 15.2
+      ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096], [0, 4096]]
+      tire_stiffness_factor = 0.5
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.16], [0.025]]
+      ret.longitudinalTuning.kpBP = [0., 5., 35.]
+      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
+      ret.longitudinalTuning.kiBP = [0., 35.]
+      ret.longitudinalTuning.kiV = [0.18, 0.12]
+
     else:
       raise ValueError("unsupported car %s" % candidate)
 
@@ -317,7 +334,10 @@ class CarInterface(CarInterfaceBase):
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter. Otherwise, add 0.5 mph margin to not
     # conflict with PCM acc
-    ret.minEnableSpeed = -1. if (stop_and_go or ret.enableGasInterceptor) else 25.5 * CV.MPH_TO_MS
+    if candidate in [CAR.JADE]:
+      ret.minEnableSpeed = -1. if (ret.enableGasInterceptor) else 30 * CV.KPH_TO_MS
+    else:
+      ret.minEnableSpeed = -1. if (stop_and_go or ret.enableGasInterceptor) else 25.5 * CV.MPH_TO_MS
 
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
@@ -332,6 +352,26 @@ class CarInterface(CarInterfaceBase):
     ret.steerRateCost = 0.5
     ret.steerLimitTimer = 0.8
 
+    # dp
+    if Params().get('dp_honda_eps_mod') == b'1':
+      if candidate == CAR.CIVIC:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560, 8000], [0, 2560, 3840]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.1]] #tuned by Comma
+      elif candidate in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL):
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2564, 8000], [0, 2564, 3840]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.09]] #2.5 default mod #Tuned by TMG
+      elif candidate in (CAR.ACCORD, CAR.ACCORDH):
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.09]]
+      elif candidate == CAR.CRV_5G:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560, 10000], [0, 2560, 3840]] #tuned by Titanminer (8000)
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.21], [0.07]]
+      elif candidate == CAR.CRV_HYBRID:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0x0, 0xB5, 0x161, 0x2D6, 0x4C0, 0x70D, 0xC42, 0x1058, 0x2C00], [0x0, 0x160, 0x1F0, 0x2E0, 0x378, 0x4A0, 0x5F0, 0x804, 0xF00]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.21], [0.07]] #still needs to finish tuning for the new car
+        ret.lateralTuning.pid.kf = 0.00004
+
+    ret = common_interface_get_params_lqr(ret)
+
     return ret
 
   @staticmethod
@@ -340,7 +380,7 @@ class CarInterface(CarInterfaceBase):
       disable_ecu(logcan, sendcan, bus=1, addr=0x18DAB0F1, com_cont_req=b'\x28\x83\x03')
 
   # returns a car.CarState
-  def update(self, c, can_strings):
+  def update(self, c, can_strings, dragonconf):
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
@@ -348,9 +388,28 @@ class CarInterface(CarInterfaceBase):
       self.cp_body.update_strings(can_strings)
 
     ret = self.CS.update(self.cp, self.cp_cam, self.cp_body)
-
+    # dp
+    self.dragonconf = dragonconf
+    ret.cruiseState.enabled = common_interface_atl(ret, dragonconf.dpAtl)
+    ret.lkMode = self.CS.lkMode
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid and (self.cp_body is None or self.cp_body.can_valid)
     ret.yawRate = self.VM.yaw_rate(ret.steeringAngleDeg * CV.DEG_TO_RAD, ret.vEgo)
+
+    #dp
+    ret.engineRPM = self.CS.engineRPM
+
+    # # dp - brake lights
+    if self.CS.CP.carFingerprint in HONDA_BOSCH:
+      # do nothing if voacc is on
+      if not self.CS.CP.openpilotLongitudinalControl:
+         ret.brakeLights = bool(self.CS.brake_switch or
+                                self.CS.brake_lights or self.CS.user_brake > 0.)
+      else:
+        ret.brakeLights = bool(self.CS.brake_switch or self.CS.user_brake > 0.)
+    else:
+     brakelights_threshold = -0.02 if self.CS.CP.carFingerprint == CAR.CIVIC else -0.1
+     ret.brakeLights = bool(self.CS.brake_switch or
+                            c.actuators.accel < brakelights_threshold)
 
     buttonEvents = []
 
@@ -390,6 +449,8 @@ class CarInterface(CarInterfaceBase):
 
     # events
     events = self.create_common_events(ret, pcm_enable=False)
+    if not self.CS.lkMode or (dragonconf.dpAtl and ret.vEgo <= self.CP.minEnableSpeed):
+      events.add(EventName.manualSteeringRequired)
     if self.CS.brake_error:
       events.add(EventName.brakeUnavailable)
     if self.CS.park_brake:
@@ -407,8 +468,8 @@ class CarInterface(CarInterfaceBase):
         # keep braking if needed or if the speed is very low
         if ret.vEgo < self.CP.minEnableSpeed + 2.:
           # non loud alert if cruise disables below 25mph as expected (+ a little margin)
-          events.add(EventName.speedTooLow)
-        else:
+        #   events.add(EventName.speedTooLow)
+        # else:
           events.add(EventName.cruiseDisabled)
     if self.CS.CP.minEnableSpeed > 0 and ret.vEgo < 0.001:
       events.add(EventName.manualRestart)
@@ -443,6 +504,7 @@ class CarInterface(CarInterfaceBase):
                                c.cruiseControl.cancel,
                                hud_v_cruise,
                                c.hudControl.lanesVisible,
+                               self.dragonconf,
                                hud_show_car=c.hudControl.leadVisible,
                                hud_alert=c.hudControl.visualAlert)
 

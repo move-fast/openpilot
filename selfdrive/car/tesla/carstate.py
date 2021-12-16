@@ -53,6 +53,8 @@ class CarState(CarStateBase):
     acc_enabled = (cruise_state in ["ENABLED", "STANDSTILL", "OVERRIDE", "PRE_FAULT", "PRE_CANCEL"])
 
     ret.cruiseState.enabled = acc_enabled
+    # dp
+    ret.cruiseActualEnabled = ret.cruiseState.enabled
     if speed_units == "KPH":
       ret.cruiseState.speed = cp.vl["DI_state"]["DI_digitalSpeed"] * CV.KPH_TO_MS
     elif speed_units == "MPH":
@@ -90,6 +92,9 @@ class CarState(CarStateBase):
     # Messages needed by carcontroller
     self.msg_stw_actn_req = copy.copy(cp.vl["STW_ACTN_RQ"])
     self.acc_state = cp_cam.vl["DAS_control"]["DAS_accState"]
+
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
 
     return ret
 

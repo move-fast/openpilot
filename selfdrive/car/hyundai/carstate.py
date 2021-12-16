@@ -46,6 +46,8 @@ class CarState(CarStateBase):
       50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
     ret.steeringTorque = cp.vl["MDPS12"]["CR_Mdps_StrColTq"]
     ret.steeringTorqueEps = cp.vl["MDPS12"]["CR_Mdps_OutTq"]
+    #dp
+    ret.engineRPM = cp.vl["TCU_DCT13"]['Cluster_Engine_RPM']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     ret.steerWarning = cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 or cp.vl["MDPS12"]["CF_Mdps_ToiFlt"] != 0
 
@@ -65,6 +67,8 @@ class CarState(CarStateBase):
         ret.cruiseState.speed = cp.vl["SCC11"]["VSetDis"] * speed_conv
       else:
         ret.cruiseState.speed = 0
+    # dp
+    ret.cruiseActualEnabled = ret.cruiseState.enabled
 
     # TODO: Find brake pressure
     ret.brake = 0
@@ -114,6 +118,9 @@ class CarState(CarStateBase):
     self.brake_error = cp.vl["TCS13"]["ACCEnable"] != 0 # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
+
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
 
     return ret
 
@@ -171,6 +178,8 @@ class CarState(CarStateBase):
 
       ("SAS_Angle", "SAS11", 0),
       ("SAS_Speed", "SAS11", 0),
+      #dp
+      ("Cluster_Engine_RPM", "TCU_DCT13", 0),
     ]
 
     checks = [
@@ -185,6 +194,7 @@ class CarState(CarStateBase):
       ("CGW4", 5),
       ("WHL_SPD11", 50),
       ("SAS11", 100),
+      ("TCU_DCT13", 100),
     ]
 
     if not CP.openpilotLongitudinalControl:
