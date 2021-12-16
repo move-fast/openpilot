@@ -108,7 +108,6 @@ class CarState(CarStateBase):
     checks = [
       # sig_address, frequency
       ("Throttle", 100),
-      ("Dashlights", 10),
       ("Brake_Pedal", 50),
       ("Wheel_Speeds", 50),
       ("Transmission", 100),
@@ -127,7 +126,27 @@ class CarState(CarStateBase):
         ("BSD_RCTA", 17),
       ]
 
-    if CP.carFingerprint not in PREGLOBAL_CARS:
+    if CP.carFingerprint in PREGLOBAL_CARS:
+      checks += [
+        ("BodyInfo", 1),
+        ("CruiseControl", 50),
+        ("Dash_State2", 1),
+      ]
+
+      if CP.carFingerprint in [CAR.FORESTER_PREGLOBAL, CAR.LEVORG_PREGLOBAL, CAR.WRX_PREGLOBAL]:
+        checks += [
+          ("Dashlights", 20),
+        ]
+      elif CP.carFingerprint in [CAR.LEGACY_PREGLOBAL, CAR.LEGACY_PREGLOBAL_2018, CAR.OUTBACK_PREGLOBAL, CAR.OUTBACK_PREGLOBAL_2018]:
+        checks += [
+          ("Dashlights", 10),
+        ]
+
+      signals += [
+        ("UNITS", "Dash_State2", 0),
+      ]
+
+    else:
       signals += [
         ("Steer_Warning", "Steering_Torque", 0),
         ("Brake", "Brake_Status", 0),
@@ -137,29 +156,8 @@ class CarState(CarStateBase):
       checks += [
         ("Dashlights", 10),
         ("BodyInfo", 10),
-        ("Brake_Status", 50),
         ("CruiseControl", 20),
-      ]
-    else:
-      signals += [
-        ("UNITS", "Dash_State2", 0),
-      ]
-
-      checks += [
-        ("Dash_State2", 1),
-      ]
-
-    if CP.carFingerprint == CAR.FORESTER_PREGLOBAL:
-      checks += [
-        ("Dashlights", 20),
-        ("BodyInfo", 1),
-        ("CruiseControl", 50),
-      ]
-
-    if CP.carFingerprint in [CAR.LEGACY_PREGLOBAL, CAR.OUTBACK_PREGLOBAL, CAR.OUTBACK_PREGLOBAL_2018]:
-      checks += [
-        ("Dashlights", 10),
-        ("CruiseControl", 50),
+        ("Brake_Status", 50),
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 0)
