@@ -25,7 +25,7 @@ from selfdrive.controls.lib.events import Events, ET
 from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.locationd.calibrationd import Calibration
-from selfdrive.hardware import HARDWARE, TICI, EON
+from selfdrive.hardware import HARDWARE, TICI, EON, JETSON
 from selfdrive.manager.process_config import managed_processes
 
 SOFT_DISABLE_TIME = 3  # seconds
@@ -160,6 +160,9 @@ class Controls:
     self.logged_comm_issue = False
     self.button_timers = {ButtonEvent.Type.decelCruise: 0, ButtonEvent.Type.accelCruise: 0}
 
+    self.led_state = False
+    self.led_state_prev = False
+
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
 
@@ -213,7 +216,7 @@ class Controls:
       # under 7% of space free no enable allowed
       self.events.add(EventName.outOfSpace)
     # TODO: make tici threshold the same
-    if self.sm['deviceState'].memoryUsagePercent > (90 if TICI else 65) and not SIMULATION:
+    if self.sm['deviceState'].memoryUsagePercent > (90 if TICI or JETSON else 65) and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
     # TODO: enable this once loggerd CPU usage is more reasonable

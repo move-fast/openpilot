@@ -18,7 +18,7 @@ from common.realtime import DT_TRML, sec_since_boot
 from common.dict_helpers import strip_deprecated_keys
 from selfdrive.controls.lib.alertmanager import set_offroad_alert
 from selfdrive.controls.lib.pid import PIController
-from selfdrive.hardware import EON, TICI, PC, HARDWARE
+from selfdrive.hardware import EON, TICI, PC, HARDWARE, JETSON
 from selfdrive.loggerd.config import get_available_percent
 from selfdrive.swaglog import cloudlog
 from selfdrive.thermald.power_monitoring import PowerMonitoring
@@ -144,6 +144,17 @@ def handle_fan_tici(controller, max_cpu_temp, fan_speed, ignition):
   last_ignition = ignition
   return fan_pwr_out
 
+# we add dp_fan_mode here so we don't forget to update.
+def handle_fan_jetson(dp_fan_mode, controller, max_cpu_temp, fan_speed, ignition):
+  new_speed = int(interp(max_cpu_temp, [40.0, 80.0], [100, 255]))
+
+  if not ignition:
+    new_speed = min(100, new_speed)
+
+  if fan_speed != new_speed:
+    os.system("echo %s > /sys/devices/pwm-fan/target_pwm" % new_speed)
+
+  return new_speed
 
 def set_offroad_alert_if_changed(offroad_alert: str, show_alert: bool, extra_text: Optional[str]=None):
   if prev_offroad_states.get(offroad_alert, None) == (show_alert, extra_text):
@@ -206,6 +217,9 @@ def thermald_thread():
   if params.get_bool("IsOnroad"):
     params.put_bool("BootedOnroad", True)
 
+  if JETSON:
+    handle_fan = handle_fan_jetson
+
   while True:
     pandaStates = messaging.recv_sock(pandaState_sock, wait=True)
 
@@ -232,7 +246,7 @@ def thermald_thread():
       usb_power = peripheralState.usbPowerMode != log.PeripheralState.UsbPowerMode.client
 
       # Setup fan handler on first connect to panda
-      if handle_fan is None and peripheralState.pandaType != log.PandaState.PandaType.unknown:
+      if not JETSON and handle_fan is None and peripheralState.pandaType != log.PandaState.PandaType.unknown:
         is_uno = peripheralState.pandaType == log.PandaState.PandaType.uno
 
         if TICI:

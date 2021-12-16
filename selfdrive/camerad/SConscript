@@ -1,4 +1,4 @@
-Import('env', 'arch', 'cereal', 'messaging', 'common', 'gpucommon', 'visionipc', 'USE_WEBCAM')
+Import('env', 'arch', 'cereal', 'messaging', 'common', 'gpucommon', 'visionipc', 'USE_WEBCAM', 'USE_MIPI')
 
 libs = ['m', 'pthread', common, 'jpeg', 'OpenCL', 'yuv', cereal, messaging, 'zmq', 'capnp', 'kj', visionipc, gpucommon]
 
@@ -10,17 +10,20 @@ elif arch == "larch64":
   cameras = ['cameras/camera_qcom2.cc']
 else:
   env['CXXFLAGS'] += ["-Wno-deprecated-declarations"]
-  if USE_WEBCAM:
+  if USE_MIPI or USE_WEBCAM:
+    flag = "MIPI" if USE_MIPI else "WEBCAM"
     libs += ['opencv_core', 'opencv_highgui', 'opencv_imgproc', 'opencv_videoio']
-    cameras = ['cameras/camera_webcam.cc']
+    if USE_MIPI:
+      libs += ['opencv_cudawarping']
+    cameras = ['cameras/camera_%s.cc' % flag.lower()]
     env = env.Clone()
-    env.Append(CXXFLAGS = '-DWEBCAM')
-    env.Append(CFLAGS = '-DWEBCAM')
+    env.Append(CXXFLAGS = "-D%s" % flag)
+    env.Append(CFLAGS = "-D%s" % flag)
     env.Append(CPPPATH = ['/usr/include/opencv4', '/usr/local/include/opencv4'])
   else:
     libs += ['avutil', 'avcodec', 'avformat', 'bz2', 'ssl', 'curl', 'crypto']
     # TODO: import replay_lib from root SConstruct
-    cameras = ['cameras/camera_replay.cc', 
+    cameras = ['cameras/camera_replay.cc',
       env.Object('camera-util', '#/selfdrive/ui/replay/util.cc'),
       env.Object('camera-framereader', '#/selfdrive/ui/replay/framereader.cc'),
       env.Object('camera-filereader', '#/selfdrive/ui/replay/filereader.cc')]

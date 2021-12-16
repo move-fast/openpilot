@@ -5,12 +5,12 @@ from common.realtime import Priority, config_realtime_process
 from selfdrive.swaglog import cloudlog
 from selfdrive.controls.lib.longitudinal_planner import Planner
 from selfdrive.controls.lib.lateral_planner import LateralPlanner
-from selfdrive.hardware import TICI
+from selfdrive.hardware import TICI, JETSON
 import cereal.messaging as messaging
 
 
 def plannerd_thread(sm=None, pm=None):
-  config_realtime_process(5 if TICI else 2, Priority.CTRL_LOW)
+  config_realtime_process(5 if TICI else 4 if JETSON else 2, Priority.CTRL_LOW)
 
   cloudlog.info("plannerd is waiting for CarParams")
   params = Params()

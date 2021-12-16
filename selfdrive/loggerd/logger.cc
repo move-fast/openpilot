@@ -40,6 +40,8 @@ kj::Array<capnp::word> logger_build_init_data() {
     init.setDeviceType(cereal::InitData::DeviceType::NEO);
   } else if (Hardware::TICI()) {
     init.setDeviceType(cereal::InitData::DeviceType::TICI);
+  } else if (Hardware::JETSON()) {
+    init.setDeviceType(cereal::InitData::DeviceType::JETSON);
   } else {
     init.setDeviceType(cereal::InitData::DeviceType::PC);
   }

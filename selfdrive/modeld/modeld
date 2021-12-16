@@ -10,7 +10,11 @@ if [ -d /system ]; then
     export LD_LIBRARY_PATH="/data/pythonpath/third_party/snpe/aarch64/:$LD_LIBRARY_PATH"
   fi
 else
-  # PC
-  export LD_LIBRARY_PATH="$DIR/../../third_party/snpe/x86_64-linux-clang:$DIR/../../openpilot/third_party/snpe/x86_64:$LD_LIBRARY_PATH"
+  if [ -f /JETSON ]; then # Jetson
+    : # do nothing
+  else
+    # PC
+    export LD_LIBRARY_PATH="$DIR/../../third_party/snpe/x86_64-linux-clang:$DIR/../../openpilot/third_party/snpe/x86_64:$LD_LIBRARY_PATH"
+  fi
 fi
 exec ./_modeld

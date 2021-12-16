@@ -9,6 +9,9 @@
 #elif QCOM2
 #include "selfdrive/hardware/tici/hardware.h"
 #define Hardware HardwareTici
+#elif XNX
+#include "selfdrive/hardware/jetson/hardware.h"
+#define Hardware HardwareJetson
 #else
 class HardwarePC : public HardwareNone {
 public:

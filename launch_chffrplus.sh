@@ -128,6 +128,57 @@ function tici_init {
   fi
 }
 
+# jetpack 4.6
+function jetson_init {
+  # modeld need this
+  export LD_LIBRARY_PATH="/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH"
+  # jetpack 4.6 has mode 8
+  sudo nvpmodel -m 8
+
+  # use performance governor
+  sudo echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+  # run higher fan speed in case we need compilation
+  sudo echo 200 > /sys/devices/pwm-fan/target_pwm
+
+  # prevent throttling
+  echo 7000 > /sys/devices/c250000.i2c/i2c-7/7-0040/iio:device0/crit_current_limit_0
+
+  # use highest available cpu freq
+  for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+    echo 1907200 > $i;
+  done
+
+  # gpu min set to highest
+  sudo echo 1109250000 > /sys/devices/17000000.gv11b/devfreq/17000000.gv11b/min_freq
+
+  # set IO scheduler
+  for f in /sys/block/*/queue/scheduler; do
+    echo noop > $f
+  done
+
+  # give nvargus-daemon higer priority
+  for pid in $(pgrep "nvargus-daemon"); do
+    chrt -f -p 52 $pid
+  done
+
+  # scale 4.3" 800x480 to 1920x1080
+  if [ "$(xdpyinfo | awk '/dimensions/{print $2}')" == "800x480" ]; then
+    xrandr --output HDMI-0 --mode 800x480 --scale 2.4x2.25
+  fi
+
+  # enable jetson mode
+  echo -n 1 > /data/params/d/dp_jetson
+
+  # disable blank screen etc.
+  xset s off
+  xset s noblank
+  xset -dpms
+
+  # hide mouse cursor
+  unclutter -idle 0 &
+}
+
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
@@ -179,6 +230,13 @@ function launch {
     two_init
   elif [ -f /TICI ]; then
     tici_init
+  elif [ -f /JETSON ]; then
+    jetson_init
+    # make sure we have right models
+    if [ ! -f "$DIR/models/supercombo.onnx" ]; then
+      rm -fr $DIR/models/*.dlc
+      wget https://github.com/commaai/openpilot/raw/72a736f90e57a7d5845891ea34b17360b6f684d0/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
+    fi
   fi
 
   # write tmux scrollback to a file
@@ -187,7 +245,6 @@ function launch {
   # start manager
   cd selfdrive/manager
   ./build.py && ./manager.py
-
   # if broken, keep on screen error
   while true; do sleep 1; done
 }
