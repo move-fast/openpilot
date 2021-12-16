@@ -13,6 +13,7 @@ from common.realtime import DT_MDL
 from selfdrive.hardware import TICI, PC
 from selfdrive.controls.lib.alertmanager import set_offroad_alert
 from selfdrive.manager.process_config import managed_processes
+from common.transformations.camera import eon_f_frame_size, eon_d_frame_size, leon_d_frame_size, tici_f_frame_size
 
 LM_THRESH = 120  # defined in selfdrive/camerad/imgproc/utils.h
 
