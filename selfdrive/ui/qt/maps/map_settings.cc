@@ -17,7 +17,7 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
 
   QWidget * main_widget = new QWidget;
   QVBoxLayout *main_layout = new QVBoxLayout(main_widget);
-  const int icon_size = 200;
+  const int icon_size = 150;
 
   // Home
   QHBoxLayout *home_layout = new QHBoxLayout;
@@ -50,20 +50,20 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
   home_work_layout->addLayout(work_layout, 1);
 
   main_layout->addLayout(home_work_layout);
-  main_layout->addSpacing(20);
+//  main_layout->addSpacing(20);
   main_layout->addWidget(horizontal_line());
-  main_layout->addSpacing(20);
+//  main_layout->addSpacing(20);
 
   // Current route
   {
     current_widget = new QWidget(this);
     QVBoxLayout *current_layout = new QVBoxLayout(current_widget);
 
-    QLabel *title = new QLabel("Current Destination");
-    title->setStyleSheet("font-size: 55px");
+    QLabel *title = new QLabel(MapPanel::tr("Current Destination"));
+    title->setStyleSheet("font-size: 36px");
     current_layout->addWidget(title);
 
-    current_route = new ButtonControl("", "CLEAR");
+    current_route = new ButtonControl("", MapPanel::tr("CLEAR"));
     current_route->setStyleSheet("padding-left: 40px;");
     current_layout->addWidget(current_route);
     QObject::connect(current_route, &ButtonControl::clicked, [=]() {
@@ -71,17 +71,17 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
       updateCurrentRoute();
     });
 
-    current_layout->addSpacing(10);
+//    current_layout->addSpacing(10);
     current_layout->addWidget(horizontal_line());
-    current_layout->addSpacing(20);
+//    current_layout->addSpacing(20);
   }
   main_layout->addWidget(current_widget);
 
   // Recents
-  QLabel *recents_title = new QLabel("Recent Destinations");
-  recents_title->setStyleSheet("font-size: 55px");
+  QLabel *recents_title = new QLabel(MapPanel::tr("Recent Destinations"));
+  recents_title->setStyleSheet("font-size: 36px");
   main_layout->addWidget(recents_title);
-  main_layout->addSpacing(20);
+//  main_layout->addSpacing(20);
 
   recent_layout = new QVBoxLayout;
   QWidget *recent_widget = new LayoutWidget(recent_layout, this);
@@ -92,7 +92,7 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
   QWidget * no_prime_widget = new QWidget;
   {
     QVBoxLayout *no_prime_layout = new QVBoxLayout(no_prime_widget);
-    QLabel *signup_header = new QLabel("Try the Navigation Beta");
+    QLabel *signup_header = new QLabel(MapPanel::tr("Try the Navigation Beta"));
     signup_header->setStyleSheet(R"(font-size: 75px; color: white; font-weight:600;)");
     signup_header->setAlignment(Qt::AlignCenter);
 
@@ -104,7 +104,7 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
     screenshot->setPixmap(pm.scaledToWidth(1080, Qt::SmoothTransformation));
     no_prime_layout->addWidget(screenshot, 0, Qt::AlignHCenter);
 
-    QLabel *signup = new QLabel("Get turn-by-turn directions displayed and more with a comma \nprime subscription. Sign up now: https://connect.comma.ai");
+    QLabel *signup = new QLabel(MapPanel::tr("Get turn-by-turn directions displayed and more with a comma \nprime subscription. Sign up now: https://connect.comma.ai"));
     signup->setStyleSheet(R"(font-size: 45px; color: white; font-weight:300;)");
     signup->setAlignment(Qt::AlignCenter);
 
@@ -114,7 +114,10 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
   }
 
   stack->addWidget(main_widget);
-  stack->addWidget(no_prime_widget);
+  dp_otisserv = Params().getBool("dp_otisserv");
+  if (!dp_otisserv) {
+    stack->addWidget(no_prime_widget);
+  }
   stack->setCurrentIndex(1);
 
   QVBoxLayout *wrapper = new QVBoxLayout(this);
@@ -154,18 +157,22 @@ MapPanel::MapPanel(QWidget* parent) : QWidget(parent) {
 }
 
 void MapPanel::showEvent(QShowEvent *event) {
+  if (dp_otisserv) {
+    QString list = QString::fromStdString((params.get("ApiCache_NavDestinations")).c_str());
+    parseResponse(list.toUtf8());
+  }
   updateCurrentRoute();
 }
 
 void MapPanel::clear() {
   home_button->setIcon(QPixmap("../assets/navigation/home_inactive.png"));
-  home_address->setStyleSheet(R"(font-size: 50px; color: grey;)");
-  home_address->setText("No home\nlocation set");
+  home_address->setStyleSheet(R"(font-size: 40px; color: grey;)");
+  home_address->setText(MapPanel::tr("No home\nlocation set"));
   home_button->disconnect();
 
   work_button->setIcon(QPixmap("../assets/navigation/work_inactive.png"));
-  work_address->setStyleSheet(R"(font-size: 50px; color: grey;)");
-  work_address->setText("No work\nlocation set");
+  work_address->setStyleSheet(R"(font-size: 40px; color: grey;)");
+  work_address->setText(MapPanel::tr("No work\nlocation set"));
   work_button->disconnect();
 
   clearLayout(recent_layout);
@@ -237,7 +244,7 @@ void MapPanel::parseResponse(const QString &response, bool success) {
         star->setVisible(type == "favorite");
         star->setStyleSheet(R"(font-size: 60px;)");
         layout->addWidget(star);
-        layout->addSpacing(10);
+//        layout->addSpacing(10);
 
 
         QLabel *recent_label = new QLabel(shorten(name + " " + details, 45));
@@ -269,7 +276,7 @@ void MapPanel::parseResponse(const QString &response, bool success) {
         });
 
         recent_layout->addWidget(widget);
-        recent_layout->addSpacing(10);
+//        recent_layout->addSpacing(10);
         has_recents = true;
       }
     }
@@ -277,8 +284,8 @@ void MapPanel::parseResponse(const QString &response, bool success) {
   }
 
   if (!has_recents) {
-    QLabel *no_recents = new QLabel("no recent destinations");
-    no_recents->setStyleSheet(R"(font-size: 50px; color: #9c9c9c)");
+    QLabel *no_recents = new QLabel(MapPanel::tr("no recent destinations"));
+    no_recents->setStyleSheet(R"(font-size: 36px; color: #9c9c9c)");
     recent_layout->addWidget(no_recents);
   }
 

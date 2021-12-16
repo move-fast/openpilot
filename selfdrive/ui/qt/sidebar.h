@@ -16,6 +16,8 @@ class Sidebar : public QFrame {
   Q_PROPERTY(ItemStatus tempStatus MEMBER temp_status NOTIFY valueChanged);
   Q_PROPERTY(QString netType MEMBER net_type NOTIFY valueChanged);
   Q_PROPERTY(int netStrength MEMBER net_strength NOTIFY valueChanged);
+  Q_PROPERTY(QString ipAddrStr MEMBER ip_addr_str NOTIFY valueChanged);
+  Q_PROPERTY(QString battPercentStr MEMBER batt_percent_str NOTIFY valueChanged);
 
 public:
   explicit Sidebar(QWidget* parent = 0);
@@ -52,4 +54,6 @@ protected:
   ItemStatus connect_status, panda_status, temp_status;
   QString net_type;
   int net_strength = 0;
+  QString ip_addr_str = "N/A";
+  QString batt_percent_str = "100%";
 };

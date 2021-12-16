@@ -10,6 +10,11 @@
 #include "selfdrive/ui/qt/maps/map.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #endif
+#include <chrono>
+#include <string>
+namespace sc = std::chrono;
+using std::to_string;
+
 
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
@@ -65,12 +70,77 @@ void OnroadWindow::updateState(const UIState &s) {
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
-  if (map != nullptr) {
+  bool propagate_event = true;
+
+  int dp_btn_x = QUIState::ui_state.fb_w;
+  const int dp_btn_y = QUIState::ui_state.fb_h - dp_btn_h - (QUIState::ui_state.scene.dpMapd? 100 : 0);
+  // need extra spacing for first btn (from right to left)
+  bool dp_extra_spacing = true;
+
+  // fd
+  if (propagate_event && QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
+    dp_extra_spacing = false;
+    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
+    if (btn_rect.ptInRect(e->x(), e->y())) {
+      int val = QUIState::ui_state.scene.dpFollowingProfileCtrl + 1;
+      val = val > 2? 0 : val;
+      Params().put("dp_following_profile", std::to_string(val));
+
+      // touch dp_last_modified
+      auto time = sc::system_clock::now(); // get the current time
+      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
+      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
+      Params().put("dp_last_modified", std::to_string(millis.count()));
+      propagate_event = false;
+    }
+  }
+
+  // ap
+  if (propagate_event && QUIState::ui_state.scene.dpAccelProfileCtrl) {
+    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
+    dp_extra_spacing = false;
+    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
+    if (btn_rect.ptInRect(e->x(), e->y())) {
+      int val = QUIState::ui_state.scene.dpAccelProfile + 1;
+      val = val > 2? 0 : val;
+      Params().put("dp_accel_profile", std::to_string(val));
+
+      // touch dp_last_modified
+      auto time = sc::system_clock::now(); // get the current time
+      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
+      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
+      Params().put("dp_last_modified", std::to_string(millis.count()));
+      propagate_event = false;
+    }
+  }
+  // dlp
+  if (propagate_event && QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
+    dp_extra_spacing = false;
+    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
+    if (btn_rect.ptInRect(e->x(), e->y())) {
+      int val = QUIState::ui_state.scene.dpLaneLessMode + 1;
+      val = val > 2? 0 : val;
+      Params().put("dp_lane_less_mode", std::to_string(val));
+
+      // touch dp_last_modified
+      auto time = sc::system_clock::now(); // get the current time
+      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
+      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
+      Params().put("dp_last_modified", std::to_string(millis.count()));
+      propagate_event = false;
+    }
+  }
+  // nav show
+  if (propagate_event && map != nullptr) {
     bool sidebarVisible = geometry().x() > 0;
     map->setVisible(!sidebarVisible && !map->isVisible());
   }
   // propagation event to parent(HomeWindow)
-  QWidget::mousePressEvent(e);
+  if (propagate_event) {
+    QWidget::mousePressEvent(e);
+  }
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {

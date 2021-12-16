@@ -96,6 +96,7 @@ private:
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;
+  bool dp_allow_map = false;
 
 signals:
   void updateStateSignal(const UIState &s);

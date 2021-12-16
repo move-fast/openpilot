@@ -14,6 +14,12 @@ if maps and arch == 'x86_64':
   rpath = [Dir(f"#third_party/mapbox-gl-native-qt/{arch}").srcnode().abspath]
   qt_env["RPATH"] += rpath
 
+# dp - enable maps for EON/C2/JETSON
+if not maps:
+  maps = True
+  rpath = [Dir(f"#third_party/mapbox-gl-native-qt/{arch}").srcnode().abspath]
+  qt_env["RPATH"] += rpath
+
 if arch == "Darwin":
   del base_libs[base_libs.index('OpenCL')]
   qt_env['FRAMEWORKS'] += ['OpenCL']
@@ -57,7 +63,7 @@ qt_env.Program("qt/spinner", ["qt/spinner.cc"], LIBS=qt_libs)
 
 # build main UI
 qt_src = ["main.cc", "ui.cc", "qt/sidebar.cc", "qt/onroad.cc",
-          "qt/window.cc", "qt/home.cc", "qt/offroad/settings.cc",
+          "qt/window.cc", "qt/home.cc", "qt/offroad/settings.cc", "qt/offroad/settings_dp.cc",
           "qt/offroad/onboarding.cc", "qt/offroad/driverview.cc"]
 qt_env.Program("_ui", qt_src + [asset_obj], LIBS=qt_libs)
 

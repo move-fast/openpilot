@@ -25,6 +25,7 @@
 #include "selfdrive/ui/ui.h"
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/qt_window.h"
+#include "selfdrive/ui/qt/offroad/settings_dp.h"
 
 TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   // param, title, desc, icon
@@ -128,7 +129,7 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   if (!params.getBool("Passive")) {
     auto retrainingBtn = new ButtonControl("Review Training Guide", "REVIEW", "Review the rules, features, and limitations of openpilot");
     connect(retrainingBtn, &ButtonControl::clicked, [=]() {
-      if (ConfirmationDialog::confirm("Are you sure you want to review the training guide?", this)) {
+      if (ConfirmationDialog::confirm(tr("Are you sure you want to review the training guide?"), this)) {
         emit reviewTrainingGuide();
       }
     });
@@ -154,12 +155,12 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   QHBoxLayout *power_layout = new QHBoxLayout();
   power_layout->setSpacing(30);
 
-  QPushButton *reboot_btn = new QPushButton("Reboot");
+  QPushButton *reboot_btn = new QPushButton(tr("Reboot"));
   reboot_btn->setObjectName("reboot_btn");
   power_layout->addWidget(reboot_btn);
   QObject::connect(reboot_btn, &QPushButton::clicked, this, &DevicePanel::reboot);
 
-  QPushButton *poweroff_btn = new QPushButton("Power Off");
+  QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
   poweroff_btn->setObjectName("poweroff_btn");
   power_layout->addWidget(poweroff_btn);
   QObject::connect(poweroff_btn, &QPushButton::clicked, this, &DevicePanel::poweroff);
@@ -224,17 +225,17 @@ void DevicePanel::poweroff() {
 }
 
 SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
-  gitBranchLbl = new LabelControl("Git Branch");
-  gitCommitLbl = new LabelControl("Git Commit");
-  osVersionLbl = new LabelControl("OS Version");
-  versionLbl = new LabelControl("Version", "", QString::fromStdString(params.get("ReleaseNotes")).trimmed());
-  lastUpdateLbl = new LabelControl("Last Update Check", "", "The last time openpilot successfully checked for an update. The updater only runs while the car is off.");
-  updateBtn = new ButtonControl("Check for Update", "");
+  gitBranchLbl = new LabelControl(SoftwarePanel::tr("Git Branch"));
+  gitCommitLbl = new LabelControl(SoftwarePanel::tr("Git Commit"));
+  osVersionLbl = new LabelControl(SoftwarePanel::tr("OS Version"));
+  versionLbl = new LabelControl(SoftwarePanel::tr("Version"), "", QString::fromStdString(params.get("ReleaseNotes")).trimmed());
+  lastUpdateLbl = new LabelControl(SoftwarePanel::tr("Last Update Check"), "", SoftwarePanel::tr("The last time openpilot successfully checked for an update. The updater only runs while the car is off."));
+  updateBtn = new ButtonControl(SoftwarePanel::tr("Check for Update"), "");
   connect(updateBtn, &ButtonControl::clicked, [=]() {
     if (params.getBool("IsOffroad")) {
       fs_watch->addPath(QString::fromStdString(params.getParamPath("LastUpdateTime")));
       fs_watch->addPath(QString::fromStdString(params.getParamPath("UpdateFailedCount")));
-      updateBtn->setText("CHECKING");
+      updateBtn->setText(SoftwarePanel::tr("CHECKING"));
       updateBtn->setEnabled(false);
     }
     std::system("pkill -1 -f selfdrive.updated");
@@ -279,7 +280,7 @@ void SoftwarePanel::updateLabels() {
 
   versionLbl->setText(getBrandVersion());
   lastUpdateLbl->setText(lastUpdate);
-  updateBtn->setText("CHECK");
+  updateBtn->setText(SoftwarePanel::tr("CHECK"));
   updateBtn->setEnabled(true);
   gitBranchLbl->setText(QString::fromStdString(params.get("GitBranch")));
   gitCommitLbl->setText(QString::fromStdString(params.get("GitCommit")).left(10));
@@ -295,11 +296,11 @@ QWidget * network_panel(QWidget * parent) {
   ListWidget *list = new ListWidget();
   list->setSpacing(30);
   // wifi + tethering buttons
-  auto wifiBtn = new ButtonControl("Wi-Fi Settings", "OPEN");
+  auto wifiBtn = new ButtonControl(SoftwarePanel::tr("Wi-Fi Settings"), SoftwarePanel::tr("OPEN"));
   QObject::connect(wifiBtn, &ButtonControl::clicked, [=]() { HardwareEon::launch_wifi(); });
   list->addItem(wifiBtn);
 
-  auto tetheringBtn = new ButtonControl("Tethering Settings", "OPEN");
+  auto tetheringBtn = new ButtonControl(SoftwarePanel::tr("Tethering Settings"), SoftwarePanel::tr("OPEN"));
   QObject::connect(tetheringBtn, &ButtonControl::clicked, [=]() { HardwareEon::launch_tethering(); });
   list->addItem(tetheringBtn);
 
@@ -329,18 +330,17 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   panel_widget = new QStackedWidget();
   panel_widget->setStyleSheet(R"(
     border-radius: 30px;
-    background-color: #292929;
+    background-color: #000000;
   )");
 
   // close button
-  QPushButton *close_btn = new QPushButton("×");
+  QPushButton *close_btn = new QPushButton(SettingsWindow::tr("BACK"));
   close_btn->setStyleSheet(R"(
     QPushButton {
-      font-size: 140px;
-      padding-bottom: 20px;
+      font-size: 48px;
       font-weight: bold;
       border 1px grey solid;
-      border-radius: 100px;
+      border-radius: 20px;
       background-color: #292929;
       font-weight: 400;
     }
@@ -348,8 +348,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
       background-color: #3B3B3B;
     }
   )");
-  close_btn->setFixedSize(200, 200);
-  sidebar_layout->addSpacing(45);
+  close_btn->setFixedSize(200, 80);
   sidebar_layout->addWidget(close_btn, 0, Qt::AlignCenter);
   QObject::connect(close_btn, &QPushButton::clicked, this, &SettingsWindow::closeSettings);
 
@@ -359,19 +358,29 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   QObject::connect(device, &DevicePanel::showDriverView, this, &SettingsWindow::showDriverView);
 
   QList<QPair<QString, QWidget *>> panels = {
-    {"Device", device},
-    {"Network", network_panel(this)},
-    {"Toggles", new TogglesPanel(this)},
-    {"Software", new SoftwarePanel(this)},
+    {SettingsWindow::tr("Device"), device},
+    {SettingsWindow::tr("Network"), network_panel(this)},
+    {SettingsWindow::tr("Toggles"), new TogglesPanel(this)},
+    {SettingsWindow::tr("Software"), new SoftwarePanel(this)},
   };
 
 #ifdef ENABLE_MAPS
   auto map_panel = new MapPanel(this);
-  panels.push_back({"Navigation", map_panel});
+  panels.push_back({SettingsWindow::tr("Navigation"), map_panel});
   QObject::connect(map_panel, &MapPanel::closeSettings, this, &SettingsWindow::closeSettings);
 #endif
+  // dp
+  dp_general_panel = new DPGeneralPanel(this);
+  QObject::connect(this, &SettingsWindow::showDisclaimer, dp_general_panel, &DPGeneralPanel::showDisclaimer);
+  panels.push_back({SettingsWindow::tr("DP - General"), dp_general_panel});
+  panels.push_back({SettingsWindow::tr("DP - Controls"), new DPControlPanel(this)});
+  panels.push_back({SettingsWindow::tr("DP - UI"), new DPUIPanel(this)});
+  panels.push_back({SettingsWindow::tr("DP - Cars"), new DPCarPanel(this)});
+  dp_maps_panel = new DPMapsPanel(this);
+  QObject::connect(this, &SettingsWindow::updateIpAddr, dp_maps_panel, &DPMapsPanel::updateMapsPanelIpAddr);
+  panels.push_back({SettingsWindow::tr("DP - Maps"), dp_maps_panel});
 
-  const int padding = panels.size() > 3 ? 25 : 35;
+  const int padding = panels.size() > 3 ? 5 : 35;
 
   nav_btns = new QButtonGroup(this);
   for (auto &[name, panel] : panels) {
@@ -383,8 +392,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
         color: grey;
         border: none;
         background: none;
-        font-size: 65px;
-        font-weight: 500;
+        font-size: 46px;
+        font-weight: 350;
         padding-top: %1px;
         padding-bottom: %1px;
       }
@@ -397,10 +406,10 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     )").arg(padding));
 
     nav_btns->addButton(btn);
-    sidebar_layout->addWidget(btn, 0, Qt::AlignRight);
+    sidebar_layout->addWidget(btn, 0, Qt::AlignLeft);
 
-    const int lr_margin = name != "Network" ? 50 : 0;  // Network panel handles its own margins
-    panel->setContentsMargins(lr_margin, 25, lr_margin, 25);
+    const int lr_margin = name != SettingsWindow::tr("Network") ? 25 : 0;  // Network panel handles its own margins
+    panel->setContentsMargins(lr_margin, 12, lr_margin, 12);
 
     ScrollView *panel_frame = new ScrollView(panel, this);
     panel_widget->addWidget(panel_frame);

@@ -69,10 +69,10 @@ typedef enum UIStatus {
 } UIStatus;
 
 const QColor bg_colors [] = {
-  [STATUS_DISENGAGED] =  QColor(0x17, 0x33, 0x49, 0xc8),
-  [STATUS_ENGAGED] = QColor(0x17, 0x86, 0x44, 0xf1),
-  [STATUS_WARNING] = QColor(0xDA, 0x6F, 0x25, 0xf1),
-  [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
+  [STATUS_DISENGAGED] = QColor(0x0, 0x0, 0x0, 0xff),
+  [STATUS_ENGAGED] = QColor(0x01, 0x50, 0x01, 0x01),
+  [STATUS_WARNING] = QColor(0x80, 0x80, 0x80, 0x0f),
+  [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xff),
 };
 
 typedef struct {
@@ -85,6 +85,12 @@ typedef struct UIScene {
   bool world_objects_visible;
 
   cereal::PandaState::PandaType pandaType;
+
+  int laneless_mode;
+
+  cereal::CarState::Reader car_state;
+  cereal::ControlsState::Reader controls_state;
+  cereal::LateralPlan::Reader lateral_plan;
 
   // modelV2
   float lane_line_probs[4];
@@ -99,6 +105,51 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, longitudinal_control, end_to_end;
   uint64_t started_frame;
+
+  // dp
+  int dpUiDisplayMode;
+  bool dpUiSpeed;
+  bool dpUiEvent;
+  bool dpUiMaxSpeed;
+  bool dpUiFace;
+  bool dpUiLane;
+  bool dpUiLead;
+  bool dpUiSide;
+  bool dpUiTop;
+  bool dpUiBlinker;
+  int dpUiBrightness;
+  std::string dpIpAddr;
+  float angleSteersDes;
+  float angleSteers;
+  bool isReversing;
+  // for blinker, from kegman
+  bool leftBlinker;
+  bool rightBlinker;
+  bool brakeLights;
+  int blinker_blinking_rate;
+  int blinker_blinking_x_offset;
+  // for blind spot
+  bool leftBlindspot;
+  bool rightBlindspot;
+  std::string dpLocale;
+  bool dpAthenad;
+  bool dpFollowingProfileCtrl;
+  int dpFollowingProfile;
+  bool dpAccelProfileCtrl;
+  int dpAccelProfile;
+  int engineRPM;
+  // gps
+  int satelliteCount;
+  float gpsAccuracy;
+  float gForce;
+  bool dpMapd;
+  bool steeringPressed;
+  bool dpLaneLessModeCtrl;
+  int dpLaneLessMode;
+  bool dpLaneLessModeStatus;
+  float dpLat;
+  float dpLon;
+  bool dpInTW = false;
 } UIScene;
 
 typedef struct UIState {

@@ -67,6 +67,7 @@ static void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTDa
 }
 
 static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
+  SubMaster &sm = *(s->sm);
   UIScene &scene = s->scene;
   auto model_position = model.getPosition();
   float max_distance = std::clamp(model_position.getX()[TRAJECTORY_SIZE - 1],
@@ -80,6 +81,8 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     scene.lane_line_probs[i] = lane_line_probs[i];
     update_line_data(s, lane_lines[i], 0.025 * scene.lane_line_probs[i], 0, &scene.lane_line_vertices[i], max_idx);
   }
+
+  scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
 
   // update road edges
   const auto road_edges = model.getRoadEdges();
@@ -183,6 +186,82 @@ static void update_state(UIState *s) {
     scene.light_sensor = std::clamp<float>(1.0 - (ev / max_ev), 0.0, 1.0);
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  if (sm.updated("lateralPlan")) {
+    scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
+    auto data = sm["lateralPlan"].getLateralPlan();
+    scene.dpLaneLessModeStatus = data.getDpLaneLessModeStatus();
+  }
+  if (scene.started) {
+    if (sm.updated("controlsState")) {
+      auto controls_state = sm["controlsState"].getControlsState();
+      scene.angleSteers = controls_state.getAngleSteers();
+      scene.angleSteersDes = controls_state.getSteeringAngleDesiredDeg();
+    }
+    if (sm.updated("carState")) {
+      auto car_state = sm["carState"].getCarState();
+      // dp - blinker / reversing
+      bool cur_left_blinker = car_state.getLeftBlinker();
+      bool cur_right_blinker = car_state.getRightBlinker();
+      if(scene.leftBlinker != cur_left_blinker || scene.rightBlinker != cur_right_blinker) {
+        scene.blinker_blinking_rate = 200;
+        scene.blinker_blinking_x_offset = 0;
+      }
+      scene.leftBlinker = cur_left_blinker;
+      scene.rightBlinker = cur_right_blinker;
+      scene.brakeLights = car_state.getBrakeLights();
+      scene.isReversing = car_state.getGearShifter() == cereal::CarState::GearShifter::REVERSE;
+      scene.leftBlindspot = car_state.getLeftBlindspot();
+      scene.rightBlindspot = car_state.getRightBlindspot();
+      scene.engineRPM = car_state.getEngineRPM();
+      scene.gForce = car_state.getAEgo() / 9.8;
+      scene.steeringPressed = car_state.getSteeringPressed();
+    }
+    if (sm.updated("ubloxGnss")) {
+      auto sensor = sm["ubloxGnss"].getUbloxGnss();
+      if (sensor.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
+        scene.satelliteCount = sensor.getMeasurementReport().getNumMeas();
+      }
+    }
+    if (sm.updated("gpsLocationExternal")) {
+      auto gps = sm["gpsLocationExternal"].getGpsLocationExternal();
+
+      scene.gpsAccuracy = gps.getAccuracy();
+      scene.dpLat = gps.getLatitude();
+      scene.dpLon = gps.getLongitude();
+      if (!scene.dpInTW && scene.dpLat <= 25.506094 && scene.dpLat >= 21.861697 && scene.dpLon >= 120.204992 && scene.dpLon <= 122.1591313) {
+        scene.dpInTW = true;
+      }
+    }
+  }
+  if (sm.updated("dragonConf")) {
+    auto dragonConf = sm["dragonConf"].getDragonConf();
+    if (scene.started) {
+      scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
+      scene.dpUiSpeed = dragonConf.getDpUiSpeed();
+      scene.dpUiEvent = dragonConf.getDpUiEvent();
+      scene.dpUiMaxSpeed = dragonConf.getDpUiMaxSpeed();
+      scene.dpUiFace = dragonConf.getDpUiFace();
+      scene.dpUiLane = dragonConf.getDpUiLane();
+      scene.dpUiLead = dragonConf.getDpUiLead();
+      scene.dpUiSide = dragonConf.getDpUiSide();
+      scene.dpUiTop = dragonConf.getDpUiTop();
+      scene.dpUiBlinker = dragonConf.getDpUiBlinker();
+      scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
+      scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
+      scene.dpAccelProfileCtrl = dragonConf.getDpAccelProfileCtrl();
+      scene.dpAccelProfile = dragonConf.getDpAccelProfile();
+      scene.dpMapd = dragonConf.getDpMapd();
+      scene.dpLaneLessModeCtrl = dragonConf.getDpLaneLessModeCtrl();
+      scene.dpLaneLessMode = dragonConf.getDpLaneLessMode();
+    }
+    scene.dpUiBrightness = dragonConf.getDpUiBrightness();
+    scene.dpIpAddr = dragonConf.getDpIpAddr();
+    scene.dpAthenad = dragonConf.getDpAthenad();
+    scene.dpLocale = dragonConf.getDpLocale();
+  }
+  if (!scene.dpInTW && scene.dpLocale == "zh-TW") {
+    scene.dpInTW = true;
+  }
 }
 
 void ui_update_params(UIState *s) {
@@ -222,6 +301,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
+    "dragonConf", "ubloxGnss", "gpsLocationExternal", "lateralPlan", "liveMapData",
   });
 
   Params params;
@@ -304,15 +384,22 @@ void Device::updateBrightness(const UIState &s) {
 
 void Device::updateWakefulness(const UIState &s) {
   awake_timeout = std::max(awake_timeout - 1, 0);
-
-  bool should_wake = s.scene.started || s.scene.ignition;
-  if (!should_wake) {
-    // tap detection while display is off
-    bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
-    bool gyro_trigger = abs(s.scene.gyro_sensor - gyro_prev) > 0.15;
-    should_wake = accel_trigger && gyro_trigger;
-    gyro_prev = s.scene.gyro_sensor;
-    accel_prev = (accel_prev * (accel_samples - 1) + s.scene.accel_sensor) / accel_samples;
+  bool should_wake = false;
+  if (s.scene.dpUiDisplayMode == 0 || s.scene.dpUiDisplayMode == 1) {
+    should_wake = s.scene.started || s.scene.ignition;
+    if (s.scene.dpUiDisplayMode == 1 && s.scene.isReversing) {
+      should_wake = false;
+    }
+    if (!should_wake) {
+      // tap detection while display is off
+      bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
+      bool gyro_trigger = abs(s.scene.gyro_sensor - gyro_prev) > 0.15;
+      should_wake = accel_trigger && gyro_trigger;
+      gyro_prev = s.scene.gyro_sensor;
+      accel_prev = (accel_prev * (accel_samples - 1) + s.scene.accel_sensor) / accel_samples;
+    }
+  } else if (s.scene.dpUiDisplayMode == 2 && s.scene.started) {
+    should_wake = false;
   }
 
   setAwake(awake_timeout, should_wake);

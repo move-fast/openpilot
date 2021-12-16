@@ -8,7 +8,7 @@
 #include <QStackedWidget>
 #include <QWidget>
 
-
+#include "selfdrive/ui/qt/offroad/settings_dp.h"
 #include "selfdrive/ui/qt/widgets/controls.h"
 
 // ********** settings window + top-level panels **********
