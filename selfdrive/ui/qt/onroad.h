@@ -20,6 +20,25 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(bool hideDM MEMBER hideDM NOTIFY valueChanged);
   Q_PROPERTY(int status MEMBER status NOTIFY valueChanged);
 
+  // dp
+  // topbar
+  Q_PROPERTY(QString currentDateTime MEMBER currentDateTime NOTIFY valueChanged);
+  // bottombar
+  Q_PROPERTY(QString mapd_info MEMBER mapd_info NOTIFY valueChanged);
+  Q_PROPERTY(float angleSteers MEMBER angleSteers NOTIFY valueChanged);
+  Q_PROPERTY(float angleSteersDes MEMBER angleSteersDes NOTIFY valueChanged);
+  Q_PROPERTY(float relativeDist MEMBER relativeDist NOTIFY valueChanged);
+  Q_PROPERTY(float relativeSpeed MEMBER relativeSpeed NOTIFY valueChanged);
+  Q_PROPERTY(int engineRPM MEMBER engineRPM NOTIFY valueChanged);
+  Q_PROPERTY(bool brakeLights MEMBER brakeLights NOTIFY valueChanged);
+  Q_PROPERTY(bool leftBlindspot MEMBER leftBlindspot NOTIFY valueChanged);
+  Q_PROPERTY(bool rightBlindspot MEMBER rightBlindspot NOTIFY valueChanged);
+  Q_PROPERTY(bool steeringPressed MEMBER steeringPressed NOTIFY valueChanged);
+  Q_PROPERTY(bool leftBlinker MEMBER leftBlinker NOTIFY valueChanged);
+  Q_PROPERTY(bool rightBlinker MEMBER rightBlinker NOTIFY valueChanged);
+  Q_PROPERTY(int blinkerOffset MEMBER blinkerOffset NOTIFY valueChanged);
+  Q_PROPERTY(int blinkerAlpha MEMBER blinkerAlpha NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -28,6 +47,16 @@ private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void paintEvent(QPaintEvent *event) override;
+  void drawBlinkers();
+  void drawBlinkerLeft();
+  void drawBlinkerRight();
+  void drawBlindSpots();
+  void drawBlindSpotLeft();
+  void drawBlindSpotRight();
+  void drawTopbar();
+  void drawSidebar();
+  void drawBottombar();
+  void drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color);
 
   QPixmap engage_img;
   QPixmap dm_img;
@@ -41,6 +70,44 @@ private:
   bool dmActive = false;
   bool hideDM = false;
   int status = STATUS_DISENGAGED;
+
+  // dp
+  QString currentDateTime;
+  bool mapd_enabled = false;
+  QString mapd_info;
+  float angleSteers = 0.0;
+  float angleSteersDes = 0.0;
+  float relativeDist = 0.0;
+  float relativeSpeed = 0.0;
+  int engineRPM = 0;
+  bool brakeLights = false;
+
+  bool leftBlindspot = false;
+  bool rightBlindspot = false;
+  bool steeringPressed = false;
+  bool leftBlinker = false;
+  bool rightBlinker = false;
+  int blinkerOffset = 0;
+  int blinkerAlpha = 200;
+
+
+  // toggles
+  bool dpUiSpeed = true;
+  bool dpUiEvent = true;
+  bool dpUiMaxSpeed = true;
+  bool dpUiFace = true;
+  bool dpUiLane = true;
+  bool dpUiLead = true;
+  bool dpUiSide = false;
+  bool dpUiTop = false;
+  bool dpUiBlinker = true;
+  bool dpFollowingProfileCtrl = false;
+  bool dpFollowingProfile = 0;
+  bool dpAccelProfileCtrl = false;
+  bool dpAccelProfile = 0;
+  bool dpMapd = false;
+  bool dpLaneLessModeCtrl = 0;
+  bool dpLaneLessMode = false;
 
 signals:
   void valueChanged();
