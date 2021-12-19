@@ -235,22 +235,22 @@ static void update_state(UIState *s) {
   }
   if (sm.updated("dragonConf")) {
     auto dragonConf = sm["dragonConf"].getDragonConf();
+    scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
     if (scene.started) {
-      scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
-      scene.dpUiSpeed = dragonConf.getDpUiSpeed();
-      scene.dpUiEvent = dragonConf.getDpUiEvent();
-      scene.dpUiMaxSpeed = dragonConf.getDpUiMaxSpeed();
-      scene.dpUiFace = dragonConf.getDpUiFace();
-      scene.dpUiLane = dragonConf.getDpUiLane();
-      scene.dpUiLead = dragonConf.getDpUiLead();
-      scene.dpUiSide = dragonConf.getDpUiSide();
-      scene.dpUiTop = dragonConf.getDpUiTop();
-      scene.dpUiBlinker = dragonConf.getDpUiBlinker();
+//      scene.dpUiSpeed = dragonConf.getDpUiSpeed();
+//      scene.dpUiEvent = dragonConf.getDpUiEvent();
+//      scene.dpUiMaxSpeed = dragonConf.getDpUiMaxSpeed();
+//      scene.dpUiFace = dragonConf.getDpUiFace();
+//      scene.dpUiLane = dragonConf.getDpUiLane();
+//      scene.dpUiLead = dragonConf.getDpUiLead();
+//      scene.dpUiSide = dragonConf.getDpUiSide();
+//      scene.dpUiTop = dragonConf.getDpUiTop();
+//      scene.dpUiBlinker = dragonConf.getDpUiBlinker();
       scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
       scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
       scene.dpAccelProfileCtrl = dragonConf.getDpAccelProfileCtrl();
       scene.dpAccelProfile = dragonConf.getDpAccelProfile();
-      scene.dpMapd = dragonConf.getDpMapd();
+//      scene.dpMapd = dragonConf.getDpMapd();
       scene.dpLaneLessModeCtrl = dragonConf.getDpLaneLessModeCtrl();
       scene.dpLaneLessMode = dragonConf.getDpLaneLessMode();
     }

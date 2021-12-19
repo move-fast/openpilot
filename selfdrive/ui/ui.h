@@ -108,41 +108,41 @@ typedef struct UIScene {
 
   // dp
   int dpUiDisplayMode;
-  bool dpUiSpeed;
-  bool dpUiEvent;
-  bool dpUiMaxSpeed;
-  bool dpUiFace;
-  bool dpUiLane;
-  bool dpUiLead;
-  bool dpUiSide;
-  bool dpUiTop;
-  bool dpUiBlinker;
+//  bool dpUiSpeed;
+//  bool dpUiEvent;
+//  bool dpUiMaxSpeed;
+//  bool dpUiFace;
+//  bool dpUiLane;
+//  bool dpUiLead;
+//  bool dpUiSide;
+//  bool dpUiTop;
+//  bool dpUiBlinker;
   int dpUiBrightness;
   std::string dpIpAddr;
-  float angleSteersDes;
-  float angleSteers;
+//  float angleSteersDes;
+//  float angleSteers;
   bool isReversing;
   // for blinker, from kegman
-  bool leftBlinker;
-  bool rightBlinker;
-  bool brakeLights;
-  int blinker_blinking_rate;
-  int blinker_blinking_x_offset;
+//  bool leftBlinker;
+//  bool rightBlinker;
+//  bool brakeLights;
+//  int blinker_blinking_rate;
+//  int blinker_blinking_x_offset;
   // for blind spot
-  bool leftBlindspot;
-  bool rightBlindspot;
+//  bool leftBlindspot;
+//  bool rightBlindspot;
   std::string dpLocale;
   bool dpAthenad;
   bool dpFollowingProfileCtrl;
   int dpFollowingProfile;
   bool dpAccelProfileCtrl;
   int dpAccelProfile;
-  int engineRPM;
+//  int engineRPM;
   // gps
   int satelliteCount;
   float gpsAccuracy;
   float gForce;
-  bool dpMapd;
+//  bool dpMapd;
   bool steeringPressed;
   bool dpLaneLessModeCtrl;
   int dpLaneLessMode;

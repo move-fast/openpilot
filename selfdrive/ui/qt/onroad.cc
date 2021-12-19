@@ -242,6 +242,12 @@ void OnroadHud::updateState(const UIState &s) {
   const int SET_SPEED_NA = 255;
   const SubMaster &sm = *(s.sm);
   const auto cs = sm["controlsState"].getControlsState();
+  // dp
+  const auto dp = sm["dragonConf"].getDragonConf();
+  setProperty("dpUiSpeed", dp.getDpUiSpeed());
+  setProperty("dpUiEvent", dp.getDpUiEvent());
+  setProperty("dpUiFace", dp.getDpUiFace());
+  setProperty("dpUiMaxSpeed", dp.getDpUiMaxSpeed());
 
   float maxspeed = cs.getVCruise();
   bool cruise_set = maxspeed > 0 && (int)maxspeed != SET_SPEED_NA;
@@ -263,105 +269,6 @@ void OnroadHud::updateState(const UIState &s) {
     setProperty("engageable", cs.getEngageable() || cs.getEnabled());
     setProperty("dmActive", sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode());
   }
-
-
-  // dp - start
-  // topbar - time
-  if (sm.frame % (UI_FREQ / 2) == 0) {
-    QDateTime dateTime = dateTime.currentDateTime();
-    setProperty("currentDateTime", dateTime.toString("yyyy-MM-dd HH:mm:ss"));
-  }
-
-  // bottombar
-  // mapd info (name & others)
-  if (s.scene.dpMapd) {
-    if (sm.frame % (UI_FREQ / 2) == 0) {
-      auto liveMapData = sm["liveMapData"].getLiveMapData();
-      setProperty("mapd_info", QString::fromStdString(liveMapData.getCurrentRoadName()));
-    }
-  }
-
-  // side bar
-  // work out rel speed/dist
-  auto leads = sm["modelV2"].getModelV2().getLeadsV3();
-  float closest_lead_rel_dist = 0;
-  float closest_lead_rel_speed = 0;
-  if (leads[0].getProb() > .5) {
-    closest_lead_rel_dist = leads[0].getX()[0];
-    closest_lead_rel_speed = leads[0].getV()[0];
-  }
-  if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
-    closest_lead_rel_dist = leads[1].getX()[0];
-    closest_lead_rel_speed = leads[1].getV()[0];
-  }
-  if (closest_lead_rel_speed != 0) {
-    if (s.scene.is_metric) {
-      closest_lead_rel_speed = closest_lead_rel_speed * 3.6 + 0.5;
-    } else {
-      closest_lead_rel_speed = closest_lead_rel_speed * 2.2374144 + 0.5;
-    }
-  }
-  setProperty("relativeDist", closest_lead_rel_dist);
-  setProperty("relativeSpeed", closest_lead_rel_speed);
-
-  // steer angle
-  const auto car_state = sm["controlsState"].getCarState();
-  float _angleSteers = cs.getAngleSteers();
-  if (_angleSteers != 0) {
-    _angleSteers = _angleSteers;
-  }
-  setProperty("angleSteers", _angleSteers);
-  // desired angle
-  float _angleSteersDes = cs.getSteeringAngleDesiredDeg();
-  if (_angleSteersDes != 0) {
-    _angleSteersDes = _angleSteersDes;
-  }
-  setProperty("angleSteersDes", _angleSteersDes);
-
-  setProperty("engineRPM", car_state.getEngineRPM());
-  setProperty("brakeLights", car_state.getBrakeLights());
-  setProperty("leftBlindspot", car_state.getLeftBlindspot());
-  setProperty("rightBlindspot", car_state.getRightBlindspot());
-  setProperty("steeringPressed", car_state.getSteeringPressed());
-  bool _leftBlinker = car_state.getLeftBlinker();
-  bool _rightBlinker = car_state.getRightBlinker();
-  // blinkers animation
-  if (_leftBlinker || _rightBlinker) {
-    blinkerAlpha -= 5;
-    blinkerOffset += 10;
-    if (blinkerAlpha <= 100) {
-      blinkerAlpha = 200;
-      blinkerOffset = 0;
-    }
-  } else {
-    blinkerAlpha = 200;
-    blinkerOffset = 0;
-  }
-  setProperty("leftBlinker", _leftBlinker);
-  setProperty("rightBlinker", _rightBlinker);
-  setProperty("blinkerAlpha", blinkerAlpha);
-  setProperty("blinkerOffset", blinkerOffset);
-
-  // ui toggles
-  auto dp = sm["dragonConf"].getDragonConf();
-  setProperty("dpUiSpeed", dp.getDpUiSpeed());
-  setProperty("dpUiEvent", dp.getDpUiEvent());
-  setProperty("dpUiMaxSpeed", dp.getDpUiMaxSpeed());
-  setProperty("dpUiFace", dp.getDpUiFace());
-  setProperty("dpUiLane", dp.getDpUiLane());
-  setProperty("dpUiLead", dp.getDpUiLead());
-  setProperty("dpUiSide", dp.getDpUiSide());
-  setProperty("dpUiTop", dp.getDpUiTop());
-  setProperty("dpUiBlinker", dp.getDpUiBlinker());
-
-  setProperty("dpFollowingProfileCtrl", dp.getDpFollowingProfileCtrl());
-  setProperty("dpFollowingProfile", dp.getDpFollowingProfile());
-  setProperty("dpAccelProfileCtrl", dp.getDpAccelProfileCtrl());
-  setProperty("dpAccelProfile", dp.getDpAccelProfile());
-  setProperty("dpMapd", dp.getDpMapd());
-  setProperty("dpLaneLessModeCtrl", dp.getDpLaneLessModeCtrl());
-  setProperty("dpLaneLessMode", dp.getDpLaneLessMode());
-  // dp - end
 }
 
 void OnroadHud::paintEvent(QPaintEvent *event) {
@@ -374,6 +281,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, width(), header_h, bg);
 
+  if (dpUiMaxSpeed) {
   // max speed
   QRect rc(bdr_s * 2, bdr_s * 1.5, 184, 202);
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
@@ -390,203 +298,29 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     configFont(p, "Open Sans", 80, "SemiBold");
     drawText(p, rc.center().x(), 212, maxSpeed, 100);
   }
+  }
 
+  if (dpUiSpeed) {
   // current speed
   configFont(p, "Open Sans", 176, "Bold");
   drawText(p, rect().center().x(), 210, speed);
   configFont(p, "Open Sans", 66, "Regular");
   drawText(p, rect().center().x(), 290, speedUnit, 200);
-
+  }
+  if (dpUiEvent) {
   // engage-ability icon
   if (engageable) {
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5),
              engage_img, bg_colors[status], 1.0);
   }
-
+  }
+  if (dpUiFace) {
   // dm icon
   if (!hideDM) {
     drawIcon(p, radius / 2 + (bdr_s * 2), rect().bottom() - footer_h / 2,
              dm_img, QColor(0, 0, 0, 70), dmActive ? 1.0 : 0.2);
   }
-
-  drawBlinkerLeft();
-  drawBlinkerRight();
-  drawBlindSpotLeft();
-  drawBlindSpotRight();
-  drawTopbar();
-  drawSidebar();
-  drawBottombar();
-}
-
-void OnroadHud::drawBlinkerLeft() {
-  if (leftBlinker) {
-    int x = rect().center().x() - 200 - blinkerOffset;
-    int y = bdr_s*2;
-
-    QPainter p(this);
-    QPainterPath path = QPainterPath();
-    path.moveTo(x, y);
-    path.lineTo(x, y + 250);
-    path.lineTo(x - 100, y + 125);
-    path.lineTo(x, y);
-    p.setPen(Qt::NoPen);
-    p.fillPath(path, QBrush(QColor(0, 255, 0, blinkerAlpha)));
   }
-}
-
-void OnroadHud::drawBlinkerRight() {
-  if (rightBlinker) {
-    int x = rect().center().x() + 200 + blinkerOffset;
-    int y = bdr_s*2;
-
-    QPainter p(this);
-    QPainterPath path = QPainterPath();
-    path.moveTo(x, y);
-    path.lineTo(x, y + 250);
-    path.lineTo(x + 100, y + 125);
-    path.lineTo(x, y);
-    p.setPen(Qt::NoPen);
-    p.fillPath(path, QBrush(QColor(0, 255, 0, blinkerAlpha)));
-  }
-}
-
-void OnroadHud::drawBlindSpotLeft() {
-  if (leftBlindspot) {
-    QPainter p(this);
-    p.setBrush(QColor(255, 255, 0, 255));
-    p.setPen(Qt::NoPen);
-    int blind_spot_width = (int)(bdr_s * 1.5);
-    QRect rc(0, 0, blind_spot_width, height());
-    p.drawRoundedRect(rc, 0, 0);
-  }
-}
-
-void OnroadHud::drawBlindSpotRight() {
-  if (rightBlindspot) {
-    QPainter p(this);
-    p.setBrush(QColor(255, 255, 0, 255));
-    p.setPen(Qt::NoPen);
-    int blind_spot_width = (int)(bdr_s * 1.5);
-    QRect rc(width() - blind_spot_width, 0, blind_spot_width, height());
-    p.drawRoundedRect(rc, 0, 0);
-  }
-}
-
-
-void OnroadHud::drawTopbar() {
-  QPainter p(this);
-  QRect rc(0, 0, width(), bdr_s);
-  if (brakeLights) {
-    p.setBrush(QColor(255, 0, 0, 255));
-  } else {
-    p.setBrush(QColor(0, 0, 0, 255));
-  }
-  p.drawRoundedRect(rc, 0, 0);
-  p.setPen(Qt::NoPen);
-
-  configFont(p, "Open Sans", 30, "Bold");
-  drawText(p, rc.center().x(), bdr_s - 5, currentDateTime, 200);
-}
-
-void OnroadHud::drawSidebar() {
-  QPainter p(this);
-  int y = bdr_s * 1.5 + 202; // max speed
-  QColor text_color = QColor(0xff, 0xff, 0xff, 200);
-  // x: align with engage image
-  y += 50;
-  QRect rc(rect().right() - radius - bdr_s * 2, y, 184, 650);
-  p.setPen(QPen(text_color, 10));
-  p.drawRoundedRect(rc, 20, 20);
-  p.setPen(Qt::NoPen);
-
-  y += 80;
-
-  // actual steering
-  configFont(p, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (abs(angleSteers) >= 12) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (abs(angleSteers) >= 6) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
-  }
-  drawColoredText(p, rc.center().x(), y, QString::number(angleSteers, 'f', 1), text_color);
-  y += 30;
-  configFont(p, "Open Sans", 24, "Bold");
-  drawText(p, rc.center().x(), y, OnroadHud::tr("REAL STEER"), 200);
-  y += 100; // spacing
-
-  // desire steering
-  configFont(p, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (abs(angleSteersDes) >= 12) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (abs(angleSteersDes) >= 6) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
-  }
-  drawColoredText(p, rc.center().x(), y, QString::number(angleSteersDes, 'f', 1), text_color);
-  y += 30;
-  configFont(p, "Open Sans", 24, "Bold");
-  drawText(p, rc.center().x(), y, OnroadHud::tr("DESIR STEER"), 200);
-  y += 100; // spacing
-
-  // relative distance
-  configFont(p, "Open Sans", 54, "SemiBold");
-  drawText(p, rc.center().x(), y, QString::number(relativeDist, 'f', 1), 200);
-  y += 30;
-  configFont(p, "Open Sans", 24, "Bold");
-  drawText(p, rc.center().x(), y, OnroadHud::tr("REL DIST"), 200);
-  y += 100; // spacing
-
-  // relative speed
-  configFont(p, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (relativeSpeed <= -5) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (relativeSpeed < 0) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
-  }
-  drawText(p, rc.center().x(), y, QString::number(relativeSpeed, 'f', 1), 200);
-  y += 30;
-  configFont(p, "Open Sans", 24, "Bold");
-  drawText(p, rc.center().x(), y, OnroadHud::tr("REL SPEED"), 200);
-  y += 100; // spacing
-
-  // engine rpm
-  configFont(p, "Open Sans", 52, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (engineRPM >= 6000) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (engineRPM >= 4000) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
-  }
-  drawColoredText(p, rc.center().x(), y, engineRPM <= 0 ? OnroadHud::tr("N/A") : QString::number(engineRPM), text_color);
-  y += 30;
-  configFont(p, "Open Sans", 24, "Bold");
-  drawText(p, rc.center().x(), y, OnroadHud::tr("ENG RPM"), 200);
-//  y += 10; // spacing
-}
-
-void OnroadHud::drawBottombar() {
-  if (mapd_info != "") {
-    QPainter p(this);
-    QRect rc(0, height() - bdr_s*2, width(), bdr_s*2);
-    p.setBrush(QColor(0, 0, 0, 255));
-    p.drawRoundedRect(rc, 0, 0);
-    p.setPen(Qt::NoPen);
-
-    configFont(p, "Open Sans", 48, "Bold");
-    drawText(p, rc.center().x(), height() - bdr_s/2, mapd_info);
-  }
-}
-
-void OnroadHud::drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color) {
-  QFontMetrics fm(p.font());
-  QRect init_rect = fm.boundingRect(text);
-  QRect real_rect = fm.boundingRect(init_rect, 0, text);
-  real_rect.moveCenter({x, y - real_rect.height() / 2});
-
-  p.setPen(color);
-  p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
 void OnroadHud::drawText(QPainter &p, int x, int y, const QString &text, int alpha) {
@@ -661,7 +395,7 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIScene &scene) {
   painter.drawPolygon(scene.track_vertices.v, scene.track_vertices.cnt);
 }
 
-void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd) {
+void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd, bool has_op_long) {
   const float speedBuff = 10.;
   const float leadBuff = 40.;
   const float d_rel = lead_data.getX()[0];
@@ -689,30 +423,236 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
 
   // chevron
   QPointF chevron[] = {{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}};
-  painter.setBrush(redColor(fillAlpha));
+  painter.setBrush(has_op_long? redColor(fillAlpha) : QColor(180, 180, 180, fillAlpha));
   painter.drawPolygon(chevron, std::size(chevron));
+}
+
+void NvgWindow::drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color = QColor(0xff, 0xff, 0xff, 200)) {
+  QFontMetrics fm(p.font());
+  QRect init_rect = fm.boundingRect(text);
+  QRect real_rect = fm.boundingRect(init_rect, 0, text);
+  real_rect.moveCenter({x, y - real_rect.height() / 2});
+
+  p.setPen(color);
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+void NvgWindow::drawBlinkers(QPainter &painter, const cereal::CarState::Reader &cs) {
+  bool leftBlinker = cs.getLeftBlinker();
+  bool rightBlinker = cs.getRightBlinker();
+  if (!leftBlinker && !rightBlinker) {
+    blinkerAlpha = 200;
+    blinkerOffset = 0;
+  } else {
+    blinkerAlpha -= 5;
+    blinkerOffset += 10;
+    if (blinkerAlpha <= 100) {
+      blinkerAlpha = 200;
+      blinkerOffset = 0;
+    }
+  }
+  if (leftBlinker) {
+    int x = rect().center().x() - 200 - blinkerOffset;
+    int y = bdr_s*2;
+
+    QPainterPath path = QPainterPath();
+    path.moveTo(x, y);
+    path.lineTo(x, y + 250);
+    path.lineTo(x - 100, y + 125);
+    path.lineTo(x, y);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(path, QBrush(QColor(0, 0xff, 0, blinkerAlpha)));
+  }
+  if (rightBlinker) {
+    int x = rect().center().x() + 200 + blinkerOffset;
+    int y = bdr_s*2;
+
+    QPainterPath path = QPainterPath();
+    path.moveTo(x, y);
+    path.lineTo(x, y + 250);
+    path.lineTo(x + 100, y + 125);
+    path.lineTo(x, y);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(path, QBrush(QColor(0, 0xff, 0, blinkerAlpha)));
+  }
+}
+void NvgWindow::drawBlindSpots(QPainter &painter, const cereal::CarState::Reader &cs) {
+  bool leftBlindSpot = cs.getLeftBlindspot();
+  bool rightBlindSpot = cs.getRightBlindspot();
+  if (leftBlindSpot || rightBlindSpot) {
+    int blind_spot_width = (int)(bdr_s * 1.5);
+    int blind_spot_height = height();
+    painter.setBrush(QColor(0xff, 0xff, 0, 200));
+    painter.setPen(Qt::NoPen);
+
+    if (leftBlindSpot) {
+      QRect rc(0, 0, blind_spot_width, blind_spot_height);
+      painter.drawRoundedRect(rc, 0, 0);
+    }
+    if (rightBlindSpot) {
+      QRect rc(width() - blind_spot_width, 0, blind_spot_width, blind_spot_height);
+      painter.drawRoundedRect(rc, 0, 0);
+    }
+  }
+}
+void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs) {
+  QRect rc(0, 0, width(), bdr_s);
+  if (cs.getBrakeLights()) {
+    painter.setBrush(QColor(0xff, 0, 0, 0xff));
+  } else {
+    painter.setBrush(QColor(0, 0, 0, 0xff));
+  }
+  painter.drawRoundedRect(rc, 0, 0);
+  painter.setPen(Qt::NoPen);
+  QDateTime dateTime = dateTime.currentDateTime();
+
+  configFont(painter, "Open Sans", 36, "Bold");
+  drawColoredText(painter, rc.center().x(), bdr_s - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
+}
+
+void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric) {
+  painter.setBrush(Qt::NoBrush);
+  const int radius = 192; // from OnroadHud
+  int y = bdr_s * 1.5 + 202; // max speed
+  QColor text_color = QColor(0xff, 0xff, 0xff, 200);
+  // x: align with engage image
+  y += 50;
+  QRect rc(rect().right() - radius - bdr_s * 2, y, 184, 650);
+  painter.setPen(QPen(text_color, 10));
+  painter.drawRoundedRect(rc, 20, 20);
+  painter.setPen(Qt::NoPen);
+
+  y += 80;
+
+  // actual steering
+  float angleSteers = css.getAngleSteers();
+  configFont(painter, "Open Sans", 54, "SemiBold");
+  text_color = QColor(0xff, 0xff, 0xff, 200);
+  if (abs(angleSteers) >= 12) {
+    text_color = QColor(0xff, 0x0, 0x0, 200);
+  } else if (abs(angleSteers) >= 6) {
+    text_color = QColor(0xff, 0xff, 0x0, 200);
+  }
+  drawColoredText(painter, rc.center().x(), y, QString::number(angleSteers, 'f', 1), text_color);
+  y += 30;
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("REAL STEER"));
+  y += 100; // spacing
+
+  // desire steering
+  float angleSteersDes = css.getSteeringAngleDesiredDeg();
+  configFont(painter, "Open Sans", 54, "SemiBold");
+  text_color = QColor(0xff, 0xff, 0xff, 200);
+  if (abs(angleSteersDes) >= 12) {
+    text_color = QColor(0xff, 0x0, 0x0, 200);
+  } else if (abs(angleSteersDes) >= 6) {
+    text_color = QColor(0xff, 0xff, 0x0, 200);
+  }
+  drawColoredText(painter, rc.center().x(), y, QString::number(angleSteersDes, 'f', 1), text_color);
+  y += 30;
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("DESIR STEER"));
+  y += 100; // spacing
+
+  // find leads data
+  auto leads = lead_reader.getLeadsV3();
+  float closest_lead_rel_dist = 0;
+  float closest_lead_rel_speed = 0;
+  if (leads[0].getProb() > .5) {
+    closest_lead_rel_dist = leads[0].getX()[0];
+    closest_lead_rel_speed = leads[0].getV()[0];
+  }
+  if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
+    closest_lead_rel_dist = leads[1].getX()[0];
+    closest_lead_rel_speed = leads[1].getV()[0];
+  }
+  if (closest_lead_rel_speed != 0) {
+    if (is_metric) {
+      closest_lead_rel_speed = closest_lead_rel_speed * 3.6 + 0.5;
+    } else {
+      closest_lead_rel_speed = closest_lead_rel_speed * 2.2374144 + 0.5;
+    }
+  }
+
+  // relative distance
+  configFont(painter, "Open Sans", 54, "SemiBold");
+  drawColoredText(painter, rc.center().x(), y, QString::number(closest_lead_rel_dist, 'f', 1));
+  y += 30;
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("REL DIST"));
+  y += 100; // spacing
+
+  // relative speed
+  configFont(painter, "Open Sans", 54, "SemiBold");
+  text_color = QColor(0xff, 0xff, 0xff, 200);
+  if (closest_lead_rel_speed <= -5) {
+    text_color = QColor(0xff, 0x0, 0x0, 200);
+  } else if (closest_lead_rel_speed < 0) {
+    text_color = QColor(0xff, 0xff, 0x0, 200);
+  }
+  drawColoredText(painter, rc.center().x(), y, QString::number(closest_lead_rel_speed, 'f', 1));
+  y += 30;
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("REL SPEED"));
+  y += 100; // spacing
+
+  // engine rpm
+  float engineRPM = cs.getEngineRPM();
+  configFont(painter, "Open Sans", 52, "SemiBold");
+  text_color = QColor(0xff, 0xff, 0xff, 200);
+  if (engineRPM >= 6000) {
+    text_color = QColor(0xff, 0x0, 0x0, 200);
+  } else if (engineRPM >= 4000) {
+    text_color = QColor(0xff, 0xff, 0x0, 200);
+  }
+  drawColoredText(painter, rc.center().x(), y, engineRPM <= 0 ? NvgWindow::tr("OFF") : QString::number((int)engineRPM), text_color);
+  y += 30;
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("ENG RPM"));
+}
+
+void NvgWindow::drawBottombar(QPainter &painter, const cereal::LiveMapData::Reader &lmd) {
+  painter.setBrush(QColor(0, 0, 0, 0xff));
+  painter.setPen(Qt::NoPen);
+  QRect rc(0, height() - bdr_s*2, width(), bdr_s*2);
+  painter.drawRoundedRect(rc, 0, 0);
+
+  configFont(painter, "Open Sans", 48, "Bold");
+  drawColoredText(painter, rc.center().x(), height() - bdr_s/2, QString::fromStdString(lmd.getCurrentRoadName()), QColor(0xff, 0xff, 0xff, 0xff));
 }
 
 void NvgWindow::paintGL() {
   CameraViewWidget::paintGL();
 
   UIState *s = &QUIState::ui_state;
+  auto dp = (*s->sm)["dragonConf"].getDragonConf();
   if (s->scene.world_objects_visible) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::NoPen);
 
-    drawLaneLines(painter, s->scene);
+    if (dp.getDpUiLane())
+      drawLaneLines(painter, s->scene);
 
-    if (s->scene.longitudinal_control) {
+    if (dp.getDpUiLead()) { //s->scene.longitudinal_control) {
       auto leads = (*s->sm)["modelV2"].getModelV2().getLeadsV3();
       if (leads[0].getProb() > .5) {
-        drawLead(painter, leads[0], s->scene.lead_vertices[0]);
+        drawLead(painter, leads[0], s->scene.lead_vertices[0], s->scene.longitudinal_control);
       }
       if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
-        drawLead(painter, leads[1], s->scene.lead_vertices[1]);
+        drawLead(painter, leads[1], s->scene.lead_vertices[1], s->scene.longitudinal_control);
       }
     }
+
+    drawBlindSpots(painter, (*s->sm)["carState"].getCarState());
+    if (dp.getDpUiBlinker())
+      drawBlinkers(painter, (*s->sm)["carState"].getCarState());
+    if (dp.getDpUiTop())
+      drawTopbar(painter, (*s->sm)["carState"].getCarState());
+    if (dp.getDpUiSide())
+      drawSidebar(painter, (*s->sm)["modelV2"].getModelV2(), (*s->sm)["carState"].getCarState(), (*s->sm)["controlsState"].getControlsState(), s->scene.is_metric);
+    if (dp.getDpMapd())
+      drawBottombar(painter, (*s->sm)["liveMapData"].getLiveMapData());
   }
 
   double cur_draw_t = millis_since_boot();

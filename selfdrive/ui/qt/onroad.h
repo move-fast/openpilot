@@ -21,23 +21,10 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(int status MEMBER status NOTIFY valueChanged);
 
   // dp
-  // topbar
-  Q_PROPERTY(QString currentDateTime MEMBER currentDateTime NOTIFY valueChanged);
-  // bottombar
-  Q_PROPERTY(QString mapd_info MEMBER mapd_info NOTIFY valueChanged);
-  Q_PROPERTY(float angleSteers MEMBER angleSteers NOTIFY valueChanged);
-  Q_PROPERTY(float angleSteersDes MEMBER angleSteersDes NOTIFY valueChanged);
-  Q_PROPERTY(float relativeDist MEMBER relativeDist NOTIFY valueChanged);
-  Q_PROPERTY(float relativeSpeed MEMBER relativeSpeed NOTIFY valueChanged);
-  Q_PROPERTY(int engineRPM MEMBER engineRPM NOTIFY valueChanged);
-  Q_PROPERTY(bool brakeLights MEMBER brakeLights NOTIFY valueChanged);
-  Q_PROPERTY(bool leftBlindspot MEMBER leftBlindspot NOTIFY valueChanged);
-  Q_PROPERTY(bool rightBlindspot MEMBER rightBlindspot NOTIFY valueChanged);
-  Q_PROPERTY(bool steeringPressed MEMBER steeringPressed NOTIFY valueChanged);
-  Q_PROPERTY(bool leftBlinker MEMBER leftBlinker NOTIFY valueChanged);
-  Q_PROPERTY(bool rightBlinker MEMBER rightBlinker NOTIFY valueChanged);
-  Q_PROPERTY(int blinkerOffset MEMBER blinkerOffset NOTIFY valueChanged);
-  Q_PROPERTY(int blinkerAlpha MEMBER blinkerAlpha NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiSpeed MEMBER dpUiSpeed NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiEvent MEMBER dpUiEvent NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiFace MEMBER dpUiFace NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiMaxSpeed MEMBER dpUiMaxSpeed NOTIFY valueChanged);
 
 public:
   explicit OnroadHud(QWidget *parent);
@@ -47,16 +34,6 @@ private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void paintEvent(QPaintEvent *event) override;
-  void drawBlinkers();
-  void drawBlinkerLeft();
-  void drawBlinkerRight();
-  void drawBlindSpots();
-  void drawBlindSpotLeft();
-  void drawBlindSpotRight();
-  void drawTopbar();
-  void drawSidebar();
-  void drawBottombar();
-  void drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color);
 
   QPixmap engage_img;
   QPixmap dm_img;
@@ -72,42 +49,10 @@ private:
   int status = STATUS_DISENGAGED;
 
   // dp
-  QString currentDateTime;
-  bool mapd_enabled = false;
-  QString mapd_info;
-  float angleSteers = 0.0;
-  float angleSteersDes = 0.0;
-  float relativeDist = 0.0;
-  float relativeSpeed = 0.0;
-  int engineRPM = 0;
-  bool brakeLights = false;
-
-  bool leftBlindspot = false;
-  bool rightBlindspot = false;
-  bool steeringPressed = false;
-  bool leftBlinker = false;
-  bool rightBlinker = false;
-  int blinkerOffset = 0;
-  int blinkerAlpha = 200;
-
-
-  // toggles
   bool dpUiSpeed = true;
   bool dpUiEvent = true;
-  bool dpUiMaxSpeed = true;
   bool dpUiFace = true;
-  bool dpUiLane = true;
-  bool dpUiLead = true;
-  bool dpUiSide = false;
-  bool dpUiTop = false;
-  bool dpUiBlinker = true;
-  bool dpFollowingProfileCtrl = false;
-  bool dpFollowingProfile = 0;
-  bool dpAccelProfileCtrl = false;
-  bool dpAccelProfile = 0;
-  bool dpMapd = false;
-  bool dpLaneLessModeCtrl = 0;
-  bool dpLaneLessMode = false;
+  bool dpUiMaxSpeed = true;
 
 signals:
   void valueChanged();
@@ -141,9 +86,19 @@ protected:
   void showEvent(QShowEvent *event) override;
   void updateFrameMat(int w, int h) override;
   void drawLaneLines(QPainter &painter, const UIScene &scene);
-  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd);
+  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd, bool has_op_long);
   inline QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   double prev_draw_t = 0;
+
+  // dp
+  int blinkerOffset = 0;
+  int blinkerAlpha = 200;
+  void drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color);
+  void drawBlinkers(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawBlindSpots(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric);
+  void drawBottombar(QPainter &painter, const cereal::LiveMapData::Reader &lmd);
 };
 
 // container for all onroad widgets
