@@ -235,7 +235,7 @@ function launch {
     # make sure we have right models
     if [ ! -f "$DIR/models/supercombo.onnx" ]; then
       rm -fr $DIR/models/*.dlc
-      wget https://github.com/commaai/openpilot/raw/72a736f90e57a7d5845891ea34b17360b6f684d0/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
+      wget https://github.com/commaai/openpilot/raw/811188c6c61ceb9f9dfb13b51f01445b9cfeff9e/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
     fi
   fi
 
