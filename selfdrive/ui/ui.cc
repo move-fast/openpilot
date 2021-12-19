@@ -192,29 +192,9 @@ static void update_state(UIState *s) {
     scene.dpLaneLessModeStatus = data.getDpLaneLessModeStatus();
   }
   if (scene.started) {
-    if (sm.updated("controlsState")) {
-      auto controls_state = sm["controlsState"].getControlsState();
-      scene.angleSteers = controls_state.getAngleSteers();
-      scene.angleSteersDes = controls_state.getSteeringAngleDesiredDeg();
-    }
     if (sm.updated("carState")) {
       auto car_state = sm["carState"].getCarState();
-      // dp - blinker / reversing
-      bool cur_left_blinker = car_state.getLeftBlinker();
-      bool cur_right_blinker = car_state.getRightBlinker();
-      if(scene.leftBlinker != cur_left_blinker || scene.rightBlinker != cur_right_blinker) {
-        scene.blinker_blinking_rate = 200;
-        scene.blinker_blinking_x_offset = 0;
-      }
-      scene.leftBlinker = cur_left_blinker;
-      scene.rightBlinker = cur_right_blinker;
-      scene.brakeLights = car_state.getBrakeLights();
       scene.isReversing = car_state.getGearShifter() == cereal::CarState::GearShifter::REVERSE;
-      scene.leftBlindspot = car_state.getLeftBlindspot();
-      scene.rightBlindspot = car_state.getRightBlindspot();
-      scene.engineRPM = car_state.getEngineRPM();
-      scene.gForce = car_state.getAEgo() / 9.8;
-      scene.steeringPressed = car_state.getSteeringPressed();
     }
     if (sm.updated("ubloxGnss")) {
       auto sensor = sm["ubloxGnss"].getUbloxGnss();
@@ -237,20 +217,10 @@ static void update_state(UIState *s) {
     auto dragonConf = sm["dragonConf"].getDragonConf();
     scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
     if (scene.started) {
-//      scene.dpUiSpeed = dragonConf.getDpUiSpeed();
-//      scene.dpUiEvent = dragonConf.getDpUiEvent();
-//      scene.dpUiMaxSpeed = dragonConf.getDpUiMaxSpeed();
-//      scene.dpUiFace = dragonConf.getDpUiFace();
-//      scene.dpUiLane = dragonConf.getDpUiLane();
-//      scene.dpUiLead = dragonConf.getDpUiLead();
-//      scene.dpUiSide = dragonConf.getDpUiSide();
-//      scene.dpUiTop = dragonConf.getDpUiTop();
-//      scene.dpUiBlinker = dragonConf.getDpUiBlinker();
       scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
       scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
       scene.dpAccelProfileCtrl = dragonConf.getDpAccelProfileCtrl();
       scene.dpAccelProfile = dragonConf.getDpAccelProfile();
-//      scene.dpMapd = dragonConf.getDpMapd();
       scene.dpLaneLessModeCtrl = dragonConf.getDpLaneLessModeCtrl();
       scene.dpLaneLessMode = dragonConf.getDpLaneLessMode();
     }
