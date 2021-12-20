@@ -114,12 +114,11 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
   if (pandas.size() == 0) {
     return false;
   }
-  if (!pandas[0]->disable_relay) {
-  pandas[0]->set_safety_model(cereal::CarParams::SafetyModel::ELM327);
-  }
   Params p = Params();
 
-  if (!pandas[0]->disable_relay && !pandas[0]->is_old_panda) {
+  if (!pandas[0]->disable_relay) {
+  pandas[0]->set_safety_model(cereal::CarParams::SafetyModel::ELM327);
+
   // switch to SILENT when CarVin param is read
   while (true) {
     if (do_exit || !check_all_connected(pandas) || !ignition) {
