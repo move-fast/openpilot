@@ -2,7 +2,7 @@
 import cereal.messaging as messaging
 from opendbc.can.packer import CANPacker
 from selfdrive.boardd.boardd_api_impl import can_list_to_can_capnp  # pylint: disable=no-name-in-module,import-error
-from selfdrive.car.honda.values import FINGERPRINTS, CAR
+from selfdrive.car.honda.values import CAR
 from selfdrive.car import crc8_pedal
 import math
 from opendbc.can.parser import CANParser
