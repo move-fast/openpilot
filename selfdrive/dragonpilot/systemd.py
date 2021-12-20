@@ -34,7 +34,6 @@ params = Params()
 from common.dp_common import param_get, get_last_modified
 from common.dp_time import LAST_MODIFIED_SYSTEMD
 from selfdrive.dragonpilot.dashcamd import Dashcamd
-from selfdrive.dragonpilot.appd import Appd
 from selfdrive.hardware import EON
 import socket
 from common.realtime import Ratekeeper
@@ -129,7 +128,7 @@ def confd_thread():
     if frame == 0:
       setattr(msg.dragonConf, get_struct_name('dp_locale'), params.get("dp_locale"))
       # mirror EndToEndToggle to dp_lane_less_model_ctrl first time, after all
-      put_nonblocking('dp_lane_less_mode_ctrl', params.get('EndToEndToggle'))
+      put_nonblocking('dp_lane_less_mode_ctrl', "1" if params.get_bool('EndToEndToggle') else "0")
     '''
     ===================================================
     push ip addr every 10 secs
