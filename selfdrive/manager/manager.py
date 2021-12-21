@@ -12,7 +12,7 @@ from common.basedir import BASEDIR
 from common.params import Params, ParamKeyType
 from common.text_window import TextWindow
 from selfdrive.boardd.set_time import set_time
-from selfdrive.hardware import HARDWARE, PC, EON
+from selfdrive.hardware import HARDWARE, PC, TICI
 from selfdrive.manager.helpers import unblock_stdout
 from selfdrive.manager.process import ensure_running
 from selfdrive.manager.process_config import managed_processes
@@ -157,6 +157,8 @@ def manager_thread():
     ignore += ['mapd']
   if not dp_otisserv:
     ignore += ['otisserv']
+    if not TICI:
+      ignore += ['navd']
   if not dp_mapd and not dp_otisserv and not params.get_bool('dp_gpxd'):
     ignore += ['gpxd']
   if params.get("DongleId", encoding='utf8') == UNREGISTERED_DONGLE_ID:
