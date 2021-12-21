@@ -11,7 +11,7 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/request_repeater.h"
-
+#include "selfdrive/hardware/hw.h"
 
 const int PAN_TIMEOUT = 100;
 const float MANEUVER_TRANSITION_THRESHOLD = 10;
@@ -238,18 +238,18 @@ void MapWindow::initializeGL() {
 
 void MapWindow::paintGL() {
   if (!isVisible() || m_map.isNull()) return;
-  #ifndef XNX
+  if (!Hardware::JETSON()) {
   float light_sensor_val = QUIState::ui_state.scene.light_sensor >= 0.5? 0.5 : 0.0;
   // exponential moving average
   filtered_val = (0.025 * light_sensor_val) + (1.0 - 0.025) * filtered_val;
   if (filtered_val <= 0.01)
     filtered_val = 0.01;
-  bool at_night = filtered_val <= 0.4;
+  bool at_night = filtered_val <= 0.2;
   if (at_night_last != at_night) {
     m_map->setStyleUrl(at_night? night_style : day_style);
     at_night_last = at_night;
   }
-  #endif
+  }
   m_map->render();
 }
 
