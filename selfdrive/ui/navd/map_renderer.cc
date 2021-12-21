@@ -6,6 +6,7 @@
 
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/common/timing.h"
+#include "selfdrive/common/params.h"
 
 const float ZOOM = 13.5; // Don't go below 13 or features will start to disappear
 const int WIDTH = 256;
@@ -165,6 +166,10 @@ extern "C" {
     QMapboxGLSettings settings;
     settings.setApiBaseUrl(MAPS_HOST);
     settings.setAccessToken(get_mapbox_token());
+    if (Params().getBool("dp_otisserv")) {
+      settings.setApiBaseUrl("https://api.mapbox.com");
+      settings.setAccessToken(QString::fromStdString(Params().get("dp_nav_mapbox_token_sk")));
+    }
 
     return new MapRenderer(settings, false);
   }
