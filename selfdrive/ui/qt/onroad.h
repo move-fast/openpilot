@@ -34,6 +34,12 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(bool mapSourcedSpeedLimit MEMBER mapSourcedSpeedLimit NOTIFY valueChanged);
   Q_PROPERTY(bool slcActive MEMBER slcActive NOTIFY valueChanged);
 
+  Q_PROPERTY(bool showTurnSpeedLimit MEMBER showTurnSpeedLimit NOTIFY valueChanged);
+  Q_PROPERTY(QString turnSpeedLimit MEMBER turnSpeedLimit NOTIFY valueChanged);
+  Q_PROPERTY(QString tscSubText MEMBER tscSubText NOTIFY valueChanged);
+  Q_PROPERTY(bool tscActive MEMBER tscActive NOTIFY valueChanged);
+  Q_PROPERTY(int curveSign MEMBER curveSign NOTIFY valueChanged);
+
 public:
   explicit OnroadHud(QWidget *parent);
   void updateState(const UIState &s);
@@ -47,14 +53,18 @@ private:
   void drawCircle(QPainter &p, int x, int y, int r, QBrush bg);
   void drawSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int subtext_size,
                      bool is_map_sourced, bool is_active);
+  void drawTrunSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int curv_sign, 
+                         bool is_active);
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap engage_img;
   QPixmap dm_img;
   QPixmap map_img;
+  QPixmap left_img;
+  QPixmap right_img;
   const int radius = 192;
   const int img_size = (radius / 2) * 1.5;
-  const int map_img_size = 35;
+  const int subsign_img_size = 35;
   QString speed;
   QString speedUnit;
   QString maxSpeed;
@@ -77,6 +87,12 @@ private:
   float slcSubTextSize = 0.0;
   bool mapSourcedSpeedLimit = false;
   bool slcActive = false;
+
+  bool showTurnSpeedLimit = false;
+  QString turnSpeedLimit;
+  QString tscSubText;
+  bool tscActive = false;
+  int curveSign = 0;
 
 signals:
   void valueChanged();
