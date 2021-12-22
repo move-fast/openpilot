@@ -825,6 +825,9 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   accels @32 :List(Float32);
   speeds @33 :List(Float32);
   jerks @34 :List(Float32);
+  #mapd
+  visionTurnControllerState @35 :VisionTurnControllerState;
+  visionTurnSpeed @36 :Float32;
 
   enum LongitudinalPlanSource {
     cruise @0;
@@ -832,6 +835,10 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
     lead1 @2;
     lead2 @3;
     e2e @4;
+    #mapd
+    turn @5;
+    limit @6;
+    turnlimit @7;
   }
 
   # deprecated
@@ -875,6 +882,9 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   rProb @7 :Float32;
   dPathPoints @20 :List(Float32);
   dProb @21 :Float32;
+  #mapd
+  dPathWLinesX @32 :List(Float32);
+  dPathWLinesY @33 :List(Float32);
 
   mpcSolutionValid @9 :Bool;
   desire @17 :Desire;
@@ -1535,5 +1545,6 @@ struct Event {
     uiLayoutStateDEPRECATED @57 :Legacy.UiLayoutState;
     pandaStateDEPRECATED @12 :PandaState;
     dragonConf @85 :Dp.DragonConf;
+    liveMapData @86 :Dp.LiveMapData;
   }
 }
