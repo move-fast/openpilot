@@ -439,14 +439,14 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_hkg_smart_mdps", DPCarPanel::tr("Enable Smart MDPS Support"), DPCarPanel::tr("Enable this will increase steering and allow steering down to to 0.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
-  layout->addWidget(new LabelControl(DPCarPanel::tr("Volkswagen"), ""));
-  layout->addWidget(horizontal_line());
-  ParamControl *vwPandaCtrl = new ParamControl("dp_vw_panda", DPCarPanel::tr("Enable J533 + White Panda Mode"), DPCarPanel::tr("Credit to jyoung8607.\nReboot required."), ICON_EMPTY);
-  QObject::connect(vwPandaCtrl, &ToggleControl::toggleFlipped, [=](bool state) {
-    std::system("rm -fr /data/openpilot/panda/board/obj/panda.bin");
-  });
-  layout->addWidget(vwPandaCtrl);
-  layout->addWidget(horizontal_line());
+//  layout->addWidget(new LabelControl(DPCarPanel::tr("Volkswagen"), ""));
+//  layout->addWidget(horizontal_line());
+//  ParamControl *vwPandaCtrl = new ParamControl("dp_vw_panda", DPCarPanel::tr("Enable J533 + White Panda Mode"), DPCarPanel::tr("Credit to jyoung8607.\nReboot required."), ICON_EMPTY);
+//  QObject::connect(vwPandaCtrl, &ToggleControl::toggleFlipped, [=](bool state) {
+//    std::system("rm -fr /data/openpilot/panda/board/obj/panda.bin");
+//  });
+//  layout->addWidget(vwPandaCtrl);
+//  layout->addWidget(horizontal_line());
   // custom car model
   carModelWidget(layout);
 }
