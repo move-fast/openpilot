@@ -120,7 +120,7 @@ void MapWindow::timerUpdate() {
 
     localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID);// && pos.getValid();
     if (Hardware::TICI()) {
-      localizer_valid = localizer_valid && pos.getValid()
+      localizer_valid = localizer_valid && pos.getValid();
     }
 
     if (localizer_valid) {
