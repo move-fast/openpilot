@@ -129,7 +129,6 @@ def manager_thread():
   dp_logger = params.get_bool('dp_logger')
   dp_athenad = params.get_bool('dp_athenad')
   dp_uploader = params.get_bool('dp_uploader')
-  dp_atl = params.get_bool('dp_atl')
   dp_jetson = params.get_bool('dp_jetson')
   dp_otisserv = params.get_bool('dp_otisserv')
   dp_mapd = params.get_bool('dp_mapd')
