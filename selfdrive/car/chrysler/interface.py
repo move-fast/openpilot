@@ -46,6 +46,8 @@ class CarInterface(CarInterfaceBase):
     ret.enableBsm = 720 in fingerprint[0]
 
     # dp
+    if Params().get_bool('dp_lqr'):
+      set_lat_tune(ret.lateralTuning, LatTunes.LQR_RAV4)
     ret = common_interface_get_params_lqr(ret)
 
     return ret

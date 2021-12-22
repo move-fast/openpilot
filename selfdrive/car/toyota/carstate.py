@@ -73,22 +73,23 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.vEgoRaw < 0.001
 
+    ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+    torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
+    if self.dp_toyota_zss:
+      torque_sensor_angle_deg = cp.vl["SECONDARY_STEER_ANGLE"]["ZORRO_STEER"]
+
     # Some newer models have a more accurate angle measurement in the TORQUE_SENSOR message. Use if non-zero
-    if self.dp_toyota_zss or abs(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]) > 1e-3:
+    if abs(torque_sensor_angle_deg) > 1e-3:
       self.accurate_steer_angle_seen = True
 
     if self.accurate_steer_angle_seen:
-      if self.dp_toyota_zss:
-        ret.steeringAngleDeg = cp.vl["SECONDARY_STEER_ANGLE"]["ZORRO_STEER"] - self.angle_offset
-      else:
-        ret.steeringAngleDeg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"] - self.angle_offset
-      if self.needs_angle_offset:
-        angle_wheel = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-        if abs(angle_wheel) > 1e-3:
-          self.needs_angle_offset = False
-          self.angle_offset = ret.steeringAngleDeg - angle_wheel
-    else:
-      ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+      # Offset seems to be invalid for large steering angles
+      if abs(ret.steeringAngleDeg) < 90:
+        self.angle_offset.update(torque_sensor_angle_deg - ret.steeringAngleDeg)
+
+      if self.angle_offset.initialized:
+        ret.steeringAngleOffsetDeg = self.angle_offset.x
+        ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
 
