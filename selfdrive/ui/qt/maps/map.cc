@@ -118,7 +118,10 @@ void MapWindow::timerUpdate() {
     auto pos = location.getPositionGeodetic();
     auto orientation = location.getCalibratedOrientationNED();
 
-    localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID) && pos.getValid();
+    localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID);// && pos.getValid();
+    if (Hardware::TICI()) {
+      localizer_valid = localizer_valid && pos.getValid()
+    }
 
     if (localizer_valid) {
       float velocity = location.getVelocityCalibrated().getValue()[0];
