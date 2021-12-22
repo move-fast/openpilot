@@ -10,7 +10,7 @@ from pathlib import Path
 from common.basedir import BASEDIR
 from common.spinner import Spinner
 from common.text_window import TextWindow
-from selfdrive.hardware import TICI
+from selfdrive.hardware import TICI, JETSON
 from selfdrive.swaglog import cloudlog, add_file_handler
 from selfdrive.version import get_dirty
 
@@ -26,6 +26,8 @@ def build(spinner, dirty=False):
   env = os.environ.copy()
   env['SCONS_PROGRESS'] = "1"
   nproc = os.cpu_count()
+  if JETSON:
+    nproc += 1
   j_flag = "" if nproc is None else f"-j{nproc - 1}"
 
   for retry in [True, False]:
