@@ -119,13 +119,13 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new LabelControl(DPGeneralPanel::tr("Hardware - General"), ""));
   layout->addWidget(horizontal_line());
-  layout->addWidget(new ParamSpinBoxControl("dp_camera_offset", DPGeneralPanel::tr("Camera Offset"), DPGeneralPanel::tr("Adjust your camera position if your device is not mounted as per guidance."), ICON_EMPTY, -100, 100, 1, " cm"));
-  layout->addWidget(horizontal_line());
+//  layout->addWidget(new ParamSpinBoxControl("dp_camera_offset", DPGeneralPanel::tr("Camera Offset"), DPGeneralPanel::tr("Adjust your camera position if your device is not mounted as per guidance."), ICON_EMPTY, -100, 100, 1, " cm"));
+//  layout->addWidget(horizontal_line());
   // auto shutdown
   autoShutdownWidget(layout);
+  #ifdef QCOM
   layout->addWidget(new ParamSpinBoxControl("dp_fan_mode", DPGeneralPanel::tr("Fan Mode"), DPGeneralPanel::tr("0 = Default\n1 = Quiet\n2 = Full Speed"), ICON_EMPTY, 0, 2, 1));
   layout->addWidget(horizontal_line());
-  #ifdef QCOM
   layout->addWidget(new ParamControl("dp_hotspot_on_boot", DPGeneralPanel::tr("Enable Hotspot On Boot"), DPGeneralPanel::tr("Reboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_no_batt", DPGeneralPanel::tr("Enable No Battery Support"), DPGeneralPanel::tr("Enable this option if your device does not have a battery.\nDo not use this if you have a C2, Reboot required."), ICON_EMPTY));
@@ -314,8 +314,8 @@ DPControlPanel::DPControlPanel(QWidget* parent) : QWidget(parent) {
 
   steeringRatioWidget(layout);
 
-  layout->addWidget(new ParamSpinBoxControl("dp_path_offset", DPControlPanel::tr("Driving Path Offset"), DPControlPanel::tr("Adjust this if you wish to let openpilot drive slightly towards to left (+) or right (-)"), ICON_EMPTY, -100, 100, 1, DPControlPanel::tr(" cm")));
-  layout->addWidget(horizontal_line());
+//  layout->addWidget(new ParamSpinBoxControl("dp_path_offset", DPControlPanel::tr("Driving Path Offset"), DPControlPanel::tr("Adjust this if you wish to let openpilot drive slightly towards to left (+) or right (-)"), ICON_EMPTY, -100, 100, 1, DPControlPanel::tr(" cm")));
+//  layout->addWidget(horizontal_line());
 
   longitudinalWidget(layout);
 
@@ -323,7 +323,7 @@ DPControlPanel::DPControlPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_temp_monitor", DPControlPanel::tr("Enable Device Temp Check"), "", ICON_EMPTY));
   layout->addWidget(horizontal_line());
-  layout->addWidget(new ParamControl("dp_max_ctrl_speed_check", DPControlPanel::tr("Enable Max Ctrl Speed Check"), "", ICON_EMPTY));
+  layout->addWidget(new ParamControl("dp_speed_check", DPControlPanel::tr("Enable Max Ctrl Speed Check"), "", ICON_EMPTY));
 }
 
 DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
