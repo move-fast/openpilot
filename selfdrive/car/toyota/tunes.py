@@ -61,6 +61,17 @@ def set_lat_tune(tune, name):
     tune.indi.actuatorEffectivenessBP = [0.]
     tune.indi.actuatorEffectivenessV = [1.0]
 
+  if name == LatTunes.INDI_PRIUS_TSS2:
+    tune.init('indi')
+    tune.indi.innerLoopGainBP = [20, 24, 30]
+    tune.indi.innerLoopGainV = [7.25, 7.5, 9]
+    tune.indi.outerLoopGainBP = [20, 24, 30]
+    tune.indi.outerLoopGainV = [6, 7.25, 6]
+    tune.indi.timeConstantBP = [20, 24]
+    tune.indi.timeConstantV = [2.0, 2.2]
+    tune.indi.actuatorEffectivenessBP = [20, 24]
+    tune.indi.actuatorEffectivenessV = [2, 3]
+
   elif name == LatTunes.LQR_RAV4:
     tune.init('lqr')
     tune.lqr.scale = 1500.0
