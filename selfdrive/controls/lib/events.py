@@ -264,7 +264,7 @@ def joystick_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool, sof
   vals = _("Gas: %s%%, Steer: %s%%") % (round(gb * 100.), round(steer * 100.))
   return NormalPermanentAlert(_("Joystick Mode"), vals)
 
-def alca_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool) -> Alert:
+def alca_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
   return Alert(
     _("Auto Lane Change starts in %.1f secs") % float(sm['lateralPlan'].dpALCAStartIn),
     _("Monitor Other Vehicles"),
