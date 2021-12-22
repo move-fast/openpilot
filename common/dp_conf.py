@@ -80,7 +80,7 @@ confs = [
   {'name': 'dp_honda_eps_mod', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   {'name': 'dp_honda_kmh_display', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   # volkswagen
-  {'name': 'dp_vw_panda', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
+  # {'name': 'dp_vw_panda', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   #misc
   {'name': 'dp_ip_addr', 'default': '', 'type': 'Text', 'conf_type': ['struct']},
   {'name': 'dp_fan_mode', 'default': 0, 'type': 'UInt8', 'min': 0, 'max': 2, 'conf_type': ['param']},

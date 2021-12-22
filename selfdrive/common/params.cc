@@ -225,7 +225,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_hkg_smart_mdps", PERSISTENT},
     {"dp_honda_eps_mod", PERSISTENT},
     {"dp_honda_kmh_display", PERSISTENT},
-    {"dp_vw_panda", PERSISTENT},
+//    {"dp_vw_panda", PERSISTENT},
     {"dp_fan_mode", PERSISTENT},
     {"dp_last_modified", PERSISTENT},
 //    {"dp_camera_offset", PERSISTENT},
