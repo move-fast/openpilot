@@ -211,7 +211,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_ui_blinker", PERSISTENT},
     {"dp_ui_brightness", PERSISTENT},
     {"dp_ui_volume", PERSISTENT},
-    {"dp_lexus_rx_rpm_fix", PERSISTENT},
+//    {"dp_lexus_rx_rpm_fix", PERSISTENT},
     {"dp_toyota_ldw", PERSISTENT},
     {"dp_toyota_sng", PERSISTENT},
     {"dp_toyota_zss", PERSISTENT},
