@@ -359,6 +359,7 @@ void Device::updateWakefulness(const UIState &s) {
     should_wake = s.scene.started || s.scene.ignition;
     if (s.scene.dpUiDisplayMode == 1 && s.scene.isReversing) {
       should_wake = false;
+      awake_timeout = 0;
     }
     if (!should_wake) {
       // tap detection while display is off
