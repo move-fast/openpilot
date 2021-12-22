@@ -171,6 +171,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"TermsVersion", PERSISTENT},
     {"Timezone", PERSISTENT},
     {"TrainingVersion", PERSISTENT},
+    {"TurnSpeedControl", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
     {"UbloxAvailable", PERSISTENT},
     {"UpdateAvailable", CLEAR_ON_MANAGER_START},
