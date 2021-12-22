@@ -90,6 +90,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_speed_limit.png",
     },
     {
+      "TurnSpeedControl",
+      "Enable Map Data Turn Control",
+      "Use curvature info from map data to define speed limits to take turns ahead",
+      "../assets/offroad/icon_openpilot.png",
+    },
+    {
       "ShowDebugUI",
       "Show debug UI elements",
       "Show UI elements that aid debugging.",
