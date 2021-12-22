@@ -47,8 +47,21 @@ void Sound::update() {
     return;
   }
 
+
+  // dp - volume adjust
+  bool auto_vol = true;
+  if (sm.updated("dragonConf")) {
+    dpUiVolume = sm["dragonConf"].getDragonConf().getDpUiVolume();
+    if (dpUiVolume >= 0) {
+      for (auto &[s, loops] : sounds) {
+        s->setVolume(dpUiVolume / 100);
+      }
+      auto_vol = false;
+    }
+  }
+
   // scale volume with speed
-  if (sm.updated("carState")) {
+  if (auto_vol && sm.updated("carState")) {
     float volume = util::map_val(sm["carState"].getCarState().getVEgo(), 11.f, 20.f, 0.f, 1.0f);
     volume = QAudio::convertVolume(volume, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     volume = util::map_val(volume, 0.f, 1.f, Hardware::MIN_VOLUME, Hardware::MAX_VOLUME);
