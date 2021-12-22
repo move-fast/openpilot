@@ -75,6 +75,8 @@ class CarState(CarStateBase):
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
+    if self.dp_toyota_zss:
+      torque_sensor_angle_deg = cp.vl["SECONDARY_STEER_ANGLE"]["ZORRO_STEER"]
 
     # Some newer models have a more accurate angle measurement in the TORQUE_SENSOR message. Use if non-zero
     if abs(torque_sensor_angle_deg) > 1e-3:
