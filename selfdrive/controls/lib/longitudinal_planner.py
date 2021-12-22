@@ -24,10 +24,10 @@ _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
 DP_FOLLOWING_DIST = {
-  0: 1.2,
-  1: 1.5,
-  2: 1.8,
-  3: 2.2,
+  0: 1.0,
+  1: 1.2,
+  2: 1.4,
+  3: 1.8,
 }
 
 DP_ACCEL_ECO = 0
@@ -92,9 +92,9 @@ class Planner:
     # dp
     self.dp_accel_profile_ctrl = False
     self.dp_accel_profile = DP_ACCEL_ECO
-    # self.dp_following_profile_ctrl = False
-    # self.dp_following_profile = 2
-    # self.dp_following_dist = 1.8 # default val
+    self.dp_following_profile_ctrl = False
+    self.dp_following_profile = 2
+    self.dp_following_dist = 1.4 # default val
 
   def update(self, sm):
     v_ego = sm['carState'].vEgo
@@ -138,6 +138,7 @@ class Planner:
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired, self.a_desired)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, prev_accel_constraint=prev_accel_constraint)
+    self.mpc.set_desired_TR(1.8 if not self.dp_following_profile_ctrl else self.dp_following_profile)
     self.v_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.a_solution)
     self.j_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
