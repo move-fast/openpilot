@@ -874,6 +874,20 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
     x @0 :List(Float32);
     y @1 :List(Float32);
   }
+
+  enum SpeedLimitControlState {
+    inactive @0; # No speed limit set or not enabled by parameter.
+    tempInactive @1; # User wants to ignore speed limit until it changes.
+    adapting @2; # Reducing speed to match new speed limit.
+    active @3; # Cruising at speed limit.
+  }
+
+  enum VisionTurnControllerState {
+    disabled @0; # No predicted substancial turn on vision range or feature disabled.
+    entering @1; # A subsantial turn is predicted ahead, adapting speed to turn confort levels.
+    turning @2; # Actively turning. Managing acceleration to provide a roll on turn feeling.
+    leaving @3; # Road ahead straightens. Start to allow positive acceleration.
+  }
 }
 
 struct LateralPlan @0xe1e9318e2ae8b51e {
