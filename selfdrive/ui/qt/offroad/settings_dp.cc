@@ -409,8 +409,8 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
 
   layout->addWidget(new LabelControl(DPCarPanel::tr("Toyota / Lexus"), ""));
   layout->addWidget(horizontal_line());
-  layout->addWidget(new ParamControl("dp_lexus_rx_rpm_fix", DPCarPanel::tr("Enable Lexus RX Low Gear/High RPM Fix"), DPCarPanel::tr("See: https://github.com/LexusRXopenpilotUG/openpilot\nCredit to @nelsonchen & @sumedhekaru\nReboot required."), ICON_EMPTY));
-  layout->addWidget(horizontal_line());
+//  layout->addWidget(new ParamControl("dp_lexus_rx_rpm_fix", DPCarPanel::tr("Enable Lexus RX Low Gear/High RPM Fix"), DPCarPanel::tr("See: https://github.com/LexusRXopenpilotUG/openpilot\nCredit to @nelsonchen & @sumedhekaru\nReboot required."), ICON_EMPTY));
+//  layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_sng", DPCarPanel::tr("Enable SnG Mod"), DPCarPanel::tr("Enable this to fix stop and go (SnG) issue on some models.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_zss", DPCarPanel::tr("Enable ZSS Support"), DPCarPanel::tr("Enable this if you have ZSS module installed.\nReboot required."), ICON_EMPTY));
