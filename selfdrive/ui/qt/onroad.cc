@@ -146,7 +146,8 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
 void OnroadWindow::offroadTransition(bool offroad) {
 #ifdef ENABLE_MAPS
   if (!offroad) {
-    if (map == nullptr && (QUIState::ui_state.has_prime || !MAPBOX_TOKEN.isEmpty() || Params().getBool("dp_otisserv"))) {
+    bool dp_nav_enabled = Params().getBool("dp_otisserv") && QString::fromStdString(Params().get("dp_nav_mapbox_token_sk")) != "";
+    if (map == nullptr && (QUIState::ui_state.has_prime || !MAPBOX_TOKEN.isEmpty() || dp_nav_enabled)) {
       MapWindow * m = new MapWindow(get_mapbox_settings());
       if (Params().getBool("dp_nav_full_screen")) {
         m->setFixedWidth(topWidget(this)->width());

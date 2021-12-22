@@ -167,8 +167,11 @@ extern "C" {
     settings.setApiBaseUrl(MAPS_HOST);
     settings.setAccessToken(get_mapbox_token());
     if (Params().getBool("dp_otisserv")) {
-      settings.setApiBaseUrl("https://api.mapbox.com");
-      settings.setAccessToken(QString::fromStdString(Params().get("dp_nav_mapbox_token_sk")));
+      QString key = QString::fromStdString(Params().get("dp_nav_mapbox_token_sk"));
+      if (key != "") {
+        settings.setApiBaseUrl("https://api.mapbox.com");
+        settings.setAccessToken(key);
+      }
     }
 
     return new MapRenderer(settings, false);
