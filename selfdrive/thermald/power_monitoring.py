@@ -173,7 +173,7 @@ class PowerMonitoring:
     return disable_charging
 
   # See if we need to shutdown
-  def should_shutdown(self, peripheralState, ignition, in_car, offroad_timestamp, started_seen, dp_auto_shutdown, dp_auto_shutdown_in):
+  def should_shutdown(self, peripheralState, ignition, in_car, offroad_timestamp, started_seen):
     if offroad_timestamp is None:
       return False
 
