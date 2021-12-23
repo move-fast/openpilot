@@ -843,6 +843,11 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
     ET.NO_ENTRY: NoEntryAlert(_("Cruise Fault: Restart the Car")),
   },
 
+  # dp
+  EventName.autoLaneChange: {
+    ET.WARNING: alca_alert,
+  },
+
   EventName.manualSteeringRequired: {
     ET.WARNING: Alert(
       _("STEERING REQUIRED: Lane Keeping OFF"),
