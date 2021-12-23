@@ -112,8 +112,6 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
   #ifdef QCOM
   layout->addWidget(new ParamControl("dp_dashcamd", DPGeneralPanel::tr("Enable On-Road Dashcam"), DPGeneralPanel::tr("Enable this if you wish to record screen, just like a dashcam.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
-//  layout->addWidget(new ParamControl("dp_appd", DPGeneralPanel::tr("Enable Appd Service"), DPGeneralPanel::tr("Enable this if you wish to run your own android app.\nSee /data/openpilot/selfdrive/dragonpilot/HOWTO-APPD.md for more information.\nReboot required."), ICON_EMPTY));
-//  layout->addWidget(horizontal_line());
   #endif
   layout->addWidget(new ParamControl("dp_gpxd", DPGeneralPanel::tr("Enable GPS Logger"), DPGeneralPanel::tr("This will store your track in /data/media/0/gpx_logs/.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
@@ -330,10 +328,12 @@ DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
   QVBoxLayout *layout = new QVBoxLayout(this);
   layout->addWidget(new ParamSpinBoxControl("dp_ui_display_mode", DPUIPanel::tr("Display Mode"), DPUIPanel::tr("0 = Default\n1 = Screen Off While Reversing\n2 = Screen Off While Driving"), ICON_EMPTY, 0, 2, 1));
   layout->addWidget(horizontal_line());
+  #ifndef XNX
   layout->addWidget(new ParamSpinBoxControl("dp_ui_brightness", DPUIPanel::tr("Screen Brightness"), DPUIPanel::tr("Adjust your screen brightness."), ICON_EMPTY, 0, 100, 5, " %", DPUIPanel::tr("AUTO")));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamSpinBoxControl("dp_ui_volume", DPUIPanel::tr("Alert Volume"), DPUIPanel::tr("Adjust your alert volume."), ICON_EMPTY, -5, 100, 5, " %", DPUIPanel::tr("AUTO")));
   layout->addWidget(horizontal_line());
+  #endif
   layout->addWidget(new ParamControl("dp_ui_speed", DPUIPanel::tr("Display Speed"), DPUIPanel::tr("Enable this to display your current speed."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_ui_lane", DPUIPanel::tr("Display Lane Prediction"), DPUIPanel::tr("Enable this to display the lane/path prediction."), ICON_EMPTY));
