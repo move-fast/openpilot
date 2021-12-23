@@ -177,6 +177,19 @@ function jetson_init {
 
   # hide mouse cursor
   unclutter -idle 0 &
+
+  # prep for model
+  rm -fr $DIR/models/*.dlc
+  if [ -f "$DIR/models/supercombo.onnx" ]; then
+    file_check_sum=$(md5sum $DIR/models/supercombo.onnx | cut -d " " -f1)
+    if [[ $file_check_sum != "e9e19c5127f717dd94e8182201a08ab8" ]]; then
+      rm -fr $DIR/models/supercombo.onnx
+    fi
+  fi
+  # make sure we have right models
+  if [ ! -f "$DIR/models/supercombo.onnx" ]; then
+    wget https://github.com/commaai/openpilot/raw/be89044c51406eccb7ce7ae7678004a8fc774a7a/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
+  fi
 }
 
 function launch {
@@ -232,11 +245,6 @@ function launch {
     tici_init
   elif [ -f /JETSON ]; then
     jetson_init
-    # make sure we have right models
-    if [ ! -f "$DIR/models/supercombo.onnx" ]; then
-      rm -fr $DIR/models/*.dlc
-      wget https://github.com/commaai/openpilot/raw/be89044c51406eccb7ce7ae7678004a8fc774a7a/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
-    fi
   fi
 
   # write tmux scrollback to a file
