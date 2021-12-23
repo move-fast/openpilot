@@ -51,7 +51,7 @@ void Sound::update() {
   // dp - volume adjust
   bool auto_vol = true;
   if (sm.updated("dragonConf")) {
-    dpUiVolume = sm["dragonConf"].getDragonConf().getDpUiVolume();
+    int dpUiVolume = sm["dragonConf"].getDragonConf().getDpUiVolume();
     if (dpUiVolume >= 0) {
       for (auto &[s, loops] : sounds) {
         s->setVolume(dpUiVolume / 100);
