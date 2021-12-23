@@ -7,6 +7,7 @@ elif [ -f /TICI ] && [ ! -f qt/spinner ]; then
 elif [ -f /JETSON ] && [ ! -f qt/spinner ]; then
   cp qt/spinner_larch64 qt/spinner
 fi
-
+if [ ! -f /JETSON ]; then
 export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
+fi
 exec ./qt/spinner "$1"
