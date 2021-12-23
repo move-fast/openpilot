@@ -132,6 +132,8 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     autoLaneChange @107;
     manualSteeringRequired @108;
     manualSteeringRequiredBlinkersOn @109;
+    speedLimitActive @110;
+    speedLimitValueChange @111;
   }
 }
 

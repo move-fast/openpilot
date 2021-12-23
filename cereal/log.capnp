@@ -829,6 +829,17 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   visionTurnControllerState @35 :VisionTurnControllerState;
   visionTurnSpeed @36 :Float32;
 
+  speedLimitControlState @37 :SpeedLimitControlState;
+  speedLimit @38 :Float32;
+  speedLimitOffset @39 :Float32;
+  distToSpeedLimit @40 :Float32;
+  isMapSpeedLimit @41 :Bool;
+
+  distToTurn @42 :Float32;
+  turnSpeed @43 :Float32;
+  turnSpeedControlState @44 :SpeedLimitControlState;
+  turnSign @45 :Int16;
+
   enum LongitudinalPlanSource {
     cruise @0;
     lead0 @1;
