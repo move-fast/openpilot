@@ -628,7 +628,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
   # and attaching while making sure the device is pointed straight forward and is level.
   # See https://comma.ai/setup for more information
   EventName.calibrationInvalid: {
-    ET.PERMANENT: NormalPermanentAlert(_("Calibration Invalid", _("Remount Device and Recalibrate"))),
+    ET.PERMANENT: NormalPermanentAlert(_("Calibration Invalid"), _("Remount Device and Recalibrate")),
     ET.SOFT_DISABLE: soft_disable_alert(_("Calibration Invalid: Remount Device & Recalibrate")),
     ET.NO_ENTRY: NoEntryAlert(_("Calibration Invalid: Remount Device & Recalibrate")),
   },
@@ -705,7 +705,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
 
   EventName.lowMemory: {
     ET.SOFT_DISABLE: soft_disable_alert(_("Low Memory: Reboot Your Device")),
-    ET.PERMANENT: NormalPermanentAlert(_("Low Memory", "Reboot your Device")),
+    ET.PERMANENT: NormalPermanentAlert(_("Low Memory"), _("Reboot your Device")),
     ET.NO_ENTRY: NoEntryAlert(_("Low Memory: Reboot Your Device")),
   },
 
