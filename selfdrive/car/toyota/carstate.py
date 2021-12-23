@@ -1,13 +1,15 @@
-import time
-from math import floor
 from cereal import car
 from common.numpy_fast import mean
+from common.filter_simple import FirstOrderFilter
+from common.realtime import DT_CTRL
 from opendbc.can.can_define import CANDefine
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
 from selfdrive.car.toyota.values import CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, TSS2_CAR
 from common.params import Params, put_nonblocking
+import time
+from math import floor
 
 # dp
 DP_ACCEL_ECO = 0
@@ -25,7 +27,10 @@ class CarState(CarStateBase):
     # Need to apply an offset as soon as the steering angle measurements are both received
     self.needs_angle_offset = True
     self.accurate_steer_angle_seen = False
-    self.angle_offset = 0.
+    self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
+
+    self.low_speed_lockout = False
+    self.acc_type = 1
 
     # dp
     self.read_distance_lines = 0
@@ -37,8 +42,6 @@ class CarState(CarStateBase):
     self.dp_accel_profile_prev = None
     self.dp_accel_profile_init = False
 
-    self.low_speed_lockout = False
-    self.acc_type = 1
     self.dp_toyota_fp_btn_link = Params().get_bool('dp_toyota_fp_btn_link')
     self.dp_toyota_ap_btn_link = Params().get_bool('dp_toyota_ap_btn_link')
 
