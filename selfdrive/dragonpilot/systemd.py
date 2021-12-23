@@ -158,13 +158,6 @@ def confd_thread():
     '''
     if msg.dragonConf.dpDashcamd and frame % HERTZ == 0:
       dashcamd.run(started, free_space)
-    # '''
-    # ===================================================
-    # appd
-    # ===================================================
-    # '''
-    # if msg.dragonConf.dpAppd:
-    #   appd.update(started)
     '''
     ===================================================
     finalise

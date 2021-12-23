@@ -98,7 +98,6 @@ confs = [
   {'name': 'dp_lqr', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   {'name': 'dp_reset_live_param_on_start', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
 
-  # {'name': 'dp_appd', 'default': False, 'type': 'Bool', 'conf_type': ['param', 'struct']},
   {'name': 'dp_jetson', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   {'name': 'dp_car_assigned', 'default': '', 'type': 'Text', 'conf_type': ['param']},
   {'name': 'dp_car_list', 'default': '', 'type': 'Text', 'conf_type': ['param']},

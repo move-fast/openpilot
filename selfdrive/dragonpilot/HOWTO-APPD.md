@@ -1,5 +1,7 @@
 What is appd
 ------
+**Appd is no long in used.**
+
 Appd is a service that runs specific android apps when on road, and then close the when offroad.
 
 How to use appd
