@@ -535,7 +535,7 @@ float NvgWindow::calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, 
   if (delta < 0.1 || (sqrt(delta) + v_rel < 0.1)) {
     return max_ttc;
   } else {
-    return std::fmin(2 * x_lead / (sqrt(abs(delta) + v_rel)), max_ttc0);
+    return std::fmin(2 * x_lead / (sqrt(abs(delta) + v_rel)), max_ttc);
   }
 }
 
