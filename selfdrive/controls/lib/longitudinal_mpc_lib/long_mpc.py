@@ -312,7 +312,7 @@ class LongitudinalMpc():
 
 
   def set_desired_TR(self, desired_TR):
-    self.desired_TR = clip(desired_TR, 1.2, 2.7)
+    self.desired_TR = clip(desired_TR, 1.0, 2.0)
     self.set_weights()
 
   def update(self, carstate, radarstate, v_cruise, prev_accel_constraint=False):
