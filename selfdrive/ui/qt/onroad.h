@@ -20,25 +20,11 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(bool hideDM MEMBER hideDM NOTIFY valueChanged);
   Q_PROPERTY(int status MEMBER status NOTIFY valueChanged);
 
-  Q_PROPERTY(bool showVTC MEMBER showVTC NOTIFY valueChanged);
-  Q_PROPERTY(QString vtcSpeed MEMBER vtcSpeed NOTIFY valueChanged);
-  Q_PROPERTY(QColor vtcColor MEMBER vtcColor NOTIFY valueChanged);
-  Q_PROPERTY(bool showDebugUI MEMBER showDebugUI NOTIFY valueChanged);
-
-  Q_PROPERTY(QString roadName MEMBER roadName NOTIFY valueChanged);
-
-  Q_PROPERTY(bool showSpeedLimit MEMBER showSpeedLimit NOTIFY valueChanged);
-  Q_PROPERTY(QString speedLimit MEMBER speedLimit NOTIFY valueChanged);
-  Q_PROPERTY(QString slcSubText MEMBER slcSubText NOTIFY valueChanged);
-  Q_PROPERTY(float slcSubTextSize MEMBER slcSubTextSize NOTIFY valueChanged);
-  Q_PROPERTY(bool mapSourcedSpeedLimit MEMBER mapSourcedSpeedLimit NOTIFY valueChanged);
-  Q_PROPERTY(bool slcActive MEMBER slcActive NOTIFY valueChanged);
-
-  Q_PROPERTY(bool showTurnSpeedLimit MEMBER showTurnSpeedLimit NOTIFY valueChanged);
-  Q_PROPERTY(QString turnSpeedLimit MEMBER turnSpeedLimit NOTIFY valueChanged);
-  Q_PROPERTY(QString tscSubText MEMBER tscSubText NOTIFY valueChanged);
-  Q_PROPERTY(bool tscActive MEMBER tscActive NOTIFY valueChanged);
-  Q_PROPERTY(int curveSign MEMBER curveSign NOTIFY valueChanged);
+  // dp
+  Q_PROPERTY(bool dpUiSpeed MEMBER dpUiSpeed NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiEvent MEMBER dpUiEvent NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiFace MEMBER dpUiFace NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiMaxSpeed MEMBER dpUiMaxSpeed NOTIFY valueChanged);
 
 public:
   explicit OnroadHud(QWidget *parent);
@@ -47,24 +33,12 @@ public:
 private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
-  void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
-  void drawVisionTurnControllerUI(QPainter &p, int x, int y, int size, const QColor &color, const QString &speed,
-                                  int alpha);
-  void drawCircle(QPainter &p, int x, int y, int r, QBrush bg);
-  void drawSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int subtext_size,
-                     bool is_map_sourced, bool is_active);
-  void drawTrunSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int curv_sign, 
-                         bool is_active);
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap engage_img;
   QPixmap dm_img;
-  QPixmap map_img;
-  QPixmap left_img;
-  QPixmap right_img;
   const int radius = 192;
   const int img_size = (radius / 2) * 1.5;
-  const int subsign_img_size = 35;
   QString speed;
   QString speedUnit;
   QString maxSpeed;
@@ -74,25 +48,11 @@ private:
   bool hideDM = false;
   int status = STATUS_DISENGAGED;
 
-  bool showVTC = false;
-  QString vtcSpeed;
-  QColor vtcColor;
-  bool showDebugUI = false;
-
-  QString roadName;
-
-  bool showSpeedLimit = false;
-  QString speedLimit;
-  QString slcSubText;
-  float slcSubTextSize = 0.0;
-  bool mapSourcedSpeedLimit = false;
-  bool slcActive = false;
-
-  bool showTurnSpeedLimit = false;
-  QString turnSpeedLimit;
-  QString tscSubText;
-  bool tscActive = false;
-  int curveSign = 0;
+  // dp
+  bool dpUiSpeed = true;
+  bool dpUiEvent = true;
+  bool dpUiFace = true;
+  bool dpUiMaxSpeed = true;
 
 signals:
   void valueChanged();

@@ -210,9 +210,6 @@ static void update_status(UIState *s) {
       s->scene.started_frame = s->sm->frame;
       s->scene.end_to_end = Params().getBool("EndToEndToggle");
       s->wide_camera = Hardware::TICI() ? Params().getBool("EnableWideCamera") : false;
-      s->scene.show_debug_ui = Params().getBool("ShowDebugUI");
-      s->scene.speed_limit_control_enabled = Params().getBool("SpeedLimitControl");
-      s->scene.speed_limit_perc_offset = Params().getBool("SpeedLimitPercOffset");
     }
     // Invisible until we receive a calibration message.
     s->scene.world_objects_visible = false;
@@ -225,7 +222,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-    "longitudinalPlan", "liveMapData",
+    "dragonConf", "ubloxGnss", "gpsLocationExternal", "lateralPlan", "liveMapData",
   });
 
   Params params;
