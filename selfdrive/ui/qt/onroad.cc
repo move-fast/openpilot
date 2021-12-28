@@ -69,14 +69,14 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   bool propagate_event = true;
 
     // Toggle speed limit control enabled
-  SubMaster &sm = *(uiState()->sm);
+  SubMaster &sm = *(QUIState::ui_state.sm);
   auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
   const QRect speed_limit_touch_rect = speed_sgn_rc.adjusted(-50, -50, 50, 50);
 
   if (longitudinal_plan.getSpeedLimit() > 0.0 && speed_limit_touch_rect.contains(e->x(), e->y())) {
     // If touching the speed limit sign area when visible
-    uiState()->scene.last_speed_limit_sign_tap = seconds_since_boot();
-    uiState()->scene.speed_limit_control_enabled = !uiState()->scene.speed_limit_control_enabled;
+    QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
+    QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
     Params().putBool("SpeedLimitControl", uiState()->scene.speed_limit_control_enabled);
     propagate_event = false;
   }
@@ -410,7 +410,7 @@ void OnroadHud::drawSpeedSign(QPainter &p, QRect rc, const QString &speed_limit,
   }
 }
 
-void OnroadHud::drawTrunSpeedSign(QPainter &p, QRect rc, const QString &turn_speed, const QString &sub_text, 
+void OnroadHud::drawTrunSpeedSign(QPainter &p, QRect rc, const QString &turn_speed, const QString &sub_text,
                                   int curv_sign, bool is_active) {
   const QColor border_color = is_active ? QColor(255, 0, 0, 255) : QColor(0, 0, 0, 50);
   const QColor inner_color = QColor(255, 255, 255, is_active ? 255 : 85);
@@ -428,7 +428,7 @@ void OnroadHud::drawTrunSpeedSign(QPainter &p, QRect rc, const QString &turn_spe
   const float h1 = A * h2;
   const float L = 4.0 * R / sqrt(3.0);
 
-  // Draw the internal triangle, compensate for stroke width. Needed to improve rendering when in inactive 
+  // Draw the internal triangle, compensate for stroke width. Needed to improve rendering when in inactive
   // state due to stroke transparency being different from inner transparency.
   QPainterPath path;
   path.moveTo(x, y - R + cS);
@@ -438,7 +438,7 @@ void OnroadHud::drawTrunSpeedSign(QPainter &p, QRect rc, const QString &turn_spe
   p.setPen(Qt::NoPen);
   p.setBrush(inner_color);
   p.drawPath(path);
-  
+
   // Draw the stroke
   QPainterPath stroke_path;
   stroke_path.moveTo(x, y - R);
