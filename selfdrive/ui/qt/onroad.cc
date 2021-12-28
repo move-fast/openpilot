@@ -77,7 +77,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
     // If touching the speed limit sign area when visible
     QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
     QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
-    Params().putBool("SpeedLimitControl", uiState()->scene.speed_limit_control_enabled);
+    Params().putBool("SpeedLimitControl", QUIState::ui_state.scene.speed_limit_control_enabled);
     propagate_event = false;
   }
   else if (map != nullptr) {
