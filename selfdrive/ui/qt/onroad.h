@@ -93,6 +93,7 @@ protected:
   // dp
   int blinkerOffset = 0;
   int blinkerAlpha = 200;
+  float calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, float a_lead);
   void drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color);
   void drawBlinkers(QPainter &painter, const cereal::CarState::Reader &cs);
   void drawBlindSpots(QPainter &painter, const cereal::CarState::Reader &cs);

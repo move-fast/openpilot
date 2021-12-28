@@ -516,6 +516,29 @@ void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs
   drawColoredText(painter, rc.center().x(), bdr_s - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
 }
 
+// from fcw.py in 0.8.9
+float NvgWindow::calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, float a_lead) {
+  const float max_ttc = 5.0;
+  float v_rel = v_ego - v_lead;
+  float a_rel = a_ego - a_lead;
+
+//    # assuming that closing gap ARel comes from lead vehicle decel,
+//    # then limit ARel so that v_lead will get to zero in no sooner than t_decel.
+//    # This helps underweighting ARel when v_lead is close to zero.
+  const float t_decel = 2.0;
+  a_rel = std::fmin(a_rel, v_lead / t_decel);
+
+//    # delta of the quadratic equation to solve for ttc
+  float delta = pow(abs(v_rel), 2) + 2 * x_lead * a_rel;
+
+//    # assign an arbitrary high ttc value if there is no solution to ttc
+  if (delta < 0.1 || (sqrt(delta) + v_rel < 0.1)) {
+    return max_ttc;
+  } else {
+    return std::fmin(2 * x_lead / (sqrt(abs(delta) + v_rel)), max_ttc;
+  }
+}
+
 void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric) {
   painter.setBrush(Qt::NoBrush);
   const int radius = 192; // from OnroadHud
@@ -560,46 +583,45 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("DESIR STEER"));
   y += 100; // spacing
 
+  float v_ego = cs.getVEgo();
+  float a_ego = cs.getAEgo();
+
   // find leads data
+  float v_lead = 0;
+  float a_lead = 0;
+  float x_lead = 0;
   auto leads = lead_reader.getLeadsV3();
-  float closest_lead_rel_dist = 0;
-  float closest_lead_rel_speed = 0;
   if (leads[0].getProb() > .5) {
-    closest_lead_rel_dist = leads[0].getX()[0];
-    closest_lead_rel_speed = leads[0].getV()[0];
-  }
-  if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
-    closest_lead_rel_dist = leads[1].getX()[0];
-    closest_lead_rel_speed = leads[1].getV()[0];
-  }
-  if (closest_lead_rel_speed != 0) {
-    if (is_metric) {
-      closest_lead_rel_speed = closest_lead_rel_speed * 3.6 + 0.5;
-    } else {
-      closest_lead_rel_speed = closest_lead_rel_speed * 2.2374144 + 0.5;
-    }
+    v_lead = leads[0].getV()[0];
+    a_lead = leads[0].getA()[0];
+    x_lead = leads[0].getX()[0];
+  } else if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
+    v_lead = leads[1].getV()[0];
+    a_lead = leads[1].getA()[0];
+    x_lead = leads[1].getX()[0];
   }
 
   // relative distance
   configFont(painter, "Open Sans", 54, "SemiBold");
-  drawColoredText(painter, rc.center().x(), y, QString::number(closest_lead_rel_dist, 'f', 1));
+  drawColoredText(painter, rc.center().x(), y, x_lead == 0? NvgWindow::tr("N/A") : QString::number(x_lead, 'f', 1));
   y += 30;
   configFont(painter, "Open Sans", 24, "Bold");
   drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("REL DIST"));
   y += 100; // spacing
 
   // relative speed
+  float ttc = calc_ttc(v_ego, a_ego, x_lead, v_lead, a_lead);
   configFont(painter, "Open Sans", 54, "SemiBold");
   text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (closest_lead_rel_speed <= -5) {
+  if (ttc <= 1) {
     text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (closest_lead_rel_speed < 0) {
+  } else if (ttc < 2) {
     text_color = QColor(0xff, 0xff, 0x0, 200);
   }
-  drawColoredText(painter, rc.center().x(), y, QString::number(closest_lead_rel_speed, 'f', 1));
+  drawColoredText(painter, rc.center().x(), y, x_lead == 0 || ttc == 5.0? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
   y += 30;
   configFont(painter, "Open Sans", 24, "Bold");
-  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("REL SPEED"));
+  drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("TTC"));
   y += 100; // spacing
 
   // engine rpm
