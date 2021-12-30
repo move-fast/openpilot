@@ -73,7 +73,7 @@ class LateralPlanner:
     self.dp_torque_apply = False # should we apply torque?
 
     self.laneless_mode = 2 # AUTO
-    self.laneless_mode_status = False
+    self.laneless_mode_is_e2e = False
 
   def reset_mpc(self, x0=np.zeros(6)):
     self.x0 = x0
@@ -201,17 +201,17 @@ class LateralPlanner:
     if self.desire == log.LateralPlan.Desire.laneChangeRight or self.desire == log.LateralPlan.Desire.laneChangeLeft:
       self.LP.lll_prob *= self.lane_change_ll_prob
       self.LP.rll_prob *= self.lane_change_ll_prob
-    if self.get_dlp_use_lanelines():
+    if not self.get_dlp_laneless_mode():
       d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
-      self.laneless_mode_status = False
+      self.laneless_mode_is_e2e = False
     else:
       d_path_xyz = self.path_xyz
       path_cost = np.clip(abs(self.path_xyz[0, 1] / self.path_xyz_stds[0, 1]), 0.5, 1.5) * MPC_COST_LAT.PATH
       # Heading cost is useful at low speed, otherwise end of plan can be off-heading
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
       self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
-      self.laneless_mode_status = True
+      self.laneless_mode_is_e2e = True
     y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
     heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
     self.y_pts = y_pts
@@ -242,10 +242,10 @@ class LateralPlanner:
     else:
       self.solution_invalid_cnt = 0
 
-  def get_dlp_use_lanelines(self):
-    if self.laneless_mode == 0: # e2e
+  def get_dlp_laneless_mode(self):
+    if self.laneless_mode == 1: # e2e
       return False
-    if self.laneless_mode == 1: # lane
+    if self.laneless_mode == 0: # lane
       return True
     elif self.laneless_mode == 2: # auto
       # only while lane change is off
@@ -282,7 +282,7 @@ class LateralPlanner:
     plan_send.lateralPlan.laneChangeState = self.lane_change_state
     plan_send.lateralPlan.laneChangeDirection = self.lane_change_direction
     # dp
-    plan_send.lateralPlan.dpLaneLessModeStatus = bool(self.laneless_mode_status)
+    plan_send.lateralPlan.dpLaneLessModeIsE2E = bool(self.laneless_mode_is_e2e)
     plan_send.lateralPlan.dpALCAStartIn = self.dp_lc_auto_start_in
 
     pm.send('lateralPlan', plan_send)

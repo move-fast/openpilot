@@ -924,7 +924,7 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
 
   # dp
   dpALCAStartIn @30 :Float32;
-  dpLaneLessModeStatus @31 :Bool;
+  dpLaneLessModeIsE2E @31 :Bool;
   # 32~33 are being used in mapd
 
   enum Desire {
