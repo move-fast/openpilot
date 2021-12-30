@@ -68,19 +68,21 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   bool sidebarVisible = geometry().x() > 0;
   bool propagate_event = true;
 
+  if (propagate_event) { // add this if so we can handle dp btn
     // Toggle speed limit control enabled
-  SubMaster &sm = *(QUIState::ui_state.sm);
-  auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
-  const QRect speed_limit_touch_rect = speed_sgn_rc.adjusted(-50, -50, 50, 50);
+    SubMaster &sm = *(QUIState::ui_state.sm);
+    auto longitudinal_plan = sm["longitudinalPlan"].getLongitudinalPlan();
+    const QRect speed_limit_touch_rect = speed_sgn_rc.adjusted(-50, -50, 50, 50);
 
-  if (longitudinal_plan.getSpeedLimit() > 0.0 && speed_limit_touch_rect.contains(e->x(), e->y())) {
-    // If touching the speed limit sign area when visible
-    QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
-    QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
-    Params().putBool("SpeedLimitControl", QUIState::ui_state.scene.speed_limit_control_enabled);
-    propagate_event = false;
+    if (longitudinal_plan.getSpeedLimit() > 0.0 && speed_limit_touch_rect.contains(e->x(), e->y())) {
+      // If touching the speed limit sign area when visible
+      QUIState::ui_state.scene.last_speed_limit_sign_tap = seconds_since_boot();
+      QUIState::ui_state.scene.speed_limit_control_enabled = !QUIState::ui_state.scene.speed_limit_control_enabled;
+      Params().putBool("SpeedLimitControl", QUIState::ui_state.scene.speed_limit_control_enabled);
+      propagate_event = false;
+    }
   }
-  else if (map != nullptr) {
+  if (propagate_event && map != nullptr) {
     map->setVisible(!sidebarVisible && !map->isVisible());
   }
 
