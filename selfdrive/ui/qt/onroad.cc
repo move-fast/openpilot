@@ -94,7 +94,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
     x -= x_offset;
     QRect fp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
     if (fp_rc.contains(e->x(), e->y())) {
-      btnTriggered("dp_following_profile", QUIState::ui_state.scene.dpFollowingProfile, 0, 2);
+      btnTriggered("dp_following_profile", QUIState::ui_state.scene.dpFollowingProfile, 0, 3);
       propagate_event = false;
     }
   }
@@ -365,6 +365,22 @@ void NvgWindow::updateFrameMat(int w, int h) {
 }
 
 void NvgWindow::drawLaneLines(QPainter &painter, const UIScene &scene) {
+  bool end_to_end = scene.end_to_end;
+  if (QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+    if (QUIState::ui_state.scene.dpLaneLessMode == 1) { // e2e
+      end_to_end = true;
+    } else if (QUIState::ui_state.scene.dpLaneLessMode == 0) { // lane
+      end_to_end = false;
+    } else {
+      // auto
+      if (QUIState::ui_state.scene.dpLaneLessModeIsE2E) {
+        end_to_end = true;
+      } else {
+        end_to_end = false;
+      }
+    }
+  }
+
   if (!scene.end_to_end) {
     // lanelines
     for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
@@ -699,13 +715,13 @@ void NvgWindow::drawBtns(QPainter &painter) {
     QString dlp;
     switch (QUIState::ui_state.scene.dpLaneLessMode) {
       case 1:
-        dlp = NvgWindow::tr("LANE");
+        dlp = NvgWindow::tr("E2E");
         break;
       case 2:
         dlp = NvgWindow::tr("AUTO");
         break;
       default:
-        dlp = NvgWindow::tr("E2E");
+        dlp = NvgWindow::tr("LANE");
     }
     paintBtn(painter, x, y, dlp, NvgWindow::tr("LANE"));
   }

@@ -189,7 +189,7 @@ static void update_state(UIState *s) {
   if (sm.updated("lateralPlan")) {
     scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
     auto data = sm["lateralPlan"].getLateralPlan();
-    scene.dpLaneLessModeStatus = data.getDpLaneLessModeStatus();
+    scene.dpLaneLessModeIsE2E = data.getDpLaneLessModeIsE2E();
   }
   if (scene.started) {
     if (sm.updated("carState")) {

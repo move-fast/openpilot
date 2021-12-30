@@ -86,8 +86,6 @@ typedef struct UIScene {
 
   cereal::PandaState::PandaType pandaType;
 
-  int laneless_mode;
-
   cereal::CarState::Reader car_state;
   cereal::ControlsState::Reader controls_state;
   cereal::LateralPlan::Reader lateral_plan;
@@ -146,7 +144,7 @@ typedef struct UIScene {
   bool steeringPressed;
   bool dpLaneLessModeCtrl;
   int dpLaneLessMode;
-  bool dpLaneLessModeStatus;
+  bool dpLaneLessModeIsE2E;
   float dpLat;
   float dpLon;
   bool dpInTW = false;
