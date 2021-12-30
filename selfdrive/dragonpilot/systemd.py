@@ -172,11 +172,11 @@ def confd_thread():
 def update_conf(msg, conf, first_run = False):
   conf_type = conf.get('conf_type')
 
-  # skip checking since modified date time hasn't been changed.
-  if (last_modified_confs.get(conf['name'])) is not None and last_modified_confs.get(conf['name']) == os.stat(PARAM_PATH + conf['name']).st_mtime:
-    return msg
-
   if 'param' in conf_type and 'struct' in conf_type:
+    access_time = os.path.getatime(PARAM_PATH + conf['name'])
+    if (last_modified_confs.get(conf['name'])) is not None and last_modified_confs.get(conf['name']) == access_time:
+      return msg
+
     update_this_conf = True
 
     if not first_run:
@@ -189,7 +189,7 @@ def update_conf(msg, conf, first_run = False):
     if update_this_conf:
       msg = set_message(msg, conf)
       if os.path.isfile(PARAM_PATH + conf['name']):
-        last_modified_confs[conf['name']] = os.stat(PARAM_PATH + conf['name']).st_mtime
+        last_modified_confs[conf['name']] = access_time
   return msg
 
 def update_conf_all(confs, msg, first_run = False):
