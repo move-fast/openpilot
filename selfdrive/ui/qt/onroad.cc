@@ -287,9 +287,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, width(), header_h, bg);
 
+  QRect rc(bdr_s * 2, bdr_s * 1.5, 184, 202);
   if (dpUiMaxSpeed) {
   // max speed
-  QRect rc(bdr_s * 2, bdr_s * 1.5, 184, 202);
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
   p.setBrush(QColor(0, 0, 0, 100));
   p.drawRoundedRect(rc, 20, 20);
