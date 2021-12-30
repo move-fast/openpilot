@@ -6,6 +6,11 @@
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
 
+// dp
+const int dp_btn_wh = 160;
+const int dp_btn_wh_gap = 30;
+const int dp_sidebar_width = 192; // same as event icon radius
+#include "selfdrive/common/params.h"
 
 // ***** onroad widgets *****
 
@@ -100,6 +105,8 @@ protected:
   void drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs);
   void drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric);
   void drawBottombar(QPainter &painter, const cereal::LiveMapData::Reader &lmd);
+  void drawBtns(QPainter &painter);
+  void paintBtn(QPainter &painter, int x, int y, QString main, QString sub);
 };
 
 // container for all onroad widgets
@@ -112,6 +119,7 @@ public:
 
 private:
   void paintEvent(QPaintEvent *event);
+  void btnTriggered(std::string param, int val, int min, int max);
   void mousePressEvent(QMouseEvent* e) override;
   OnroadHud *hud;
   OnroadAlerts *alerts;

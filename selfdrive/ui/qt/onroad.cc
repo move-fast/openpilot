@@ -69,72 +69,56 @@ void OnroadWindow::updateState(const UIState &s) {
   }
 }
 
+// dp - action when btn is triggered
+void OnroadWindow::btnTriggered(std::string param, int val, int min, int max) {
+  Params p = Params();
+  val += 1;
+  val = (val > max)? min : val;
+  p.put(param, std::to_string(val));
+  // touch dp_last_modified
+  auto time = sc::system_clock::now(); // get the current time
+  auto since_epoch = time.time_since_epoch(); // get the duration since epoch
+  auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
+  p.put("dp_last_modified", std::to_string(millis.count()));
+}
+
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
+  bool sidebarVisible = geometry().x() > 0;
   bool propagate_event = true;
 
-//  int dp_btn_x = QUIState::ui_state.fb_w;
-//  const int dp_btn_y = QUIState::ui_state.fb_h - dp_btn_h - (QUIState::ui_state.scene.dpMapd? 100 : 0);
-//  // need extra spacing for first btn (from right to left)
-//  bool dp_extra_spacing = true;
-//
-//  // fd
-//  if (propagate_event && QUIState::ui_state.scene.dpFollowingProfileCtrl) {
-//    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
-//    dp_extra_spacing = false;
-//    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
-//    if (btn_rect.ptInRect(e->x(), e->y())) {
-//      int val = QUIState::ui_state.scene.dpFollowingProfileCtrl + 1;
-//      val = val > 2? 0 : val;
-//      Params().put("dp_following_profile", std::to_string(val));
-//
-//      // touch dp_last_modified
-//      auto time = sc::system_clock::now(); // get the current time
-//      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
-//      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
-//      Params().put("dp_last_modified", std::to_string(millis.count()));
-//      propagate_event = false;
-//    }
-//  }
-//
-//  // ap
-//  if (propagate_event && QUIState::ui_state.scene.dpAccelProfileCtrl) {
-//    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
-//    dp_extra_spacing = false;
-//    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
-//    if (btn_rect.ptInRect(e->x(), e->y())) {
-//      int val = QUIState::ui_state.scene.dpAccelProfile + 1;
-//      val = val > 2? 0 : val;
-//      Params().put("dp_accel_profile", std::to_string(val));
-//
-//      // touch dp_last_modified
-//      auto time = sc::system_clock::now(); // get the current time
-//      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
-//      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
-//      Params().put("dp_last_modified", std::to_string(millis.count()));
-//      propagate_event = false;
-//    }
-//  }
-//  // dlp
-//  if (propagate_event && QUIState::ui_state.scene.dpLaneLessModeCtrl) {
-//    dp_btn_x -= (184 + (dp_extra_spacing? bdr_s * 10 : bdr_s));
-//    dp_extra_spacing = false;
-//    Rect btn_rect = {dp_btn_x, dp_btn_y, dp_btn_w, dp_btn_h};
-//    if (btn_rect.ptInRect(e->x(), e->y())) {
-//      int val = QUIState::ui_state.scene.dpLaneLessMode + 1;
-//      val = val > 2? 0 : val;
-//      Params().put("dp_lane_less_mode", std::to_string(val));
-//
-//      // touch dp_last_modified
-//      auto time = sc::system_clock::now(); // get the current time
-//      auto since_epoch = time.time_since_epoch(); // get the duration since epoch
-//      auto millis = sc::duration_cast<sc::milliseconds>(since_epoch);
-//      Params().put("dp_last_modified", std::to_string(millis.count()));
-//      propagate_event = false;
-//    }
-//  }
+  int x = rect().right() - dp_sidebar_width - bdr_s * 2; // from drawBtn init
+  const int y = height() - bdr_s*2 - dp_btn_wh - 20; // from drawBtn init
+  const int x_offset = dp_btn_wh + dp_btn_wh_gap;
+
+  if (propagate_event && QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+    x -= x_offset;
+    QRect fp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
+    if (fp_rc.contains(e->x(), e->y())) {
+      btnTriggered("dp_following_profile", QUIState::ui_state.scene.dpFollowingProfile, 0, 2);
+      propagate_event = false;
+    }
+  }
+
+  if (propagate_event && QUIState::ui_state.scene.dpAccelProfileCtrl) {
+    x -= x_offset;
+    QRect ap_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
+    if (ap_rc.contains(e->x(), e->y())) {
+      btnTriggered("dp_accel_profile", QUIState::ui_state.scene.dpAccelProfile, 0, 2);
+      propagate_event = false;
+    }
+  }
+
+  if (propagate_event && QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+    x -= x_offset;
+    QRect dlp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
+    if (dlp_rc.contains(e->x(), e->y())) {
+      btnTriggered("dp_lane_less_mode", QUIState::ui_state.scene.dpLaneLessMode, 0, 2);
+      propagate_event = false;
+    }
+  }
+
   // nav show
   if (propagate_event && map != nullptr) {
-    bool sidebarVisible = geometry().x() > 0;
     map->setVisible(!sidebarVisible && !map->isVisible());
   }
   // propagation event to parent(HomeWindow)
@@ -502,7 +486,7 @@ void NvgWindow::drawBlindSpots(QPainter &painter, const cereal::CarState::Reader
   }
 }
 void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs) {
-  QRect rc(0, 0, width(), bdr_s);
+  QRect rc(0, 2, width(), bdr_s+5); // +5 give some bottom spacing
   if (cs.getBrakeLights()) {
     painter.setBrush(QColor(0xff, 0, 0, 0xff));
   } else {
@@ -541,12 +525,11 @@ float NvgWindow::calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, 
 
 void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric) {
   painter.setBrush(Qt::NoBrush);
-  const int radius = 192; // from OnroadHud
   int y = bdr_s * 1.5 + 202; // max speed
   QColor text_color = QColor(0xff, 0xff, 0xff, 200);
-  // x: align with engage image
+  const int end_y = height() - bdr_s*2 - 20; // total available height - bdr_s*2 (map) - 20 (leave a gap)
   y += 50;
-  QRect rc(rect().right() - radius - bdr_s * 2, y, 184, 650);
+  QRect rc(rect().right() - dp_sidebar_width - bdr_s * 2, y, dp_sidebar_width, end_y - y);
   painter.setPen(QPen(text_color, 10));
   painter.drawRoundedRect(rc, 20, 20);
   painter.setPen(Qt::NoPen);
@@ -612,11 +595,12 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   // relative speed
   float ttc = calc_ttc(v_ego, a_ego, x_lead, v_lead, a_lead);
   configFont(painter, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
   if (ttc <= 1) {
     text_color = QColor(0xff, 0x0, 0x0, 200);
   } else if (ttc < 2) {
     text_color = QColor(0xff, 0xff, 0x0, 200);
+  } else {
+    text_color = QColor(0xff, 0xff, 0xff, 200);
   }
   drawColoredText(painter, rc.center().x(), y, x_lead == 0 || ttc == 5.0? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
   y += 30;
@@ -647,6 +631,84 @@ void NvgWindow::drawBottombar(QPainter &painter, const cereal::LiveMapData::Read
 
   configFont(painter, "Open Sans", 48, "Bold");
   drawColoredText(painter, rc.center().x(), height() - bdr_s/2, QString::fromStdString(lmd.getCurrentRoadName()), QColor(0xff, 0xff, 0xff, 0xff));
+}
+
+void NvgWindow::paintBtn(QPainter &painter, int x, int y, QString main, QString sub) {
+  const QColor text_color = QColor(0xff, 0xff, 0xff, 200);
+  QRect dlp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
+
+  painter.setBrush(Qt::NoBrush);
+  painter.setPen(QPen(text_color, 10));
+  painter.drawRoundedRect(dlp_rc, 20, 20);
+  painter.setPen(Qt::NoPen);
+
+  configFont(painter, "Open Sans", 48, "SemiBold");
+  drawColoredText(painter, dlp_rc.center().x(), dlp_rc.center().y(), main, text_color);
+  configFont(painter, "Open Sans", 24, "Bold");
+  drawColoredText(painter, dlp_rc.center().x(), dlp_rc.bottom() - 20, sub, text_color);
+}
+
+void NvgWindow::drawBtns(QPainter &painter) {
+  painter.setBrush(Qt::NoBrush);
+
+  // btn init position, we work from right to left
+  int x = rect().right() - dp_sidebar_width - bdr_s * 2;
+  const int y = height() - bdr_s*2 - dp_btn_wh - 20;
+  const int x_offset = dp_btn_wh + dp_btn_wh_gap;
+
+  // fp
+  if (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+    x -= x_offset;
+    QString fp;
+    switch (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+      case 1:
+        fp = NvgWindow::tr("1.2s");
+        break;
+      case 2:
+        fp = NvgWindow::tr("1.4s");
+        break;
+      case 3:
+        fp = NvgWindow::tr("1.8s");
+        break;
+      default:
+        fp = NvgWindow::tr("1.0s");
+    }
+    paintBtn(painter, x, y, fp, NvgWindow::tr("FOLLOW"));
+  }
+
+  // ap
+  if (QUIState::ui_state.scene.dpAccelProfileCtrl) {
+    x -= x_offset;
+    QString ap;
+    switch (QUIState::ui_state.scene.dpAccelProfile) {
+      case 1:
+        ap = NvgWindow::tr("NOR");
+        break;
+      case 2:
+        ap = NvgWindow::tr("SPT");
+        break;
+      default:
+        ap = NvgWindow::tr("ECO");
+    }
+    paintBtn(painter, x, y, ap, NvgWindow::tr("ACCEL"));
+  }
+
+  // dlp
+  if (QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+    x -= x_offset;
+    QString dlp;
+    switch (QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+      case 1:
+        dlp = NvgWindow::tr("LANE");
+        break;
+      case 2:
+        dlp = NvgWindow::tr("AUTO");
+        break;
+      default:
+        dlp = NvgWindow::tr("E2E");
+    }
+    paintBtn(painter, x, y, dlp, NvgWindow::tr("LANE"));
+  }
 }
 
 void NvgWindow::paintGL() {
@@ -681,6 +743,7 @@ void NvgWindow::paintGL() {
       drawSidebar(painter, (*s->sm)["modelV2"].getModelV2(), (*s->sm)["carState"].getCarState(), (*s->sm)["controlsState"].getControlsState(), s->scene.is_metric);
     if (dp.getDpMapd())
       drawBottombar(painter, (*s->sm)["liveMapData"].getLiveMapData());
+    drawBtns(painter);
   }
 
   double cur_draw_t = millis_since_boot();
