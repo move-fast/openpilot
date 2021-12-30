@@ -381,7 +381,7 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIScene &scene) {
     }
   }
 
-  if (!scene.end_to_end) {
+  if (!end_to_end) {
     // lanelines
     for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
       painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, scene.lane_line_probs[i]));
@@ -395,8 +395,8 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIScene &scene) {
   }
   // paint path
   QLinearGradient bg(0, height(), 0, height() / 4);
-  bg.setColorAt(0, scene.end_to_end ? redColor() : QColor(255, 255, 255));
-  bg.setColorAt(1, scene.end_to_end ? redColor(0) : QColor(255, 255, 255, 0));
+  bg.setColorAt(0, end_to_end ? redColor() : QColor(255, 255, 255));
+  bg.setColorAt(1, end_to_end ? redColor(0) : QColor(255, 255, 255, 0));
   painter.setBrush(bg);
   painter.drawPolygon(scene.track_vertices.v, scene.track_vertices.cnt);
 }
