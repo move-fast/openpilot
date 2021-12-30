@@ -660,7 +660,7 @@ void NvgWindow::drawBtns(QPainter &painter) {
   if (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
     x -= x_offset;
     QString fp;
-    switch (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+    switch (QUIState::ui_state.scene.dpFollowingProfile) {
       case 1:
         fp = NvgWindow::tr("1.2s");
         break;
@@ -697,7 +697,7 @@ void NvgWindow::drawBtns(QPainter &painter) {
   if (QUIState::ui_state.scene.dpLaneLessModeCtrl) {
     x -= x_offset;
     QString dlp;
-    switch (QUIState::ui_state.scene.dpLaneLessModeCtrl) {
+    switch (QUIState::ui_state.scene.dpLaneLessMode) {
       case 1:
         dlp = NvgWindow::tr("LANE");
         break;
