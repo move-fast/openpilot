@@ -126,7 +126,7 @@ class Planner:
     if not self.dp_accel_profile_ctrl:
       accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
     else:
-      accel_limits = dp_calc_cruise_accel_limits(v_cruise, self.dp_accel_profile)
+      accel_limits = dp_calc_cruise_accel_limits(v_ego, self.dp_accel_profile)
     accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     if force_slow_decel:
       # if required so, force a smooth deceleration
