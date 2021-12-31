@@ -74,6 +74,7 @@ class LateralPlanner:
 
     self.laneless_mode = 2 # AUTO
     self.laneless_mode_is_e2e = False
+    self.laneless_mode_buffer = False
 
   def reset_mpc(self, x0=np.zeros(6)):
     self.x0 = x0
@@ -251,16 +252,13 @@ class LateralPlanner:
       # only while lane change is off
       if self.lane_change_state == LaneChangeState.off:
         # lane probability too low, we switch to laneless mode
-        if (self.LP.lll_prob + self.LP.rll_prob)/2 <= 0.5:
+        if (self.LP.lll_prob + self.LP.rll_prob)/2 < 0.3:
+          self.laneless_mode_buffer = True
+        if (self.LP.lll_prob + self.LP.rll_prob)/2 > 0.5:
+          self.laneless_mode_buffer = False
+        if self.laneless_mode_buffer: # in buffer mode, always laneless
           return True
-        # otherwise lane probability is okay, we switch to laneline mode
-        else:
-          return False
-      else:
-        # while lane change, use laneless
-        return True
-    else: # otherwise use use_lanelines val (should never happen)
-      return self.use_lanelines
+    return False
 
   def publish(self, sm, pm):
     plan_solution_valid = self.solution_invalid_cnt < 2
