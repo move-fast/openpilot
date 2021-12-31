@@ -607,14 +607,16 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   // relative speed
   float ttc = calc_ttc(v_ego, a_ego, x_lead, v_lead, a_lead);
   configFont(painter, "Open Sans", 54, "SemiBold");
-  if (ttc <= 1) {
+  if (x_lead == 0) {
+    text_color = QColor(0xff, 0xff, 0xff, 200);
+  } else if (ttc <= 1) {
     text_color = QColor(0xff, 0x0, 0x0, 200);
   } else if (ttc < 2) {
     text_color = QColor(0xff, 0xff, 0x0, 200);
   } else {
     text_color = QColor(0xff, 0xff, 0xff, 200);
   }
-  drawColoredText(painter, rc.center().x(), y, x_lead == 0 || ttc == 5.0? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
+  drawColoredText(painter, rc.center().x(), y, x_lead == 0? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
   y += 30;
   configFont(painter, "Open Sans", 24, "Bold");
   drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("TTC"));
