@@ -373,11 +373,7 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIScene &scene) {
       end_to_end = false;
     } else {
       // auto
-      if (QUIState::ui_state.scene.dpLaneLessModeIsE2E) {
-        end_to_end = true;
-      } else {
-        end_to_end = false;
-      }
+      end_to_end = QUIState::ui_state.scene.dpLaneLessModeIsE2E;
     }
   }
 
