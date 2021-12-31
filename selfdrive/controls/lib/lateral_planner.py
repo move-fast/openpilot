@@ -201,17 +201,17 @@ class LateralPlanner:
     if self.desire == log.LateralPlan.Desire.laneChangeRight or self.desire == log.LateralPlan.Desire.laneChangeLeft:
       self.LP.lll_prob *= self.lane_change_ll_prob
       self.LP.rll_prob *= self.lane_change_ll_prob
-    if not self.get_dlp_laneless_mode():
+    if self.get_dlp_laneless_mode():
       d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
-      self.laneless_mode_is_e2e = False
+      self.laneless_mode_is_e2e = True
     else:
       d_path_xyz = self.path_xyz
       path_cost = np.clip(abs(self.path_xyz[0, 1] / self.path_xyz_stds[0, 1]), 0.5, 1.5) * MPC_COST_LAT.PATH
       # Heading cost is useful at low speed, otherwise end of plan can be off-heading
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
       self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
-      self.laneless_mode_is_e2e = True
+      self.laneless_mode_is_e2e = False
     y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
     heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
     self.y_pts = y_pts
@@ -244,21 +244,21 @@ class LateralPlanner:
 
   def get_dlp_laneless_mode(self):
     if self.laneless_mode == 1: # e2e
-      return False
-    if self.laneless_mode == 0: # lane
       return True
+    if self.laneless_mode == 0: # lane
+      return False
     elif self.laneless_mode == 2: # auto
       # only while lane change is off
       if self.lane_change_state == LaneChangeState.off:
         # lane probability too low, we switch to laneless mode
         if (self.LP.lll_prob + self.LP.rll_prob)/2 <= 0.5:
-          return False
+          return True
         # otherwise lane probability is okay, we switch to laneline mode
         else:
-          return True
+          return False
       else:
         # while lane change, use laneless
-        return False
+        return True
     else: # otherwise use use_lanelines val (should never happen)
       return self.use_lanelines
 
