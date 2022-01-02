@@ -4,11 +4,11 @@
 <context>
     <name>AbstractAlert</name>
     <message>
-        <source>Dismiss</source>
+        <source>Reboot and Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Reboot and Update</source>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -95,16 +95,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Lexus RX Low Gear/High RPM Fix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>See: https://github.com/LexusRXopenpilotUG/openpilot
-Credit to @nelsonchen &amp; @sumedhekaru
-Reboot required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enable SnG Mod</source>
         <translation type="unfinished"></translation>
     </message>
@@ -173,19 +163,6 @@ Reboot required.</source>
     </message>
     <message>
         <source>Enable this will increase steering and allow steering down to to 0.
-Reboot required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Volkswagen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable J533 + White Panda Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Credit to jyoung8607.
 Reboot required.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -313,18 +290,6 @@ More linear steering experience.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Driving Path Offset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Adjust this if you wish to let openpilot drive slightly towards to left (+) or right (-)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> cm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Safety</source>
         <translation type="unfinished"></translation>
     </message>
@@ -448,14 +413,6 @@ Reboot required.</source>
     </message>
     <message>
         <source>Hardware - General</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Camera Offset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Adjust your camera position if your device is not mounted as per guidance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -759,83 +716,7 @@ Please note:
 <context>
     <name>DevicePanel</name>
     <message>
-        <source>Dongle ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Serial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Driver Camera</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PREVIEW</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Preview the driver facing camera to help optimize device mounting position for best driver monitoring experience. (vehicle must be off)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or down. openpilot is continuously calibrating, resetting is rarely required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RESET</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Are you sure you want to reset calibration?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Your device is pointed %1° %2 and %3° %4.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>up</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>down</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>right</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Review Training Guide</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>REVIEW</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Review the rules, features, and limitations of openpilot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Are you sure you want to review the training guide?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Regulatory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VIEW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -843,15 +724,7 @@ Please note:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Are you sure you want to reboot?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Power Off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Are you sure you want to power off?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -960,10 +833,6 @@ location set</source>
         <source>Waiting for GPS</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Failed to Route</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>Networking</name>
@@ -985,9 +854,107 @@ location set</source>
     </message>
 </context>
 <context>
+    <name>NvgWindow</name>
+    <message>
+        <source>REAL STEER</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DESIR STEER</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>REL DIST</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TTC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ENG RPM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1.2s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1.4s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1.8s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1.0s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FOLLOW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NOR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SPT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ECO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ACCEL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E2E</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AUTO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LANE</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OffroadHome</name>
     <message>
         <source>UPDATE</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OnroadHud</name>
+    <message>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>km/h</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MAX</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1040,86 +1007,6 @@ location set</source>
 <context>
     <name>QObject</name>
     <message>
-        <source>REL DIST</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SPT</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>NOR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ECO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ACCEL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>REL SPEED</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OFF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ENG RPM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>REAL STEER</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DESIR STEER</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>openpilot Unavailable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Waiting for controls to start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>TAKE CONTROL IMMEDIATELY</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Controls Unresponsive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MAX</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>N/A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>AUTO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>E2E</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LANE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LANE MODE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>now</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1145,10 +1032,6 @@ location set</source>
     </message>
     <message>
         <source>%1 day ago</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FOLLOW</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1282,10 +1165,6 @@ SEARCHING</source>
 <context>
     <name>SoftwarePanel</name>
     <message>
-        <source>failed to fetch update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>CHECK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1311,18 +1190,6 @@ SEARCHING</source>
     </message>
     <message>
         <source>The last time openpilot successfully checked for an update. The updater only runs while the car is off.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Uninstall </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>UNINSTALL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Are you sure you want to uninstall?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1370,97 +1237,6 @@ SEARCHING</source>
     </message>
     <message>
         <source>REMOVE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Username &apos;%1&apos; has no keys on GitHub</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Username &apos;%1&apos; doesn&apos;t exist on GitHub</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TogglesPanel</name>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Lane Departure Warnings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31mph (50kph).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Right-Hand Drive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Allow openpilot to obey left-hand traffic conventions and perform driver monitoring on right driver seat.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Community Features</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Upload Raw Logs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Upload full logs and full resolution video by default while on WiFi. If not enabled, individual logs can be marked for upload at my.comma.ai/useradmin.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Record and Upload Driver Camera</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Upload data from the driver facing camera and help improve the driver monitoring algorithm.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>塞 Disable use of lanelines (Alpha) 塞</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>In this mode openpilot will ignore lanelines and just drive how it thinks a human would.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show ETA in 24h format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use 24h format instead of am/pm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable openpilot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use Metric System</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display speed in km/h instead of mph.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use features, such as community supported hardware, from the open source community that are not maintained or supported by comma.ai and have not been confirmed to meet the standard safety model. Be extra cautious when using these features</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>openpilot Longitudinal Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>openpilot will disable the car&apos;s radar and will take over control of gas and brakes. Warning: this disables AEB!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
