@@ -169,6 +169,7 @@ extern "C" {
     if (Params().getBool("dp_otisserv")) {
       QString key = QString::fromStdString(Params().get("dp_nav_mapbox_token_sk"));
       if (key != "") {
+        qWarning() << "Using otisserv and owned API key.";
         settings.setApiBaseUrl("https://api.mapbox.com");
         settings.setAccessToken(key);
       }

@@ -498,7 +498,7 @@ void NvgWindow::drawBlindSpots(QPainter &painter, const cereal::CarState::Reader
   }
 }
 void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs) {
-  QRect rc(0, 2, width(), bdr_s+5); // +5 give some bottom spacing
+  QRect rc(0, 0, width(), bdr_s + 10); // +10 give some bottom spacing
   if (cs.getBrakeLights()) {
     painter.setBrush(QColor(0xff, 0, 0, 0xff));
   } else {
@@ -509,7 +509,7 @@ void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs
   QDateTime dateTime = dateTime.currentDateTime();
 
   configFont(painter, "Open Sans", 36, "Bold");
-  drawColoredText(painter, rc.center().x(), bdr_s - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
+  drawColoredText(painter, rc.center().x(), rc.center().y(), dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
 }
 
 // from fcw.py in 0.8.9
@@ -531,14 +531,14 @@ float NvgWindow::calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, 
   if (delta < 0.1 || (sqrt(delta) + v_rel < 0.1)) {
     return max_ttc;
   } else {
-    return std::fmin(2 * x_lead / (sqrt(abs(delta) + v_rel)), max_ttc);
+    return std::fmin(2 * x_lead / (sqrt(delta) + v_rel), max_ttc);
   }
 }
 
 void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric) {
   painter.setBrush(Qt::NoBrush);
   int y = bdr_s * 1.5 + 202; // max speed
-  QColor text_color = QColor(0xff, 0xff, 0xff, 200);
+  QColor text_color = QColor(0xff, 0xff, 0xff, 0xff);
   const int end_y = height() - bdr_s*2 - 20; // total available height - bdr_s*2 (map) - 20 (leave a gap)
   y += 50;
   QRect rc(rect().right() - dp_sidebar_width - bdr_s * 2, y, dp_sidebar_width, end_y - y);
@@ -551,12 +551,7 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   // actual steering
   float angleSteers = css.getAngleSteers();
   configFont(painter, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
-  if (abs(angleSteers) >= 12) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
-  } else if (abs(angleSteers) >= 6) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
-  }
+  text_color = QColor(0xff, 0xff, 0xff, 0xff);
   drawColoredText(painter, rc.center().x(), y, QString::number(angleSteers, 'f', 1), text_color);
   y += 30;
   configFont(painter, "Open Sans", 24, "Bold");
@@ -566,11 +561,11 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   // desire steering
   float angleSteersDes = css.getSteeringAngleDesiredDeg();
   configFont(painter, "Open Sans", 54, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
+  text_color = QColor(0xff, 0xff, 0xff, 0xff);
   if (abs(angleSteersDes) >= 12) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
+    text_color = QColor(0xff, 0x0, 0x0, 0xff);
   } else if (abs(angleSteersDes) >= 6) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
+    text_color = QColor(0xff, 0xff, 0x0, 0xff);
   }
   drawColoredText(painter, rc.center().x(), y, QString::number(angleSteersDes, 'f', 1), text_color);
   y += 30;
@@ -608,15 +603,15 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   float ttc = calc_ttc(v_ego, a_ego, x_lead, v_lead, a_lead);
   configFont(painter, "Open Sans", 54, "SemiBold");
   if (x_lead == 0) {
-    text_color = QColor(0xff, 0xff, 0xff, 200);
+    text_color = QColor(0xff, 0xff, 0xff, 0xff);
   } else if (ttc <= 1) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
+    text_color = QColor(0xff, 0x0, 0x0, 0xff);
   } else if (ttc < 2) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
+    text_color = QColor(0xff, 0xff, 0x0, 0xff);
   } else {
-    text_color = QColor(0xff, 0xff, 0xff, 200);
+    text_color = QColor(0xff, 0xff, 0xff, 0xff);
   }
-  drawColoredText(painter, rc.center().x(), y, x_lead == 0? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
+  drawColoredText(painter, rc.center().x(), y, (x_lead == 0 || ttc == 5.0)? NvgWindow::tr("N/A") : QString::number(ttc, 'f', 1), text_color);
   y += 30;
   configFont(painter, "Open Sans", 24, "Bold");
   drawColoredText(painter, rc.center().x(), y, NvgWindow::tr("TTC"));
@@ -625,11 +620,11 @@ void NvgWindow::drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader
   // engine rpm
   float engineRPM = cs.getEngineRPM();
   configFont(painter, "Open Sans", 52, "SemiBold");
-  text_color = QColor(0xff, 0xff, 0xff, 200);
+  text_color = QColor(0xff, 0xff, 0xff, 0xff);
   if (engineRPM >= 6000) {
-    text_color = QColor(0xff, 0x0, 0x0, 200);
+    text_color = QColor(0xff, 0x0, 0x0, 0xff);
   } else if (engineRPM >= 4000) {
-    text_color = QColor(0xff, 0xff, 0x0, 200);
+    text_color = QColor(0xff, 0xff, 0x0, 0xff);
   }
   drawColoredText(painter, rc.center().x(), y, engineRPM <= 0 ? NvgWindow::tr("OFF") : QString::number((int)engineRPM), text_color);
   y += 30;

@@ -113,6 +113,7 @@ RouteEngine::RouteEngine() {
   if (Params().getBool("dp_otisserv")) {
     QString key = QString::fromStdString(Params().get("dp_nav_mapbox_token_sk"));
     if (key != "") {
+      qWarning() << "Using otisserv and owned API key.";
       parameters["mapbox.access_token"] = key;
       parameters["mapbox.directions_api_url"] = "https://api.mapbox.com/directions/v5/mapbox/";
     }
@@ -159,7 +160,7 @@ void RouteEngine::msgUpdate() {
 
   gps_ok = location.getGpsOK();
 
-  localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID) && pos.getValid();
+  localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID); // && pos.getValid();
 
   if (localizer_valid) {
     last_bearing = RAD2DEG(orientation.getValue()[2]);
