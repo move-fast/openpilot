@@ -594,7 +594,7 @@ The device should reboot once if it finish updating.</source>
     </message>
     <message>
         <source>Tap the button to delete ALL your driving logs (including dashcam / gpx / driving logs).</source>
-        <translation type="unfinished">點擊按鈕來清空您所有的行駛記錄（包含 dashcam / gpx 等等）。</translation>
+        <translation>點擊按鈕來清空您所有的行駛記錄（包含 dashcam / gpx 等等）。</translation>
     </message>
 </context>
 <context>

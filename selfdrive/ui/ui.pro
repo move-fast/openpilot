@@ -6,6 +6,7 @@ SOURCES         = main.cc \
                   paint_dp.cc \
                   qt/util.cc \
                   qt/home.cc \
+                  qt/onroad.cc \
                   qt/widgets/drive_stats.cc \
                   qt/widgets/input.cc \
                   qt/widgets/offroad_alerts.cc \
