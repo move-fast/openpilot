@@ -147,6 +147,9 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
     std::system((std::string(state? "touch" : "rm -fr") + " /data/openpilot/prebuilt").c_str());
   });
   layout->addWidget(dp_prebuiltCtrl);
+  // black panda w/ no gps (for mr. one)
+  layout->addWidget(new ParamControl("dp_panda_no_gps", DPGeneralPanel::tr("Enable No GPS Support"), DPGeneralPanel::tr("Enable this option if your black panda does not have a GPS chip.\nReboot required."), ICON_EMPTY));
+  layout->addWidget(horizontal_line());
 
   // others
   //dp: button for flash panda, recover panda and delete reladata.
