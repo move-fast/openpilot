@@ -1,7 +1,5 @@
 #!/bin/sh
 cd "$(dirname "$0")"
-if [ ! -f /JETSON ]; then
-  export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
-fi
+export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
 export QT_PLUGIN_PATH="../../third_party/qt-plugins/$(uname -m)"
 exec ./_ui

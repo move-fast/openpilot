@@ -131,7 +131,7 @@ function tici_init {
 # jetpack 4.6
 function jetson_init {
   # modeld need this
-  export LD_LIBRARY_PATH="/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH="/usr/lib/aarch64-linux-gnu:$BASEDIR/third_party/mapbox-gl-native-qt/jarch64:$LD_LIBRARY_PATH"
   # jetpack 4.6 has mode 8
   sudo nvpmodel -m 8
 
