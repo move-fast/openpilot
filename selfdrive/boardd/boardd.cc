@@ -626,6 +626,7 @@ int main(int argc, char *argv[]) {
   LOGW("starting boardd");
   Params params;
   bool disable_relay = params.getBool("dp_toyota_disable_relay");
+  bool no_gps = params.getBool("dp_panda_no_gps");
 
   if (!Hardware::PC()) {
     int err;
@@ -643,7 +644,6 @@ int main(int argc, char *argv[]) {
 
   // connect to all provided serials
   std::vector<Panda *> pandas;
-  bool first_panda = true;
   for (int i = 0; i < serials.size() && !do_exit; /**/) {
     Panda *p = usb_connect(serials[i], i);
     if (!p) {
@@ -652,10 +652,6 @@ int main(int argc, char *argv[]) {
       send_empty_peripheral_state(&pm);
       util::sleep_for(500);
       continue;
-    }
-    if (first_panda) {
-      p->disable_relay = disable_relay;
-      first_panda = false;
     }
 
     pandas.push_back(p);
@@ -666,6 +662,10 @@ int main(int argc, char *argv[]) {
     LOGW("connected to board");
     Panda *peripheral_panda = pandas[0];
     std::vector<std::thread> threads;
+
+    // dp - only control first panda
+    peripheral_panda->disable_relay = disable_relay;
+    peripheral_panda->has_gps = peripheral_panda->has_gps && !no_gps;
 
     threads.emplace_back(panda_state_thread, &pm, pandas, getenv("STARTED") != nullptr);
     threads.emplace_back(peripheral_control_thread, peripheral_panda);

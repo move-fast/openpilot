@@ -246,6 +246,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_gpxd", PERSISTENT},
     {"dp_mapd", PERSISTENT},
     {"dp_otisserv", PERSISTENT},
+    {"dp_panda_no_gps", PERSISTENT},
     {"dp_nav_mapbox_token_pk", PERSISTENT},
     {"dp_nav_mapbox_token_sk", PERSISTENT},
     {"dp_nav_full_screen", PERSISTENT},

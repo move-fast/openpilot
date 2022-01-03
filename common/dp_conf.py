@@ -107,6 +107,8 @@ confs = [
   {'name': 'dp_gpxd', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   {'name': 'dp_mapd', 'default': False, 'type': 'Bool', 'conf_type': ['param', 'struct']},
   {'name': 'dp_otisserv', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
+  # no gps is for mr. one's harness + black panda in one solution (without GPS chip)
+  {'name': 'dp_panda_no_gps', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
   # deprecated
   # {'name': 'dp_mapbox_token_pk', 'default': '', 'type': 'Text', 'conf_type': ['param']},
   # {'name': 'dp_mapbox_token_sk', 'default': '', 'type': 'Text', 'conf_type': ['param']},
