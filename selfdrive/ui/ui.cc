@@ -354,23 +354,22 @@ void Device::updateBrightness(const UIState &s) {
 
 void Device::updateWakefulness(const UIState &s) {
   awake_timeout = std::max(awake_timeout - 1, 0);
-  bool should_wake = false;
-  if (s.scene.dpUiDisplayMode == 0 || s.scene.dpUiDisplayMode == 1) {
-    should_wake = s.scene.started || s.scene.ignition;
-    if (s.scene.dpUiDisplayMode == 1 && s.scene.isReversing) {
+  bool should_wake = s.scene.started || s.scene.ignition;
+  // dp - we don't need to worry about mode 0 since its default
+  if (s.scene.started) {
+    if (s.scene.dpUiDisplayMode == 1 && s.scene.isReversing) { // reverse off
       should_wake = false;
-      awake_timeout = 0;
+    } else if (s.scene.dpUiDisplayMode == 2 && s.status != STATUS_WARNING && s.status != STATUS_ALERT) { // always off
+      should_wake = false;
     }
-    if (!should_wake) {
-      // tap detection while display is off
-      bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
-      bool gyro_trigger = abs(s.scene.gyro_sensor - gyro_prev) > 0.15;
-      should_wake = accel_trigger && gyro_trigger;
-      gyro_prev = s.scene.gyro_sensor;
-      accel_prev = (accel_prev * (accel_samples - 1) + s.scene.accel_sensor) / accel_samples;
-    }
-  } else if (s.scene.dpUiDisplayMode == 2 && s.scene.started) {
-    should_wake = false;
+  }
+  if (!should_wake) {
+    // tap detection while display is off
+    bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
+    bool gyro_trigger = abs(s.scene.gyro_sensor - gyro_prev) > 0.15;
+    should_wake = accel_trigger && gyro_trigger;
+    gyro_prev = s.scene.gyro_sensor;
+    accel_prev = (accel_prev * (accel_samples - 1) + s.scene.accel_sensor) / accel_samples;
   }
 
   setAwake(awake_timeout, should_wake);
