@@ -9,7 +9,7 @@ source "$BASEDIR/launch_env.sh"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 function two_init {
-
+  export LD_LIBRARY_PATH="$BASEDIR/third_party/mapbox-gl-native-qt/aarch64:$LD_LIBRARY_PATH"
   # set IO scheduler
   setprop sys.io.scheduler noop
   for f in /sys/block/*/queue/scheduler; do
