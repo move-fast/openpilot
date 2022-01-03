@@ -508,8 +508,8 @@ void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs
   painter.setPen(Qt::NoPen);
   QDateTime dateTime = dateTime.currentDateTime();
 
-  configFont(painter, "Open Sans", 36, "Bold");
-  drawColoredText(painter, rc.center().x(), rc.center().y(), dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
+  configFont(painter, "Open Sans", 32, "Bold");
+  drawColoredText(painter, rc.center().x(), rc.bottom() - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
 }
 
 // from fcw.py in 0.8.9
