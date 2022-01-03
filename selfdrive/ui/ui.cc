@@ -346,6 +346,8 @@ void Device::updateBrightness(const UIState &s) {
     brightness = 0;
   }
 
+  // dp - brightness ctrl
+  brightness = awake && s.scene.dpUiBrightness > 0? s.scene.dpUiBrightness : brightness;
   if (brightness != last_brightness) {
     std::thread{Hardware::set_brightness, brightness}.detach();
   }
