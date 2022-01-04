@@ -25,8 +25,6 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor NOTIFY valueChanged);
   Q_PROPERTY(bool showDebugUI MEMBER showDebugUI NOTIFY valueChanged);
 
-  Q_PROPERTY(QString roadName MEMBER roadName NOTIFY valueChanged);
-
   Q_PROPERTY(bool showSpeedLimit MEMBER showSpeedLimit NOTIFY valueChanged);
   Q_PROPERTY(QString speedLimit MEMBER speedLimit NOTIFY valueChanged);
   Q_PROPERTY(QString slcSubText MEMBER slcSubText NOTIFY valueChanged);
