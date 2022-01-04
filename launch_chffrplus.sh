@@ -24,6 +24,11 @@ function two_init {
     echo noop > $f
   done
 
+  # set vol to 100 when boot
+  service call audio 3 i32 2 i32 100
+  service call audio 3 i32 3 i32 100
+  service call audio 3 i32 4 i32 100
+
   # *** shield cores 2-3 ***
 
   # TODO: should we enable this?
