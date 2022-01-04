@@ -24,9 +24,7 @@ int main(int argc, char *argv[]) {
 
   QApplication a(argc, argv);
   QString locale = "en-US";
-  #ifdef QCOM
   locale = QString::fromStdString(Params().get("dp_locale"));
-  #endif
   QTranslator translator;
   // fall back to English
   if (!translator.load(locale, "translations")) {
