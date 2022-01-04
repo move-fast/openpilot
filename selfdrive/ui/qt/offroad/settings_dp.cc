@@ -147,6 +147,7 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
     std::system((std::string(state? "touch" : "rm -fr") + " /data/openpilot/prebuilt").c_str());
   });
   layout->addWidget(dp_prebuiltCtrl);
+  layout->addWidget(horizontal_line());
   // black panda w/ no gps (for mr. one)
   layout->addWidget(new ParamControl("dp_panda_no_gps", DPGeneralPanel::tr("Enable No GPS Support"), DPGeneralPanel::tr("Enable this option if your black panda does not have a GPS chip.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
@@ -254,7 +255,7 @@ void DPControlPanel::longitudinalWidget(QVBoxLayout * layout) {
   longCtrlLayout->addWidget(horizontal_line());
   longCtrlLayout->addWidget(new ParamControl("dp_accel_profile_ctrl", DPControlPanel::tr("Manually Control Accel Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's acceleration control."), ICON_EMPTY));
   longCtrlLayout->addWidget(horizontal_line());
-  longCtrlLayout->addWidget(new ParamControl("dp_following_profile_ctrl", DPControlPanel::tr("Manually Control Following Dist. Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's following distance.\nopenpilot by default keeps 1.8 secs distance to lead car."), ICON_EMPTY));
+  longCtrlLayout->addWidget(new ParamControl("dp_following_profile_ctrl", DPControlPanel::tr("Manually Control Following Dist. Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's following distance.\nopenpilot by default keeps 1.45 secs distance to lead car."), ICON_EMPTY));
   longCtrlLayout->addWidget(horizontal_line());
   longCtrlLayout->addWidget(new ParamControl("dp_allow_gas", DPControlPanel::tr("Allow Gas Pedal Pressed"), DPControlPanel::tr("Enable this if you wish openpilot to stay engaged when gas is pressed."), ICON_EMPTY));
   longCtrlLayout->addWidget(horizontal_line());
@@ -564,7 +565,7 @@ void DPMapsPanel::dpMapd(QVBoxLayout * layout) {
   mapdCtrlLayout->addWidget(horizontal_line());
   mapdCtrl->setLayout(mapdCtrlLayout);
 
-  ParamControl *mapdParamCtrl = new ParamControl("dp_mapd", DPMapsPanel::tr("Enable MapD"), DPMapsPanel::tr("Use OSM to assist lateral/longitudinal control.\nPlease note:\n 1. This feature will works only when your car support OP longitudinal.\n2. MapD will contribute your route to OSM for future improvement automatically.\n3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd/."), "");
+  ParamControl *mapdParamCtrl = new ParamControl("dp_mapd", DPMapsPanel::tr("Enable MapD"), DPMapsPanel::tr("Use OSM to assist lateral/longitudinal control.\nPlease note:\n1. This feature will works only when your car support OP longitudinal.\n2. MapD will contribute your route to OSM for future improvement automatically.\n3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd.\n4. Not connecting to the internet for while might feel up device storage from all the gps traces. "), "");
   QObject::connect(mapdParamCtrl, &ToggleControl::toggleFlipped, [=](bool state) {
     if (state) {
       mapdCtrl->show();
