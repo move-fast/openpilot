@@ -12,7 +12,7 @@
 // TODO: detect when we can't play sounds
 // TODO: detect when we can't display the UI
 
-Sound::Sound(QObject *parent) : sm({"carState", "controlsState", "deviceState"}) {
+Sound::Sound(QObject *parent) : sm({"carState", "controlsState", "deviceState", "dragonConf"}) {
   qInfo() << "default audio device: " << QAudioDeviceInfo::defaultOutputDevice().deviceName();
 
   for (auto &[alert, fn, loops] : sound_list) {
@@ -47,26 +47,20 @@ void Sound::update() {
     return;
   }
 
-
-  // dp - volume adjust
-  bool auto_vol = true;
-  if (sm.updated("dragonConf")) {
-    int dpUiVolume = sm["dragonConf"].getDragonConf().getDpUiVolume();
-    if (dpUiVolume >= 0) {
-      for (auto &[s, loops] : sounds) {
-        s->setVolume(dpUiVolume / 100);
-      }
-      auto_vol = false;
-    }
-  }
-
   // scale volume with speed
-  if (auto_vol && sm.updated("carState")) {
+  if (sm.updated("carState")) {
     float volume = util::map_val(sm["carState"].getCarState().getVEgo(), 11.f, 20.f, 0.f, 1.0f);
+    int dpUiVolume = sm["dragonConf"].getDragonConf().getDpUiVolume();
     volume = QAudio::convertVolume(volume, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     volume = util::map_val(volume, 0.f, 1.f, Hardware::MIN_VOLUME, Hardware::MAX_VOLUME);
     for (auto &[s, loops] : sounds) {
-      s->setVolume(std::round(100 * volume) / 100);
+      if ((dpUiVolume * 0.01) < -0.03) {
+        s->setVolume(0.0);
+      } else if ((dpUiVolume * 0.01) > 0.03) {
+        s->setVolume(dpUiVolume * 0.01);
+      }else {
+        s->setVolume(std::round(100 * volume) / 100);
+      }
     }
   }
 
