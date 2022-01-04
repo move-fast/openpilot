@@ -54,12 +54,10 @@ void Sound::update() {
     volume = QAudio::convertVolume(volume, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
     volume = util::map_val(volume, 0.f, 1.f, Hardware::MIN_VOLUME, Hardware::MAX_VOLUME);
     for (auto &[s, loops] : sounds) {
-      if (dpUiVolume < -3) {
-        s->setVolume(0.0);
-      } else if (dpUiVolume > 3) {
-        s->setVolume(dpUiVolume * 0.01);
-      }else {
+      if (dpUiVolume < 0) {
         s->setVolume(std::round(100 * volume) / 100);
+      } else{
+        s->setVolume(dpUiVolume * 0.01);
       }
     }
   }
