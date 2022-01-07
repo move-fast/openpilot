@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QSslConfiguration>
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QThread>
