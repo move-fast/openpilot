@@ -364,8 +364,14 @@ LQR 在某些車型上可以提供更線性的轉向。</translation>
     <message>
         <source>Enable this if you wish to adjust openpilot&apos;s following distance.
 openpilot by default keeps 1.8 secs distance to lead car.</source>
-        <translation>如果您希望調整 openpilot 的跟車距離，請啟用此選項。
+        <translation type="vanished">如果您希望調整 openpilot 的跟車距離，請啟用此選項。
 默認情況下，openpilot 與引導車保持 1.8 秒的距離。</translation>
+    </message>
+    <message>
+        <source>Enable this if you wish to adjust openpilot&apos;s following distance.
+openpilot by default keeps 1.45 secs distance to lead car.</source>
+        <translation>如果您希望調整 openpilot 的跟車距離，請啟用此選項。
+默認情況下，openpilot 與引導車保持 1.45 秒的距離。</translation>
     </message>
 </context>
 <context>
@@ -596,6 +602,15 @@ The device should reboot once if it finish updating.</source>
         <source>Tap the button to delete ALL your driving logs (including dashcam / gpx / driving logs).</source>
         <translation>點擊按鈕來清空您所有的行駛記錄（包含 dashcam / gpx 等等）。</translation>
     </message>
+    <message>
+        <source>Enable No GPS Support</source>
+        <translation>啟用無 GPS 晶片支援</translation>
+    </message>
+    <message>
+        <source>Enable this option if your black panda does not have a GPS chip.
+Reboot required.</source>
+        <translation>如果您的黑熊沒有 GPS 晶片，請開啟這個選項。</translation>
+    </message>
 </context>
 <context>
     <name>DPMapsPanel</name>
@@ -687,11 +702,25 @@ Please note:
  1. This feature will works only when your car support OP longitudinal.
 2. MapD will contribute your route to OSM for future improvement automatically.
 3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd/.</source>
-        <translation>使用 OpenStreetMap (OSM) 圖資來協助縱向控制。
+        <translation type="vanished">使用 OpenStreetMap (OSM) 圖資來協助縱向控制。
 請注意：
 1. 您的車需要 OP 縱向控制的支援。
 2. MapD 將會把您的行車路線貢獻給 OSM 以供日後改進。
 3. 若有需要，請按照 /selfdrive/mapd/ 下的自述文件調整修改參數。</translation>
+    </message>
+    <message>
+        <source>Use OSM to assist lateral/longitudinal control.
+Please note:
+1. This feature will works only when your car support OP longitudinal.
+2. MapD will contribute your route to OSM for future improvement automatically.
+3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd.
+4. Not connecting to the internet for while might feel up device storage from all the gps traces. </source>
+        <translation>使用 OpenStreetMap (OSM) 圖資來協助縱向控制。
+請注意：
+1. 您的車需要 OP 縱向控制的支援。
+2. MapD 將會把您的行車路線貢獻給 OSM 以供日後改進。
+3. 若有需要，請按照 /selfdrive/mapd/ 下的自述文件調整修改參數。
+4. 在沒有連上網的情況下儲存的 gpx 行車路線記錄有可能會塞滿存儲空間。</translation>
     </message>
 </context>
 <context>
@@ -820,67 +849,67 @@ op控製縱向車型三角形顯示為實心。</translation>
     <name>DevicePanel</name>
     <message>
         <source>Serial</source>
-        <translation type="vanished">序號</translation>
+        <translation>序號</translation>
     </message>
     <message>
         <source>Driver Camera</source>
-        <translation type="vanished">駕駛監控</translation>
+        <translation>駕駛監控</translation>
     </message>
     <message>
         <source>PREVIEW</source>
-        <translation type="vanished">預覽</translation>
+        <translation>預覽</translation>
     </message>
     <message>
         <source>Preview the driver facing camera to help optimize device mounting position for best driver monitoring experience. (vehicle must be off)</source>
-        <translation type="vanished">預覽駕駛員監控鏡頭畫面，方便調整裝置安裝位置，更好的使用駕駛員監控功能。(車子必須在熄火的狀態)</translation>
+        <translation>預覽駕駛員監控鏡頭畫面，方便調整裝置安裝位置，更好的使用駕駛員監控功能。(車子必須在熄火的狀態)</translation>
     </message>
     <message>
         <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or down. openpilot is continuously calibrating, resetting is rarely required.</source>
-        <translation type="vanished">openpilot 需要將裝置固定在左右偏差 4° 以內，上下偏差 5° 以内。鏡頭在後台會持續自動校準，很少有需要重置的情况。</translation>
+        <translation>openpilot 需要將裝置固定在左右偏差 4° 以內，上下偏差 5° 以内。鏡頭在後台會持續自動校準，很少有需要重置的情况。</translation>
     </message>
     <message>
         <source>Reset Calibration</source>
-        <translation type="vanished">重置校準</translation>
+        <translation>重置校準</translation>
     </message>
     <message>
         <source>RESET</source>
-        <translation type="vanished">重置</translation>
+        <translation>重置</translation>
     </message>
     <message>
         <source>Are you sure you want to reset calibration?</source>
-        <translation type="vanished">您確定要重置校準嗎？</translation>
+        <translation>您確定要重置校準嗎？</translation>
     </message>
     <message>
         <source> Your device is pointed %1° %2 and %3° %4.</source>
-        <translation type="vanished"> 你的設備目前朝%2 %1° 以及朝%4 %3° 。</translation>
+        <translation> 你的設備目前朝%2 %1° 以及朝%4 %3° 。</translation>
     </message>
     <message>
         <source>up</source>
-        <translation type="vanished">上</translation>
+        <translation>上</translation>
     </message>
     <message>
         <source>down</source>
-        <translation type="vanished">下</translation>
+        <translation>下</translation>
     </message>
     <message>
         <source>right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Review Training Guide</source>
-        <translation type="vanished">回顧使用教學</translation>
+        <translation>回顧使用教學</translation>
     </message>
     <message>
         <source>REVIEW</source>
-        <translation type="vanished">查看</translation>
+        <translation>查看</translation>
     </message>
     <message>
         <source>Review the rules, features, and limitations of openpilot</source>
-        <translation type="vanished">查看 openpilot 的規則、功能和限制</translation>
+        <translation>查看 openpilot 的規則、功能和限制</translation>
     </message>
     <message>
         <source>Are you sure you want to review the training guide?</source>
@@ -888,11 +917,11 @@ op控製縱向車型三角形顯示為實心。</translation>
     </message>
     <message>
         <source>Regulatory</source>
-        <translation type="vanished">監管</translation>
+        <translation>監管</translation>
     </message>
     <message>
         <source>VIEW</source>
-        <translation type="vanished">閱讀</translation>
+        <translation>閱讀</translation>
     </message>
     <message>
         <source>Reboot</source>
@@ -900,7 +929,7 @@ op控製縱向車型三角形顯示為實心。</translation>
     </message>
     <message>
         <source>Are you sure you want to reboot?</source>
-        <translation type="vanished">你確定要重新啟動嗎？</translation>
+        <translation>你確定要重新啟動嗎？</translation>
     </message>
     <message>
         <source>Power Off</source>
@@ -908,7 +937,23 @@ op控製縱向車型三角形顯示為實心。</translation>
     </message>
     <message>
         <source>Are you sure you want to power off?</source>
-        <translation type="vanished">您確定要關機嗎？</translation>
+        <translation>您確定要關機嗎？</translation>
+    </message>
+    <message>
+        <source>Dongle ID</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation>無</translation>
+    </message>
+    <message>
+        <source>Disengage to Reboot</source>
+        <translation>請取消控車後再按重新啟動</translation>
+    </message>
+    <message>
+        <source>Disengage to Power Off</source>
+        <translation>請取消控車後再按關機</translation>
     </message>
 </context>
 <context>
@@ -2011,7 +2056,7 @@ PANDA</source>
     <name>SoftwarePanel</name>
     <message>
         <source>failed to fetch update</source>
-        <translation type="vanished">下載更新失敗</translation>
+        <translation>下載更新失敗</translation>
     </message>
     <message>
         <source>CHECK</source>
@@ -2055,11 +2100,11 @@ PANDA</source>
     </message>
     <message>
         <source>UNINSTALL</source>
-        <translation type="vanished">卸載</translation>
+        <translation>卸載</translation>
     </message>
     <message>
         <source>Are you sure you want to uninstall?</source>
-        <translation type="vanished">您確定要卸載嗎？</translation>
+        <translation>您確定要卸載嗎？</translation>
     </message>
     <message>
         <source>Wi-Fi Settings</source>
@@ -2121,27 +2166,27 @@ PANDA</source>
     <name>TogglesPanel</name>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
-        <translation type="vanished">使用 openpilot 的主動式巡航和車道保持功能，開啟後您仍需要保持注意力集中，設定變更在重新啟動車輛後生效。</translation>
+        <translation>使用 openpilot 的主動式巡航和車道保持功能，開啟後您仍需要保持注意力集中，設定變更在重新啟動車輛後生效。</translation>
     </message>
     <message>
         <source>Enable Lane Departure Warnings</source>
-        <translation type="vanished">啟用車道偏離警告</translation>
+        <translation>啟用車道偏離警告</translation>
     </message>
     <message>
         <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31mph (50kph).</source>
-        <translation type="vanished">車速在 50 km/h (31 mph) 以上且未打轉向燈的情況下，如果偵測到車輛駛出目前車道線時，發出車道偏離警告。</translation>
+        <translation>車速在 50 km/h (31 mph) 以上且未打轉向燈的情況下，如果偵測到車輛駛出目前車道線時，發出車道偏離警告。</translation>
     </message>
     <message>
         <source>Enable Right-Hand Drive</source>
-        <translation type="vanished">啟用右駕模式</translation>
+        <translation>啟用右駕模式</translation>
     </message>
     <message>
         <source>Allow openpilot to obey left-hand traffic conventions and perform driver monitoring on right driver seat.</source>
-        <translation type="vanished">允許 openpilot 遵守靠左駕的交通慣例同時對右側駕駛進行監控。</translation>
+        <translation>允許 openpilot 遵守靠左駕的交通慣例同時對右側駕駛進行監控。</translation>
     </message>
     <message>
         <source>Use Metric System</source>
-        <translation type="vanished">使用公制單位</translation>
+        <translation>使用公制單位</translation>
     </message>
     <message>
         <source>Display speed in km/h instead of mp/h.</source>
@@ -2149,7 +2194,7 @@ PANDA</source>
     </message>
     <message>
         <source>Enable Community Features</source>
-        <translation type="vanished">啟用社群維護功能</translation>
+        <translation>啟用社群維護功能</translation>
     </message>
     <message>
         <source>Use features from the open source community that are not maintained or supported by comma.ai and have not been confirmed to meet the standard safety model. These features include community supported cars and community supported hardware. Be extra cautious when using these features</source>
@@ -2165,47 +2210,47 @@ PANDA</source>
     </message>
     <message>
         <source>Record and Upload Driver Camera</source>
-        <translation type="vanished">記錄並上傳駕駛鏡頭影像</translation>
+        <translation>記錄並上傳駕駛鏡頭影像</translation>
     </message>
     <message>
         <source>Upload data from the driver facing camera and help improve the driver monitoring algorithm.</source>
-        <translation type="vanished">上傳前置相機的錄像來協助我們提升駕駛監控的準確率。</translation>
+        <translation>上傳前置相機的錄像來協助我們提升駕駛監控的準確率。</translation>
     </message>
     <message>
         <source>塞 Disable use of lanelines (Alpha) 塞</source>
-        <translation type="vanished">停用車道線判斷 (測試)</translation>
+        <translation>停用車道線判斷 (測試)</translation>
     </message>
     <message>
         <source>In this mode openpilot will ignore lanelines and just drive how it thinks a human would.</source>
-        <translation type="vanished">在這種模式下，openpilot 將忽略車道線並按照人爲方式駕駛。</translation>
+        <translation>在這種模式下，openpilot 將忽略車道線並按照人爲方式駕駛。</translation>
     </message>
     <message>
         <source>Show ETA in 24h format</source>
-        <translation type="vanished">預計到達時間單位改用 24 小時制</translation>
+        <translation>預計到達時間單位改用 24 小時制</translation>
     </message>
     <message>
         <source>Use 24h format instead of am/pm</source>
-        <translation type="vanished">使用 24 小時制。(預設值為 12 小時制)</translation>
+        <translation>使用 24 小時制。(預設值為 12 小時制)</translation>
     </message>
     <message>
         <source>Enable openpilot</source>
-        <translation type="vanished">啟用 openpilot</translation>
+        <translation>啟用 openpilot</translation>
     </message>
     <message>
         <source>Display speed in km/h instead of mph.</source>
-        <translation type="vanished">開啟後單位將使用 km/h (速度) 和 °C (溫度)；關閉後單位將使用 mph (速度) 或 °F (溫度)。</translation>
+        <translation>開啟後單位將使用 km/h (速度) 和 °C (溫度)；關閉後單位將使用 mph (速度) 或 °F (溫度)。</translation>
     </message>
     <message>
         <source>Use features, such as community supported hardware, from the open source community that are not maintained or supported by comma.ai and have not been confirmed to meet the standard safety model. Be extra cautious when using these features</source>
-        <translation type="vanished">開啟這個選項使用由社群維護的功能、硬體，請謹慎使用</translation>
+        <translation>開啟這個選項使用由社群維護的功能、硬體，請謹慎使用</translation>
     </message>
     <message>
         <source>openpilot Longitudinal Control</source>
-        <translation type="vanished">openpilot 縱向控制</translation>
+        <translation>openpilot 縱向控制</translation>
     </message>
     <message>
         <source>openpilot will disable the car&apos;s radar and will take over control of gas and brakes. Warning: this disables AEB!</source>
-        <translation type="vanished">openpilot 將會關閉雷達訊號並接管油門和剎車的控制。注意：這也會關閉自動緊急煞車系統！</translation>
+        <translation>openpilot 將會關閉雷達訊號並接管油門和剎車的控制。注意：這也會關閉自動緊急煞車系統！</translation>
     </message>
 </context>
 <context>

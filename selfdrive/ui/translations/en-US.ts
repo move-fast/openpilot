@@ -307,7 +307,7 @@ More linear steering experience.</source>
     </message>
     <message>
         <source>Enable this if you wish to adjust openpilot&apos;s following distance.
-openpilot by default keeps 1.8 secs distance to lead car.</source>
+openpilot by default keeps 1.45 secs distance to lead car.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -510,6 +510,15 @@ The device should reboot once if it finish updating.</source>
         <source>Tap the button to delete ALL your driving logs (including dashcam / gpx / driving logs).</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable No GPS Support</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this option if your black panda does not have a GPS chip.
+Reboot required.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DPMapsPanel</name>
@@ -590,9 +599,10 @@ Reboot required.</source>
     <message>
         <source>Use OSM to assist lateral/longitudinal control.
 Please note:
- 1. This feature will works only when your car support OP longitudinal.
+1. This feature will works only when your car support OP longitudinal.
 2. MapD will contribute your route to OSM for future improvement automatically.
-3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd/.</source>
+3. You can add your own offset for mapd just follow the readme under /selfdrive/mapd.
+4. Not connecting to the internet for while might feel up device storage from all the gps traces. </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -725,6 +735,102 @@ Please note:
     </message>
     <message>
         <source>Power Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dongle ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Driver Camera</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PREVIEW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preview the driver facing camera to help optimize device mounting position for best driver monitoring experience. (vehicle must be off)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to reset calibration?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Review Training Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>REVIEW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Review the rules, features, and limitations of openpilot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Regulatory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or down. openpilot is continuously calibrating, resetting is rarely required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Your device is pointed %1° %2 and %3° %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to reboot?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disengage to Reboot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to power off?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disengage to Power Off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1212,6 +1318,18 @@ SEARCHING</source>
         <source>CHECKING</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>UNINSTALL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to uninstall?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>failed to fetch update</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
@@ -1237,6 +1355,81 @@ SEARCHING</source>
     </message>
     <message>
         <source>REMOVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TogglesPanel</name>
+    <message>
+        <source>Enable openpilot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Lane Departure Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31mph (50kph).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Right-Hand Drive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allow openpilot to obey left-hand traffic conventions and perform driver monitoring on right driver seat.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Metric System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display speed in km/h instead of mph.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Community Features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use features, such as community supported hardware, from the open source community that are not maintained or supported by comma.ai and have not been confirmed to meet the standard safety model. Be extra cautious when using these features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Record and Upload Driver Camera</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Upload data from the driver facing camera and help improve the driver monitoring algorithm.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>塞 Disable use of lanelines (Alpha) 塞</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>In this mode openpilot will ignore lanelines and just drive how it thinks a human would.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot will disable the car&apos;s radar and will take over control of gas and brakes. Warning: this disables AEB!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
