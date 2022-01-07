@@ -242,7 +242,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   });
 
 
-  auto uninstallBtn = new ButtonControl("Uninstall " + getBrand(), SoftwarePanel::tr("UNINSTALL"));
+  auto uninstallBtn = new ButtonControl(SoftwarePanel::tr("Uninstall ") + getBrand(), SoftwarePanel::tr("UNINSTALL"));
   connect(uninstallBtn, &ButtonControl::clicked, [&]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to uninstall?"), this)) {
       params.putBool("DoUninstall", true);
