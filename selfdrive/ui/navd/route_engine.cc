@@ -110,14 +110,6 @@ RouteEngine::RouteEngine() {
   QVariantMap parameters;
   parameters["mapbox.access_token"] = get_mapbox_token();
   parameters["mapbox.directions_api_url"] = MAPS_HOST + "/directions/v5/mapbox/";
-  if (Params().getBool("dp_otisserv")) {
-    QString key = QString::fromStdString(Params().get("dp_nav_mapbox_token_sk"));
-    if (key != "") {
-      qWarning() << "Using otisserv and owned API key.";
-      parameters["mapbox.access_token"] = key;
-      parameters["mapbox.directions_api_url"] = "https://api.mapbox.com/directions/v5/mapbox/";
-    }
-  }
 
   geoservice_provider = new QGeoServiceProvider("mapbox", parameters);
   routing_manager = geoservice_provider->routingManager();
