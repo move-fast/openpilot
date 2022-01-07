@@ -22,6 +22,12 @@ void sigHandler(int s) {
 int main(int argc, char *argv[]) {
   qInstallMessageHandler(swagLogMessageHandler);
 
+  if (Hardware::EON()) {
+    QSslConfiguration ssl = QSslConfiguration::defaultConfiguration();
+    ssl.setCaCertificates(QSslCertificate::fromPath("/usr/etc/tls/cert.pem"));
+    QSslConfiguration::setDefaultConfiguration(ssl);
+  }
+
   QApplication app(argc, argv);
   std::signal(SIGINT, sigHandler);
   std::signal(SIGTERM, sigHandler);
