@@ -378,8 +378,8 @@ def thermald_thread():
     # set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]))
     #
     # startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get_bool("DisableUpdates") or params.get_bool("SnoozeUpdate")
-    # startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
-    # startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
+    startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
+    startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
 
     # with 2% left, we killall, otherwise the phone will take a long time to boot
     startup_conditions["free_space"] = msg.deviceState.freeSpacePercent > 2
@@ -397,6 +397,9 @@ def thermald_thread():
 
     # Handle offroad/onroad transition
     should_start = all(onroad_conditions.values())
+    # dp - check usb_present to fix not going offroad on "EON/LEON + battery - Comma Power"
+    if not TICI:
+      should_start = should_start and HARDWARE.get_usb_present()
     if started_ts is None:
       should_start = should_start and all(startup_conditions.values())
 

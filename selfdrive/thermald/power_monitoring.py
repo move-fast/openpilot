@@ -74,8 +74,8 @@ class PowerMonitoring:
         with self.integration_lock:
           self.power_used_uWh = 0
           integration_time_h = (now - self.last_measurement_time) / 3600
-          if integration_time_h < 0:
-            raise ValueError(f"Negative integration time: {integration_time_h}h")
+          # if integration_time_h < 0:
+          #   raise ValueError(f"Negative integration time: {integration_time_h}h")
           self.car_battery_capacity_uWh += (CAR_CHARGING_RATE_W * 1e6 * integration_time_h)
           self.last_measurement_time = now
       else:
@@ -141,8 +141,8 @@ class PowerMonitoring:
         if self.last_measurement_time:
           integration_time_h = (t - self.last_measurement_time) / 3600
           power_used = (current_power * 1000000) * integration_time_h
-          if power_used < 0:
-            raise ValueError(f"Negative power used! Integration time: {integration_time_h} h Current Power: {power_used} uWh")
+          # if power_used < 0:
+          #   raise ValueError(f"Negative power used! Integration time: {integration_time_h} h Current Power: {power_used} uWh")
           self.power_used_uWh += power_used
           self.car_battery_capacity_uWh -= power_used
           self.last_measurement_time = t

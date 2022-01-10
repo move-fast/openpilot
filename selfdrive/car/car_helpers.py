@@ -4,7 +4,7 @@ import threading
 import requests
 from common.params import Params, put_nonblocking
 from common.basedir import BASEDIR
-from selfdrive.version import get_comma_remote, get_tested_branch
+from selfdrive.version import comma_remote, tested_branch
 from selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
 from selfdrive.car.vin import get_vin, VIN_UNKNOWN
 from selfdrive.car.fw_versions import get_fw_versions, match_fw_to_car
@@ -18,7 +18,7 @@ EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  if True: #get_comma_remote() and get_tested_branch():
+  if True:
     event = EventName.startup
   else:
     event = EventName.startupMaster
@@ -43,7 +43,7 @@ def get_one_can(logcan):
 def load_interfaces(brand_names):
   ret = {}
   for brand_name in brand_names:
-    path = f'selfdrive.car.{brand_name}'
+    path = ('selfdrive.car.%s' % brand_name)
     CarInterface = __import__(path + '.interface', fromlist=['CarInterface']).CarInterface
 
     if os.path.exists(BASEDIR + '/' + path.replace('.', '/') + '/carstate.py'):
@@ -85,8 +85,8 @@ interfaces = load_interfaces(interface_names)
 
 # **** for use live only ****
 def fingerprint(logcan, sendcan):
-  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8')
-  fixed_fingerprint = os.environ.get('FINGERPRINT', "" if dp_car_assigned is None else dp_car_assigned)
+  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8').strip()
+  fixed_fingerprint = os.environ.get('FINGERPRINT', "" if (dp_car_assigned is None or dp_car_assigned == "") else dp_car_assigned)
   skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
 
   if not fixed_fingerprint and not skip_fw_query:
