@@ -128,10 +128,14 @@ def manager_thread():
   dp_reg = params.get_bool('dp_reg')
   dp_logger = params.get_bool('dp_logger')
   dp_athenad = params.get_bool('dp_athenad')
-  dp_uploader = params.get_bool('dp_uploader')
   dp_jetson = params.get_bool('dp_jetson')
-  dp_otisserv = params.get_bool('dp_otisserv')
-  dp_mapd = params.get_bool('dp_mapd')
+  dp_has_no_gps = params.get('dp_has_no_gps')
+  dp_uploader = params.get_bool('dp_uploader')
+  dp_mapd  = False
+  dp_otisserv = False
+  if not dp_has_no_gps:
+    dp_otisserv = params.get_bool('dp_otisserv')
+    dp_mapd = params.get_bool('dp_mapd')
   if not dp_reg:
     dp_athenad = False
     dp_uploader = False

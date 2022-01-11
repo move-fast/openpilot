@@ -665,6 +665,9 @@ int main(int argc, char *argv[]) {
 
     // dp - only control first panda
     peripheral_panda->disable_relay = disable_relay;
+    if (!peripheral_panda->has_gps) {
+      Params().putBool("dp_panda_no_gps", true);
+    }
     peripheral_panda->has_gps = peripheral_panda->has_gps && !no_gps;
 
     threads.emplace_back(panda_state_thread, &pm, pandas, getenv("STARTED") != nullptr);
