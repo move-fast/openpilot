@@ -85,8 +85,7 @@ interfaces = load_interfaces(interface_names)
 
 # **** for use live only ****
 def fingerprint(logcan, sendcan):
-  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8').strip()
-  fixed_fingerprint = os.environ.get('FINGERPRINT', "" if (dp_car_assigned is None or dp_car_assigned == "") else dp_car_assigned)
+  fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
 
   if not fixed_fingerprint and not skip_fw_query:
@@ -193,6 +192,12 @@ def crash_log2(fingerprints, fw):
 def get_car(logcan, sendcan):
   candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(logcan, sendcan)
 
+  params = Params()
+  if candidate is None:
+    dp_car_assigned = params.get('dp_car_assigned', encoding='utf8')
+    candidate = None if (dp_car_assigned is None or dp_car_assigned == "") else dp_car_assigned.strip()
+    source = car.CarParams.FingerprintSource.fixed
+
   if candidate is None:
     cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
     candidate = "mock"
@@ -205,18 +210,21 @@ def get_car(logcan, sendcan):
   try:
     CarInterface, CarController, CarState = interfaces[candidate]
     car_params = CarInterface.get_params(candidate, fingerprints, car_fw)
-    candidate_changed = Params().get('dp_last_candidate', encoding='utf8') != candidate
-    put_nonblocking("dp_sr_stock", str(car_params.steerRatio))
-    # update steering_ratio init val
-    dp_sr_custom = Params().get("dp_sr_custom", encoding='utf8')
-    if dp_sr_custom == '' or candidate_changed or (dp_sr_custom != '' and float(dp_sr_custom) <= 9.99):
-      put_nonblocking("dp_sr_custom", str(car_params.steerRatio))
-    # update last candidate
-    put_nonblocking('dp_last_candidate', candidate)
     car_params.carVin = vin
     car_params.carFw = car_fw
     car_params.fingerprintSource = source
     car_params.fuzzyFingerprint = not exact_match
+
+    # dp - handle sr learner memory/reset feature
+    candidate_changed = params.get('dp_last_candidate', encoding='utf8') != candidate
+    # keep stock sr
+    put_nonblocking("dp_sr_stock", str(car_params.steerRatio))
+    dp_sr_custom = params.get("dp_sr_custom", encoding='utf8')
+    # reset default sr
+    if dp_sr_custom == '' or candidate_changed or (dp_sr_custom != '' and float(dp_sr_custom) <= 9.99):
+      put_nonblocking("dp_sr_custom", str(car_params.steerRatio))
+    # update last candidate
+    put_nonblocking('dp_last_candidate', candidate)
 
     return CarInterface(car_params, CarController, CarState), car_params
   except KeyError:
