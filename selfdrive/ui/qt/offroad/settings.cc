@@ -365,7 +365,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   };
 
 #ifdef ENABLE_MAPS
-  if (!params.getBool("dp_has_no_gps")) {
+  if (!Params().getBool("dp_has_no_gps")) {
     auto map_panel = new MapPanel(this);
     panels.push_back({SettingsWindow::tr("Navigation"), map_panel});
     QObject::connect(map_panel, &MapPanel::closeSettings, this, &SettingsWindow::closeSettings);
@@ -380,7 +380,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   panels.push_back({SettingsWindow::tr("DP - Cars"), new DPCarPanel(this)});
   dp_maps_panel = new DPMapsPanel(this);
   QObject::connect(this, &SettingsWindow::updateIpAddr, dp_maps_panel, &DPMapsPanel::updateMapsPanelIpAddr);
-  if (!params.getBool("dp_has_no_gps")) {
+  if (!Params().getBool("dp_has_no_gps")) {
     panels.push_back({SettingsWindow::tr("DP - Maps"), dp_maps_panel});
   }
 
