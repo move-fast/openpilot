@@ -222,6 +222,7 @@ def thermald_thread():
     params.put_bool("BootedOnroad", True)
 
   # dp
+  peripheralStateLast = None
   dp_no_batt = params.get_bool("dp_no_batt")
   dp_temp_monitor = True
   dp_last_modified_temp_monitor = None
@@ -430,6 +431,14 @@ def thermald_thread():
 
     # Check if we need to disable charging (handled by boardd)
     msg.deviceState.chargingDisabled = power_monitor.should_disable_charging(onroad_conditions["ignition"], in_car, off_ts, dp_auto_shutdown, dp_auto_shutdown_in)
+
+    # dp - for battery powered device
+    # when peripheralState is not changing (panda offline), and usb is not present (not charging)
+    if not TICI and (peripheralStateLast == peripheralState) and not msg.deviceState.usbOnline:
+      if (sec_since_boot() - off_ts) > dp_auto_shutdown_in * 60:
+        time.sleep(10)
+        HARDWARE.shutdown()
+    peripheralStateLast = peripheralState
 
     # Check if we need to shut down
     if power_monitor.should_shutdown(peripheralState, onroad_conditions["ignition"], in_car, off_ts, started_seen, dp_auto_shutdown, dp_auto_shutdown_in):
