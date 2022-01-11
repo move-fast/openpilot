@@ -451,8 +451,10 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
 //  });
 //  layout->addWidget(vwPandaCtrl);
 //  layout->addWidget(horizontal_line());
+  #ifdef QCOM2
   // custom car model
   carModelWidget(layout);
+  #endif
 }
 
 void NavQRWidget::updateIpAddr(QString addr) {
