@@ -306,7 +306,8 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   batteryCurrent @15 :Int32;
   chargingError @17 :Bool;
   chargingDisabled @18 :Bool;
-  offroadPowerUsageUwh @23 :UInt32;
+  # dp, we need Int32 because it could be a negative value
+  offroadPowerUsageUwh @23 :Int32;
   carBatteryCapacityUwh @25 :UInt32;
   powerDrawW @40 :Float32;
 
