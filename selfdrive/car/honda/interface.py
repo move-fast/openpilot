@@ -355,8 +355,9 @@ class CarInterface(CarInterfaceBase):
     # dp
     if Params().get('dp_honda_eps_mod') == b'1':
       if candidate == CAR.CIVIC:
-        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560, 8000], [0, 2560, 3840]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.1]] #tuned by Comma
+        # tuned by a-tao
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096, 8000], [0, 4096, 4096]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.], [0.2]]
       elif candidate in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL):
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2564, 8000], [0, 2564, 3840]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.09]] #2.5 default mod #Tuned by TMG
