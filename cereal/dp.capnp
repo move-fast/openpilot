@@ -44,12 +44,10 @@ struct DragonConf {
   dpToyotaCruiseOverrideAt @36 :Float32;
   dpToyotaCruiseOverrideSpeed @37 :Float32;
   dpIpAddr @38 :Text;
-  dpCameraOffset @39 :Int8;
-  dpPathOffset @40 :Int8;
-  dpLocale @41 :Text;
-  dpSrLearner @42 :Bool;
-  dpSrCustom @43 :Float32;
-  dpMapd @44 :Bool;
+  dpLocale @39 :Text;
+  dpSrLearner @40 :Bool;
+  dpSrCustom @41 :Float32;
+  dpMapd @42 :Bool;
 }
 
 

@@ -240,6 +240,8 @@ def thermald_thread():
   last_modified = None
   last_modified_check = None
 
+  dp_no_offroad_fix = params.get_bool('dp_no_offroad_fix')
+
   while True:
     # dp - load temp monitor conf
     last_modified_check, modified = get_last_modified(LAST_MODIFIED_THERMALD, last_modified_check, modified)
@@ -399,7 +401,7 @@ def thermald_thread():
     # Handle offroad/onroad transition
     should_start = all(onroad_conditions.values())
     # dp - check usb_present to fix not going offroad on "EON/LEON + battery - Comma Power"
-    if not TICI:
+    if dp_no_offroad_fix:
       should_start = should_start and HARDWARE.get_usb_present()
     if started_ts is None:
       should_start = should_start and all(startup_conditions.values())
@@ -434,7 +436,7 @@ def thermald_thread():
 
     # dp - for battery powered device
     # when peripheralState is not changing (panda offline), and usb is not present (not charging)
-    if not TICI and (peripheralStateLast == peripheralState) and not msg.deviceState.usbOnline:
+    if dp_no_offroad_fix and (peripheralStateLast == peripheralState) and not msg.deviceState.usbOnline:
       if (sec_since_boot() - off_ts) > dp_auto_shutdown_in * 60:
         time.sleep(10)
         HARDWARE.shutdown()
