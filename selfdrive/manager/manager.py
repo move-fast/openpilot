@@ -9,7 +9,7 @@ import traceback
 import cereal.messaging as messaging
 import selfdrive.crash as crash
 from common.basedir import BASEDIR
-from common.params import Params, ParamKeyType
+from common.params import Params, ParamKeyType, put_nonblocking
 from common.text_window import TextWindow
 from selfdrive.boardd.set_time import set_time
 from selfdrive.hardware import HARDWARE, PC, TICI
@@ -125,22 +125,30 @@ def manager_thread():
 
   params = Params()
 
-  dp_reg = params.get_bool('dp_reg')
   dp_logger = params.get_bool('dp_logger')
-  dp_athenad = params.get_bool('dp_athenad')
   dp_jetson = params.get_bool('dp_jetson')
-  dp_panda_no_gps = params.get('dp_panda_no_gps')
-  dp_uploader = params.get_bool('dp_uploader')
-  dp_mapd  = False
-  dp_otisserv = False
-  dp_gpxd = False
-  if not dp_panda_no_gps:
+
+  if params.get_bool('dp_panda_no_gps'):
+    put_nonblocking('dp_otisserv', "0")
+    put_nonblocking('dp_mapd', "0")
+    params.put_bool('dp_gpxd', "0")
+    dp_otisserv = False
+    dp_mapd = False
+    dp_gpxd = False
+  else:
     dp_otisserv = params.get_bool('dp_otisserv')
     dp_mapd = params.get_bool('dp_mapd')
     dp_gpxd = params.get_bool('dp_gpxd')
-  if not dp_reg:
+
+  if not params.get_bool('dp_reg'):
+    put_nonblocking('dp_athenad', "0")
+    put_nonblocking('dp_uploader', "0")
     dp_athenad = False
     dp_uploader = False
+  else:
+    dp_athenad = params.get_bool('dp_athenad')
+    dp_uploader = params.get_bool('dp_uploader')
+
   # save boot log
   if dp_logger:
     subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
