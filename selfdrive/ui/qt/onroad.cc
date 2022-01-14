@@ -429,7 +429,7 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
   painter.drawPolygon(chevron, std::size(chevron));
 }
 
-void NvgWindow::drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color = QColor(0xff, 0xff, 0xff, 200)) {
+void NvgWindow::drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color = QColor(0xff, 0xff, 0xff, 0xc8)) {
   QFontMetrics fm(p.font());
   QRect init_rect = fm.boundingRect(text);
   QRect real_rect = fm.boundingRect(init_rect, 0, text);
@@ -484,7 +484,7 @@ void NvgWindow::drawBlindSpots(QPainter &painter, const cereal::CarState::Reader
   if (leftBlindSpot || rightBlindSpot) {
     int blind_spot_width = (int)(bdr_s * 1.5);
     int blind_spot_height = height();
-    painter.setBrush(QColor(0xff, 0xff, 0, 200));
+    painter.setBrush(QColor(0xff, 0xff, 0, 0xc8));
     painter.setPen(Qt::NoPen);
 
     if (leftBlindSpot) {
@@ -509,7 +509,7 @@ void NvgWindow::drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs
   QDateTime dateTime = dateTime.currentDateTime();
 
   configFont(painter, "Open Sans", 32, "Bold");
-  drawColoredText(painter, rc.center().x(), rc.bottom() - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xff));
+  drawColoredText(painter, rc.center().x(), rc.bottom() - 5, dateTime.toString("yyyy-MM-dd HH:mm:ss"), QColor(0xff, 0xff, 0xff, 0xc8));
 }
 
 // from fcw.py in 0.8.9
@@ -643,7 +643,7 @@ void NvgWindow::drawBottombar(QPainter &painter, const cereal::LiveMapData::Read
 }
 
 void NvgWindow::paintBtn(QPainter &painter, int x, int y, QString main, QString sub) {
-  const QColor text_color = QColor(0xff, 0xff, 0xff, 200);
+  const QColor text_color = QColor(0xff, 0xff, 0xff, 0xc8);
   QRect dlp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
 
   painter.setBrush(Qt::NoBrush);
