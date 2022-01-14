@@ -217,6 +217,16 @@ Reboot required.</source>
 在某些使用了SDSU的TSS1车型上也可以使用。
 需要重新启动。</translation>
     </message>
+    <message>
+        <source>Enable No Min ACC Limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this if your car support full speed OP long but not working.
+e.g. Toyota Avalon.
+Reboot required.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DPControlPanel</name>
@@ -618,6 +628,15 @@ The device should reboot once if it finish updating.</source>
         <source>Enable this option if your black panda does not have a GPS chip.
 Reboot required.</source>
         <translation>如果您的黑熊没有 GPS 芯片，请启用此选项。</translation>
+    </message>
+    <message>
+        <source>Enable No Offroad Fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this option if your device doesn&apos;t go offroad.
+Reboot required.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2301,7 +2320,7 @@ SEARCHING</source>
     </message>
     <message>
         <source>Uninstall </source>
-        <translation type="vanished">卸载 </translation>
+        <translation>卸载 </translation>
     </message>
     <message>
         <source>UNINSTALL</source>
@@ -2352,11 +2371,11 @@ SEARCHING</source>
     </message>
     <message>
         <source>Username &apos;%1&apos; has no keys on GitHub</source>
-        <translation type="vanished">Github 用户名 &apos;%1&apos; 没有设定任何的密钥</translation>
+        <translation>Github 用户名 &apos;%1&apos; 没有设定任何的密钥</translation>
     </message>
     <message>
         <source>Username &apos;%1&apos; doesn&apos;t exist on GitHub</source>
-        <translation type="vanished">Github 用户名 &apos;%1&apos; 不存在</translation>
+        <translation>Github 用户名 &apos;%1&apos; 不存在</translation>
     </message>
 </context>
 <context>

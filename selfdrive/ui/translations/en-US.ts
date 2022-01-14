@@ -176,6 +176,16 @@ ONLY WORK ON SOME OF TSS1 VEHICLES WITH SDSU.
 Reboot required.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable No Min ACC Limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this if your car support full speed OP long but not working.
+e.g. Toyota Avalon.
+Reboot required.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DPControlPanel</name>
@@ -516,6 +526,15 @@ The device should reboot once if it finish updating.</source>
     </message>
     <message>
         <source>Enable this option if your black panda does not have a GPS chip.
+Reboot required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable No Offroad Fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable this option if your device doesn&apos;t go offroad.
 Reboot required.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1330,6 +1349,10 @@ SEARCHING</source>
         <source>failed to fetch update</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Uninstall </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
@@ -1355,6 +1378,14 @@ SEARCHING</source>
     </message>
     <message>
         <source>REMOVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username &apos;%1&apos; has no keys on GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username &apos;%1&apos; doesn&apos;t exist on GitHub</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
