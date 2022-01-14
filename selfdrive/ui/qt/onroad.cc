@@ -129,7 +129,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
 
 void OnroadWindow::offroadTransition(bool offroad) {
 #ifdef ENABLE_MAPS
-  if (!offroad) {
+  if (!offroad && !Params().getBool("dp_panda_no_gps")) {
     bool dp_nav_enabled = Params().getBool("dp_otisserv") && QString::fromStdString(Params().get("dp_nav_mapbox_token_sk")) != "";
     if (map == nullptr && (QUIState::ui_state.has_prime || !MAPBOX_TOKEN.isEmpty() || dp_nav_enabled)) {
       MapWindow * m = new MapWindow(get_mapbox_settings());
