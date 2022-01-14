@@ -128,6 +128,12 @@ def manager_thread():
   dp_logger = params.get_bool('dp_logger')
   dp_jetson = params.get_bool('dp_jetson')
 
+  # save boot log
+  if dp_logger:
+    subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+
+  ignore = []
+
   if params.get_bool('dp_panda_no_gps'):
     params.put_bool('dp_otisserv', False)
     params.put_bool('dp_mapd', False)
@@ -135,6 +141,7 @@ def manager_thread():
     dp_otisserv = False
     dp_mapd = False
     dp_gpxd = False
+    ignore += ['ubloxd']
   else:
     dp_otisserv = params.get_bool('dp_otisserv')
     dp_mapd = params.get_bool('dp_mapd')
@@ -149,11 +156,6 @@ def manager_thread():
     dp_athenad = params.get_bool('dp_athenad')
     dp_uploader = params.get_bool('dp_uploader')
 
-  # save boot log
-  if dp_logger:
-    subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
-
-  ignore = []
   if dp_jetson:
     ignore += ['dmonitoringmodeld', 'dmonitoringd']
   if not params.get_bool('dp_dashcamd'):
