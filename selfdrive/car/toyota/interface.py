@@ -316,6 +316,8 @@ class CarInterface(CarInterfaceBase):
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if (stop_and_go or ret.enableGasInterceptor) else MIN_ACC_SPEED
+    if Params().get_bool('dp_toyota_no_min_acc_limit'):
+      ret.minEnableSpeed = -1.
 
     # removing the DSU disables AEB and it's considered a community maintained feature
     # intercepting the DSU is a community feature since it requires unofficial hardware
@@ -333,7 +335,7 @@ class CarInterface(CarInterfaceBase):
 
     # dp
     ret = common_interface_get_params_lqr(ret)
-    if candidate == CAR.PRIUS and Params().get('dp_toyota_zss') == b'1':
+    if candidate == CAR.PRIUS and Params().get_bool('dp_toyota_zss'):
       ret.mass = 3370. * CV.LB_TO_KG + STD_CARGO_KG
       ret.lateralTuning.indi.timeConstantV = [0.1]
       ret.lateralTuning.indi.timeConstantBP = [0.]

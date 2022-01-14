@@ -357,7 +357,6 @@ class CarInterface(CarInterfaceBase):
       if candidate == CAR.CIVIC:
         # tuned by a-tao
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 4096, 8000], [0, 4096, 4096]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.], [0.2]]
       elif candidate in (CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL):
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2564, 8000], [0, 2564, 3840]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.09]] #2.5 default mod #Tuned by TMG
