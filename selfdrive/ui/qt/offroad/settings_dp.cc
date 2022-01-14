@@ -148,6 +148,9 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
   });
   layout->addWidget(dp_prebuiltCtrl);
   layout->addWidget(horizontal_line());
+  // for device doesnt go offroad
+  layout->addWidget(new ParamControl("dp_no_offroad_fix", DPGeneralPanel::tr("Enable No Offroad Fix"), DPGeneralPanel::tr("Enable this option if your device doesn't go offroad.\nReboot required."), ICON_EMPTY));
+  layout->addWidget(horizontal_line());
   // black panda w/ no gps (for mr. one)
   layout->addWidget(new ParamControl("dp_panda_no_gps", DPGeneralPanel::tr("Enable No GPS Support"), DPGeneralPanel::tr("Enable this option if your black panda does not have a GPS chip.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
@@ -415,6 +418,8 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
 //  layout->addWidget(new ParamControl("dp_lexus_rx_rpm_fix", DPCarPanel::tr("Enable Lexus RX Low Gear/High RPM Fix"), DPCarPanel::tr("See: https://github.com/LexusRXopenpilotUG/openpilot\nCredit to @nelsonchen & @sumedhekaru\nReboot required."), ICON_EMPTY));
 //  layout->addWidget(horizontal_line());
+  layout->addWidget(new ParamControl("dp_toyota_no_min_acc_limit", DPCarPanel::tr("Enable No Min ACC Limit"), DPCarPanel::tr("Enable this if your car support full speed OP long but not working.\ne.g. Toyota Avalon.\nReboot required."), ICON_EMPTY));
+  layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_sng", DPCarPanel::tr("Enable SnG Mod"), DPCarPanel::tr("Enable this to fix stop and go (SnG) issue on some models.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_zss", DPCarPanel::tr("Enable ZSS Support"), DPCarPanel::tr("Enable this if you have ZSS module installed.\nReboot required."), ICON_EMPTY));
