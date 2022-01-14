@@ -42,7 +42,7 @@ class CarController():
     # dp
     self.last_blinker_on = False
     self.blinker_end_frame = 0.
-    self.dp_hkg_smart_mdps = Params().get('dp_hkg_smart_mdps') == b'1'
+    self.dp_hkg_smart_mdps = Params().get_bool('dp_hkg_smart_mdps')
 
     self.p = CarControllerParams(CP)
     self.packer = CANPacker(dbc_name)

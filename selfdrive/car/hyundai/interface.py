@@ -291,7 +291,7 @@ class CarInterface(CarInterfaceBase):
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HYUNDAI_LONG
 
     # dp
-    if Params().get('dp_hkg_smart_mdps') == b'1':
+    if Params().get_bool('dp_hkg_smart_mdps'):
       ret.minSteerSpeed = 0.
     ret = common_interface_get_params_lqr(ret)
     
