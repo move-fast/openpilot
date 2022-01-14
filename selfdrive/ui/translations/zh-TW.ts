@@ -1095,7 +1095,7 @@ location set</source>
     </message>
     <message>
         <source>REL DIST</source>
-        <translation>真實車距</translation>
+        <translation>相對車距</translation>
     </message>
     <message>
         <source>REAL STEER</source>
