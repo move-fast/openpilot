@@ -133,9 +133,11 @@ def manager_thread():
   dp_uploader = params.get_bool('dp_uploader')
   dp_mapd  = False
   dp_otisserv = False
+  dp_gpxd = False
   if not dp_panda_no_gps:
     dp_otisserv = params.get_bool('dp_otisserv')
     dp_mapd = params.get_bool('dp_mapd')
+    dp_gpxd = params.get_bool('dp_gpxd')
   if not dp_reg:
     dp_athenad = False
     dp_uploader = False
@@ -162,7 +164,7 @@ def manager_thread():
     ignore += ['otisserv']
     if not TICI:
       ignore += ['navd']
-  if not dp_mapd and not dp_otisserv and not params.get_bool('dp_gpxd'):
+  if not dp_mapd and not dp_otisserv and not dp_gpxd:
     ignore += ['gpxd']
   if params.get("DongleId", encoding='utf8') == UNREGISTERED_DONGLE_ID:
     ignore += ["manage_athenad", "uploader"]
