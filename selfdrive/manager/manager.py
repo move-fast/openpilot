@@ -129,9 +129,9 @@ def manager_thread():
   dp_jetson = params.get_bool('dp_jetson')
 
   if params.get_bool('dp_panda_no_gps'):
-    put_nonblocking('dp_otisserv', "0")
-    put_nonblocking('dp_mapd', "0")
-    params.put_bool('dp_gpxd', "0")
+    params.put_bool('dp_otisserv', False)
+    params.put_bool('dp_mapd', False)
+    params.put_bool('dp_gpxd', False)
     dp_otisserv = False
     dp_mapd = False
     dp_gpxd = False
@@ -141,8 +141,8 @@ def manager_thread():
     dp_gpxd = params.get_bool('dp_gpxd')
 
   if not params.get_bool('dp_reg'):
-    put_nonblocking('dp_athenad', "0")
-    put_nonblocking('dp_uploader', "0")
+    params.put_bool('dp_athenad', False)
+    params.put_bool('dp_uploader', False)
     dp_athenad = False
     dp_uploader = False
   else:
