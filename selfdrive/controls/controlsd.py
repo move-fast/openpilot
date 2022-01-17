@@ -177,10 +177,6 @@ class Controls:
       self.events.add(EventName.communityFeatureDisallowed, static=True)
     if not car_recognized:
       self.events.add(EventName.carUnrecognized, static=True)
-      if len(self.CP.carFw) > 0:
-        set_offroad_alert("Offroad_CarUnrecognized", True)
-      else:
-        set_offroad_alert("Offroad_NoFirmware", True)
     elif self.read_only:
       self.events.add(EventName.dashcamMode, static=True)
     elif self.joystick_mode:
