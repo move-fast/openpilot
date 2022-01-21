@@ -119,8 +119,6 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new LabelControl(DPGeneralPanel::tr("Hardware - General"), ""));
   layout->addWidget(horizontal_line());
-//  layout->addWidget(new ParamSpinBoxControl("dp_camera_offset", DPGeneralPanel::tr("Camera Offset"), DPGeneralPanel::tr("Adjust your camera position if your device is not mounted as per guidance."), ICON_EMPTY, -100, 100, 1, " cm"));
-//  layout->addWidget(horizontal_line());
   // auto shutdown
   autoShutdownWidget(layout);
   #ifdef QCOM
@@ -321,8 +319,10 @@ DPControlPanel::DPControlPanel(QWidget* parent) : QWidget(parent) {
 
   steeringRatioWidget(layout);
 
-//  layout->addWidget(new ParamSpinBoxControl("dp_path_offset", DPControlPanel::tr("Driving Path Offset"), DPControlPanel::tr("Adjust this if you wish to let openpilot drive slightly towards to left (+) or right (-)"), ICON_EMPTY, -100, 100, 1, DPControlPanel::tr(" cm")));
-//  layout->addWidget(horizontal_line());
+  layout->addWidget(new ParamSpinBoxControl("dp_camera_offset", DPControlPanel::tr("Camera Offset"), DPControlPanel::tr("Adjust your camera position if your device is not mounted as per guidance."), ICON_EMPTY, -100, 100, 1, " cm"));
+  layout->addWidget(horizontal_line());
+  layout->addWidget(new ParamSpinBoxControl("dp_path_offset", DPControlPanel::tr("Driving Path Offset"), DPControlPanel::tr("Adjust this if you wish to let openpilot drive slightly towards to left (+) or right (-)"), ICON_EMPTY, -100, 100, 1, DPControlPanel::tr(" cm")));
+  layout->addWidget(horizontal_line());
 
   longitudinalWidget(layout);
 
