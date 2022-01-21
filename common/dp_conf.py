@@ -127,6 +127,7 @@ confs = [
   {'name': 'dp_nav_style_day', 'default': 'mapbox://styles/rav4kumar/ckv7dtfba6oik15r0w8dh1c1q', 'type': 'Text', 'conf_type': ['param']},
   {'name': 'dp_nav_style_night', 'default': 'mapbox://styles/rav4kumar/ckvsf3f4u0zb414tcz9vof5jc', 'type': 'Text', 'conf_type': ['param']},
   {'name': 'dp_no_offroad_fix', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
+  {'name': 'dp_ftpd', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
 ]
 
 # from 0.8.9 to 0.8.10

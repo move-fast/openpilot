@@ -255,6 +255,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_nav_style_day", PERSISTENT},
     {"dp_nav_style_night", PERSISTENT},
     {"dp_no_offroad_fix", PERSISTENT},
+    {"dp_ftpd", PERSISTENT},
 };
 
 } // namespace
