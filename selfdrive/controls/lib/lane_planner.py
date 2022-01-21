@@ -43,17 +43,26 @@ class LanePlanner:
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
     self.path_offset = -PATH_OFFSET if wide_camera else PATH_OFFSET
 
-  #   self.dp_camera_offset = None
-  #   self.dp_path_offset = None
-  #
-  # def update_dp_set_offsets(self, camera_offset, path_offset):
-  #   if self.dp_camera_offset != camera_offset:
-  #     self.dp_camera_offset = camera_offset
-  #     self.camera_offset = camera_offset / 100
-  #
-  #   if self.dp_path_offset != path_offset:
-  #     self.dp_path_offset = path_offset
-  #     self.path_offset = path_offset / 100
+    self.dp_camera_offset = None
+    self.dp_path_offset = None
+    self.dp_wide_camera = wide_camera
+
+  def update_dp_set_offsets(self, camera_offset, path_offset):
+    if self.dp_camera_offset != camera_offset:
+      self.dp_camera_offset = camera_offset
+      # from -0.04 to 0.04, difference is 0.08
+      # so we can assume the distance between C3's 2 cameras is 8 cm
+      if self.dp_wide_camera:
+        self.camera_offset += 8
+      self.camera_offset = camera_offset / 100
+
+    if self.dp_path_offset != path_offset:
+      self.dp_path_offset = path_offset
+      # from -0.04 to 0.04, difference is 0.08
+      # so we can assume the distance between C3's 2 cameras is 8 cm
+      if self.dp_wide_camera:
+        self.dp_path_offset += 8
+      self.path_offset = path_offset / 100
 
   def parse_model(self, md):
     if len(md.laneLines) == 4 and len(md.laneLines[0].t) == TRAJECTORY_SIZE:

@@ -85,7 +85,7 @@ class LateralPlanner:
     v_ego = sm['carState'].vEgo
     active = sm['controlsState'].active
     measured_curvature = sm['controlsState'].curvature
-    # self.LP.update_dp_set_offsets(sm['dragonConf'].dpCameraOffset, sm['dragonConf'].dpPathOffset)
+    self.LP.update_dp_set_offsets(sm['dragonConf'].dpCameraOffset, sm['dragonConf'].dpPathOffset)
 
     md = sm['modelV2']
     self.LP.parse_model(sm['modelV2'])
