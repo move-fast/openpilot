@@ -112,6 +112,8 @@ DPGeneralPanel::DPGeneralPanel(QWidget* parent) : QWidget(parent) {
   #ifdef QCOM
   layout->addWidget(new ParamControl("dp_dashcamd", DPGeneralPanel::tr("Enable On-Road Dashcam"), DPGeneralPanel::tr("Enable this if you wish to record screen, just like a dashcam.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
+  layout->addWidget(new ParamControl("dp_ftpd", DPGeneralPanel::tr("Enable FTP Service"), DPGeneralPanel::tr("Enable this if you wish to access your device storage via FTP.\nPort: 21\nReboot required."), ICON_EMPTY));
+  layout->addWidget(horizontal_line());
   #endif
   layout->addWidget(new ParamControl("dp_gpxd", DPGeneralPanel::tr("Enable GPS Logger"), DPGeneralPanel::tr("This will store your track in /data/media/0/gpx_logs/.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
