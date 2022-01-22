@@ -57,6 +57,11 @@ def manager_init():
   # dp init params
   init_params_vals(params)
 
+  # make sure hardware serial is there available if no reg.
+  if not params.get_bool("dp_reg"):
+    params.put("HardwareSerial", HARDWARE.get_serial())
+    params.put("IMEI", HARDWARE.get_imei(0))
+
   # is this dashcam?
   if os.getenv("PASSIVE") is not None:
     params.put_bool("Passive", bool(int(os.getenv("PASSIVE"))))
