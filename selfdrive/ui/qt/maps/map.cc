@@ -11,7 +11,7 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/request_repeater.h"
-
+#include "selfdrive/hardware/hw.h"
 
 const int PAN_TIMEOUT = 100;
 const float MANEUVER_TRANSITION_THRESHOLD = 10;
@@ -118,7 +118,7 @@ void MapWindow::timerUpdate() {
     auto pos = location.getPositionGeodetic();
     auto orientation = location.getCalibratedOrientationNED();
 
-    localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID) && pos.getValid();
+    localizer_valid = location.getStatus() == cereal::LiveLocationKalman::Status::VALID;// && pos.getValid();
 
     if (localizer_valid) {
       float velocity = location.getVelocityCalibrated().getValue()[0];
@@ -147,14 +147,14 @@ void MapWindow::timerUpdate() {
 
   loaded_once = loaded_once || m_map->isFullyLoaded();
   if (!loaded_once) {
-    map_instructions->showError("Map Loading");
+    map_instructions->showError(MapWindow::tr("Map Loading"));
     return;
   }
 
   initLayers();
 
   if (!localizer_valid) {
-    map_instructions->showError("Waiting for GPS");
+    map_instructions->showError(MapWindow::tr("Waiting for GPS"));
   } else {
     map_instructions->noError();
 
@@ -227,7 +227,7 @@ void MapWindow::initializeGL() {
 
   m_map->setMargins({0, 350, 0, 50});
   m_map->setPitch(MIN_PITCH);
-  m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");
+  m_map->setStyleUrl(day_style);
 
   QObject::connect(m_map.data(), &QMapboxGL::mapChanged, [=](QMapboxGL::MapChange change) {
     if (change == QMapboxGL::MapChange::MapChangeDidFinishLoadingMap) {
@@ -238,6 +238,18 @@ void MapWindow::initializeGL() {
 
 void MapWindow::paintGL() {
   if (!isVisible() || m_map.isNull()) return;
+  if (!Hardware::JETSON()) {
+  float light_sensor_val = QUIState::ui_state.scene.light_sensor >= 0.5? 0.5 : 0.0;
+  // exponential moving average
+  filtered_val = (0.025 * light_sensor_val) + (1.0 - 0.025) * filtered_val;
+  if (filtered_val <= 0.01)
+    filtered_val = 0.01;
+  bool at_night = filtered_val <= 0.2;
+  if (at_night_last != at_night) {
+    m_map->setStyleUrl(at_night? night_style : day_style);
+    at_night_last = at_night;
+  }
+  }
   m_map->render();
 }
 
@@ -567,7 +579,7 @@ MapETA::MapETA(QWidget * parent) : QWidget(parent) {
     * {
       color: white;
       font-family: "Inter";
-      font-size: 70px;
+      font-size: 56px;
     }
   )");
 
@@ -588,7 +600,7 @@ void MapETA::updateETA(float s, float s_typical, float d) {
   auto eta_time = QDateTime::currentDateTime().addSecs(s).time();
   if (params.getBool("NavSettingTime24h")) {
     eta->setText(eta_time.toString("HH:mm"));
-    eta_unit->setText("eta");
+    eta_unit->setText(MapETA::tr("eta"));
   } else {
     auto t = eta_time.toString("h:mm a").split(' ');
     eta->setText(t[0]);
@@ -598,11 +610,11 @@ void MapETA::updateETA(float s, float s_typical, float d) {
   // Remaining time
   if (s < 3600) {
     time->setText(QString::number(int(s / 60)));
-    time_unit->setText("min");
+    time_unit->setText(MapETA::tr("min"));
   } else {
     int hours = int(s) / 3600;
     time->setText(QString::number(hours) + ":" + QString::number(int((s - hours * 3600) / 60)).rightJustified(2, '0'));
-    time_unit->setText("hr");
+    time_unit->setText(MapETA::tr("hr"));
   }
 
   QString color;
@@ -622,10 +634,10 @@ void MapETA::updateETA(float s, float s_typical, float d) {
   float num = 0;
   if (QUIState::ui_state.scene.is_metric) {
     num = d / 1000.0;
-    distance_unit->setText("km");
+    distance_unit->setText(MapETA::tr("km"));
   } else {
     num = d * METER_TO_MILE;
-    distance_unit->setText("mi");
+    distance_unit->setText(MapETA::tr("mi"));
   }
 
   distance_str.setNum(num, 'f', num < 100 ? 1 : 0);

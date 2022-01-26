@@ -6,6 +6,11 @@
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
 
+// dp
+const int dp_btn_wh = 160;
+const int dp_btn_wh_gap = 30;
+const int dp_sidebar_width = 192; // same as event icon radius
+#include "selfdrive/common/params.h"
 
 // ***** onroad widgets *****
 
@@ -19,6 +24,12 @@ class OnroadHud : public QWidget {
   Q_PROPERTY(bool dmActive MEMBER dmActive NOTIFY valueChanged);
   Q_PROPERTY(bool hideDM MEMBER hideDM NOTIFY valueChanged);
   Q_PROPERTY(int status MEMBER status NOTIFY valueChanged);
+
+  // dp
+  Q_PROPERTY(bool dpUiSpeed MEMBER dpUiSpeed NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiEvent MEMBER dpUiEvent NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiFace MEMBER dpUiFace NOTIFY valueChanged);
+  Q_PROPERTY(bool dpUiMaxSpeed MEMBER dpUiMaxSpeed NOTIFY valueChanged);
 
 public:
   explicit OnroadHud(QWidget *parent);
@@ -41,6 +52,12 @@ private:
   bool dmActive = false;
   bool hideDM = false;
   int status = STATUS_DISENGAGED;
+
+  // dp
+  bool dpUiSpeed = true;
+  bool dpUiEvent = true;
+  bool dpUiFace = true;
+  bool dpUiMaxSpeed = true;
 
 signals:
   void valueChanged();
@@ -74,9 +91,22 @@ protected:
   void showEvent(QShowEvent *event) override;
   void updateFrameMat(int w, int h) override;
   void drawLaneLines(QPainter &painter, const UIScene &scene);
-  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd);
+  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd, bool has_op_long);
   inline QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   double prev_draw_t = 0;
+
+  // dp
+  int blinkerOffset = 0;
+  int blinkerAlpha = 200;
+  float calc_ttc(float v_ego, float a_ego, float x_lead, float v_lead, float a_lead);
+  void drawColoredText(QPainter &p, int x, int y, const QString &text, QColor color);
+  void drawBlinkers(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawBlindSpots(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawTopbar(QPainter &painter, const cereal::CarState::Reader &cs);
+  void drawSidebar(QPainter &painter, const cereal::ModelDataV2::Reader &lead_reader, const cereal::CarState::Reader &cs, const cereal::ControlsState::Reader &css, bool is_metric);
+  void drawBottombar(QPainter &painter, const cereal::LiveMapData::Reader &lmd);
+  void drawBtns(QPainter &painter);
+  void paintBtn(QPainter &painter, int x, int y, QString main, QString sub);
 };
 
 // container for all onroad widgets
@@ -89,6 +119,7 @@ public:
 
 private:
   void paintEvent(QPaintEvent *event);
+  void btnTriggered(std::string param, int val, int min, int max);
   void mousePressEvent(QMouseEvent* e) override;
   OnroadHud *hud;
   OnroadAlerts *alerts;
@@ -96,6 +127,7 @@ private:
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;
+  bool dp_allow_map = false;
 
 signals:
   void updateStateSignal(const UIState &s);

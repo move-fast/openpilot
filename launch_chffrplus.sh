@@ -9,6 +9,7 @@ source "$BASEDIR/launch_env.sh"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 function two_init {
+  export LD_LIBRARY_PATH="$BASEDIR/third_party/mapbox-gl-native-qt/aarch64:$LD_LIBRARY_PATH"
   python /data/openpilot/scripts/installers/language_installer.py
   python /data/openpilot/scripts/installers/sshkey_installer.py
   python /data/openpilot/scripts/installers/font_installer.py

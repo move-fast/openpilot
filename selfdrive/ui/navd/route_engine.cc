@@ -152,7 +152,7 @@ void RouteEngine::msgUpdate() {
 
   gps_ok = location.getGpsOK();
 
-  localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID) && pos.getValid();
+  localizer_valid = (location.getStatus() == cereal::LiveLocationKalman::Status::VALID); // && pos.getValid();
 
   if (localizer_valid) {
     last_bearing = RAD2DEG(orientation.getValue()[2]);

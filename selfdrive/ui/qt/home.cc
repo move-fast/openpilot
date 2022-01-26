@@ -9,6 +9,7 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/widgets/drive_stats.h"
 #include "selfdrive/ui/qt/widgets/prime.h"
+#include "selfdrive/ui/qt/qt_window.h"
 
 // HomeWindow: the container for the offroad and onroad UIs
 
@@ -87,7 +88,7 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
   date = new QLabel();
   header_layout->addWidget(date, 1, Qt::AlignHCenter | Qt::AlignLeft);
 
-  update_notif = new QPushButton("UPDATE");
+  update_notif = new QPushButton(OffroadHome::tr("UPDATE"));
   update_notif->setVisible(false);
   update_notif->setStyleSheet("background-color: #364DEF;");
   QObject::connect(update_notif, &QPushButton::clicked, [=]() { center_layout->setCurrentIndex(1); });
@@ -159,7 +160,7 @@ void OffroadHome::hideEvent(QHideEvent *event) {
 }
 
 void OffroadHome::refresh() {
-  date->setText(QDateTime::currentDateTime().toString("dddd, MMMM d"));
+  date->setText(QDateTime::currentDateTime().toString("yyyy-MM-dd"));
 
   bool updateAvailable = update_widget->refresh();
   int alerts = alerts_widget->refresh();

@@ -9,8 +9,9 @@
 #include "common/transformations/coordinates.hpp"
 #include "common/transformations/orientation.hpp"
 #include "cereal/messaging/messaging.h"
+#include "selfdrive/common/params.h"
 
-const QString MAPBOX_TOKEN = util::getenv("MAPBOX_TOKEN").c_str();
+const QString MAPBOX_TOKEN = Params().getBool("dp_otisserv")? QString::fromStdString(Params().get("dp_nav_mapbox_token_sk")) : util::getenv("MAPBOX_TOKEN").c_str();
 const QString MAPS_HOST = util::getenv("MAPS_HOST", MAPBOX_TOKEN.isEmpty() ? "https://maps.comma.ai" : "https://api.mapbox.com").c_str();
 const QString MAPS_CACHE_PATH = "/data/mbgl-cache-navd.db";
 

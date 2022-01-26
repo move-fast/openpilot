@@ -31,6 +31,7 @@ private:
   QVBoxLayout *recent_layout;
   QWidget *current_widget;
   ButtonControl *current_route;
+  bool dp_otisserv;
 
 signals:
   void closeSettings();

@@ -114,6 +114,12 @@ private:
   void clearRoute();
   uint64_t route_rcv_frame = 0;
 
+  // dp
+  float filtered_val = 0;
+  QString day_style = QString::fromStdString(Params().get("dp_nav_style_day"));
+  QString night_style = QString::fromStdString(Params().get("dp_nav_style_night"));
+  bool at_night_last = false;
+
 private slots:
   void timerUpdate();
 

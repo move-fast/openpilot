@@ -67,6 +67,7 @@ static void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTDa
 }
 
 static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
+  SubMaster &sm = *(s->sm);
   UIScene &scene = s->scene;
   auto model_position = model.getPosition();
   float max_distance = std::clamp(model_position.getX()[TRAJECTORY_SIZE - 1],
@@ -80,6 +81,8 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     scene.lane_line_probs[i] = lane_line_probs[i];
     update_line_data(s, lane_lines[i], 0.025 * scene.lane_line_probs[i], 0, &scene.lane_line_vertices[i], max_idx);
   }
+
+  scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
 
   // update road edges
   const auto road_edges = model.getRoadEdges();
@@ -183,6 +186,52 @@ static void update_state(UIState *s) {
     scene.light_sensor = std::clamp<float>(1.0 - (ev / max_ev), 0.0, 1.0);
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  if (sm.updated("lateralPlan")) {
+    scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
+    auto data = sm["lateralPlan"].getLateralPlan();
+    scene.dpLaneLessModeIsE2E = data.getDpLaneLessModeIsE2E();
+  }
+  if (scene.started) {
+    if (sm.updated("carState")) {
+      auto car_state = sm["carState"].getCarState();
+      scene.isReversing = car_state.getGearShifter() == cereal::CarState::GearShifter::REVERSE;
+    }
+    if (sm.updated("ubloxGnss")) {
+      auto sensor = sm["ubloxGnss"].getUbloxGnss();
+      if (sensor.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
+        scene.satelliteCount = sensor.getMeasurementReport().getNumMeas();
+      }
+    }
+    if (sm.updated("gpsLocationExternal")) {
+      auto gps = sm["gpsLocationExternal"].getGpsLocationExternal();
+
+      scene.gpsAccuracy = gps.getAccuracy();
+      scene.dpLat = gps.getLatitude();
+      scene.dpLon = gps.getLongitude();
+      if (!scene.dpInTW && scene.dpLat <= 25.506094 && scene.dpLat >= 21.861697 && scene.dpLon >= 120.204992 && scene.dpLon <= 122.1591313) {
+        scene.dpInTW = true;
+      }
+    }
+  }
+  if (sm.updated("dragonConf")) {
+    auto dragonConf = sm["dragonConf"].getDragonConf();
+    scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
+    if (scene.started) {
+      scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
+      scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
+      scene.dpAccelProfileCtrl = dragonConf.getDpAccelProfileCtrl();
+      scene.dpAccelProfile = dragonConf.getDpAccelProfile();
+      scene.dpLaneLessModeCtrl = dragonConf.getDpLaneLessModeCtrl();
+      scene.dpLaneLessMode = dragonConf.getDpLaneLessMode();
+    }
+    scene.dpUiBrightness = dragonConf.getDpUiBrightness();
+    scene.dpIpAddr = dragonConf.getDpIpAddr();
+    scene.dpAthenad = dragonConf.getDpAthenad();
+    scene.dpLocale = dragonConf.getDpLocale();
+  }
+  if (!scene.dpInTW && scene.dpLocale == "zh-TW") {
+    scene.dpInTW = true;
+  }
 }
 
 void ui_update_params(UIState *s) {
@@ -222,6 +271,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
+    "dragonConf", "ubloxGnss", "gpsLocationExternal", "lateralPlan", "liveMapData",
   });
 
   Params params;
@@ -296,6 +346,8 @@ void Device::updateBrightness(const UIState &s) {
     brightness = 0;
   }
 
+  // dp - brightness ctrl
+  brightness = awake && s.scene.dpUiBrightness > 0? s.scene.dpUiBrightness : brightness;
   if (brightness != last_brightness) {
     std::thread{Hardware::set_brightness, brightness}.detach();
   }
@@ -304,8 +356,15 @@ void Device::updateBrightness(const UIState &s) {
 
 void Device::updateWakefulness(const UIState &s) {
   awake_timeout = std::max(awake_timeout - 1, 0);
-
   bool should_wake = s.scene.started || s.scene.ignition;
+  // dp - we don't need to worry about mode 0 since its default
+  if (s.scene.started) {
+    if (s.scene.dpUiDisplayMode == 1 && s.scene.isReversing) { // reverse off
+      should_wake = false;
+    } else if (s.scene.dpUiDisplayMode == 2 && s.status != STATUS_WARNING && s.status != STATUS_ALERT) { // always off
+      should_wake = false;
+    }
+  }
   if (!should_wake) {
     // tap detection while display is off
     bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
