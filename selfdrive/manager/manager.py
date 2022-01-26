@@ -39,6 +39,11 @@ def manager_init():
     ("CompletedTrainingVersion", "0"),
     ("HasAcceptedTerms", "0"),
     ("OpenpilotEnabledToggle", "1"),
+    ("ShowDebugUI", "0"),
+    ("SpeedLimitControl", "0"),
+    ("SpeedLimitPercOffset", "0"),
+    ("TurnSpeedControl", "0"),
+    ("TurnVisionControl", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

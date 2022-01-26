@@ -60,6 +60,7 @@ class LateralPlanner:
     self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
     self.t_idxs = np.arange(TRAJECTORY_SIZE)
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
+    self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE, 3))
 
     self.lat_mpc = LateralMpc()
     self.reset_mpc(np.zeros(6))
@@ -282,5 +283,8 @@ class LateralPlanner:
     # dp
     plan_send.lateralPlan.dpLaneLessModeIsE2E = bool(self.laneless_mode_is_e2e)
     plan_send.lateralPlan.dpALCAStartIn = self.dp_lc_auto_start_in
+
+    plan_send.lateralPlan.dPathWLinesX = [float(x) for x in self.d_path_w_lines_xyz[:, 0]]
+    plan_send.lateralPlan.dPathWLinesY = [float(y) for y in self.d_path_w_lines_xyz[:, 1]]
 
     pm.send('lateralPlan', plan_send)

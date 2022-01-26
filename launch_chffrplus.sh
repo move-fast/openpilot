@@ -207,7 +207,21 @@ function launch {
 
   # start manager
   cd selfdrive/manager
-  ./build.py && ./manager.py
+  if [ -f /EON ]; then
+    if [ ! -f "/system/comma/usr/lib/libgfortran.so.5.0.0" ]; then
+      mount -o remount,rw /system
+      tar -zxvf /data/openpilot/selfdrive/mapd/assets/libgfortran.tar.gz -C /system/comma/usr/lib/
+      mount -o remount,r /system
+    fi
+    if [ ! -d "/system/comma/usr/lib/python3.8/site-packages/opspline" ]; then
+      mount -o remount,rw /system
+      tar -zxvf /data/openpilot/selfdrive/mapd/assets/opspline.tar.gz -C /system/comma/usr/lib/python3.8/site-packages/
+      mount -o remount,r /system
+    fi
+    ./build.py && ./manager.py
+  else
+    ./custom_dep.py && ./build.py && ./manager.py
+  fi
 
   # if broken, keep on screen error
   while true; do sleep 1; done
