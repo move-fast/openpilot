@@ -195,7 +195,7 @@ Panda *usb_connect(std::string serial="", uint32_t index=0) {
   }
 
   // power on charging, only the first time. Panda can also change mode and it causes a brief disconneciton
-#ifndef __x86_64__
+#if !defined(__x86_64__) && !defined(XNX)
   static std::once_flag connected_once;
   std::call_once(connected_once, &Panda::set_usb_power_mode, panda, cereal::PeripheralState::UsbPowerMode::CDP);
 #endif
@@ -323,8 +323,8 @@ bool send_panda_states(PubMaster *pm, const std::vector<Panda *> &pandas, bool s
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
-    }
-  #ifndef __x86_64__
+
+  #if !defined(__x86_64__) && !defined(XNX)
     bool power_save_desired = !ignition_local && !pigeon_active;
     if (pandaState.power_save_enabled != power_save_desired) {
       panda->set_power_saving(power_save_desired);
@@ -472,7 +472,7 @@ void peripheral_control_thread(Panda *panda) {
     cnt++;
     sm.update(1000); // TODO: what happens if EINTR is sent while in sm.update?
 
-    if (!Hardware::PC() && sm.updated("deviceState")) {
+    if (!Hardware::PC() && !Hardware::JETSON() && sm.updated("deviceState")) {
       // Charging mode
       bool charging_disabled = sm["deviceState"].getDeviceState().getChargingDisabled();
       if (charging_disabled != prev_charging_disabled) {
@@ -632,12 +632,17 @@ int main(int argc, char *argv[]) {
     int err;
     err = util::set_realtime_priority(54);
     assert(err == 0);
-    err = util::set_core_affinity({Hardware::TICI() ? 4 : 3});
+    err = util::set_core_affinity({Hardware::TICI() ? 4 : Hardware::JETSON()? 2 : 3});
     assert(err == 0);
   }
 
   LOGW("attempting to connect");
   PubMaster pm({"pandaStates", "peripheralState"});
+
+  #ifdef XNX
+  // re-insert usb automatically
+  std::system("python /data/openpilot/scripts/reset_usb.py");
+  #endif
 
   std::vector<std::string> serials(argv + 1, argv + argc);
   if (serials.size() == 0) serials.push_back("");

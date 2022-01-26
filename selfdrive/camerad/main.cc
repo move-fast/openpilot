@@ -21,6 +21,8 @@
 #include "selfdrive/camerad/cameras/camera_qcom2.h"
 #elif WEBCAM
 #include "selfdrive/camerad/cameras/camera_webcam.h"
+#elif MIPI
+#include "selfdrive/camerad/cameras/camera_mipi.h"
 #else
 #include "selfdrive/camerad/cameras/camera_replay.h"
 #endif
@@ -48,11 +50,15 @@ int main(int argc, char *argv[]) {
     int ret;
     ret = util::set_realtime_priority(53);
     assert(ret == 0);
-    ret = util::set_core_affinity({Hardware::EON() ? 2 : 6});
+    ret = util::set_core_affinity({Hardware::EON() ? 2 : Hardware::JETSON() ? 0 : 6});
     assert(ret == 0 || Params().getBool("IsOffroad")); // failure ok while offroad due to offlining cores
   }
 
+  #ifdef XNX
+  cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_GPU);
+  #else
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
+  #endif
 
    // TODO: do this for QCOM2 too
 #if defined(QCOM)

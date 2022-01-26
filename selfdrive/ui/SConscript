@@ -10,6 +10,12 @@ maps = arch in ['larch64', 'x86_64']
 if arch == 'aarch64':
   base_libs += ['log', 'utils', 'gui', 'ui', 'CB', 'gsl', 'adreno_utils', 'cutils', 'uuid']
 
+# use maps on jetson
+if arch == "jarch64":
+  maps = True
+  rpath = [Dir(f"#third_party/mapbox-gl-native-qt/jarch64").srcnode().abspath]
+  qt_env["RPATH"] += rpath
+
 if maps and arch == 'x86_64':
   rpath = [Dir(f"#third_party/mapbox-gl-native-qt/{arch}").srcnode().abspath]
   qt_env["RPATH"] += rpath

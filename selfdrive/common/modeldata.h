@@ -47,7 +47,7 @@ namespace tici_dm_crop {
 };
 
 const mat3 fcam_intrinsic_matrix =
-    Hardware::EON() ? (mat3){{910., 0., 1164.0 / 2,
+    Hardware::EON() || Hardware::JETSON() ? (mat3){{910., 0., 1164.0 / 2,
                               0., 910., 874.0 / 2,
                               0., 0., 1.}}
                     : (mat3){{2648.0, 0.0, 1928.0 / 2,
@@ -60,7 +60,7 @@ const mat3 ecam_intrinsic_matrix = (mat3){{620.0, 0.0, 1928.0 / 2,
                                            0.0, 0.0, 1.0}};
 
 static inline mat3 get_model_yuv_transform(bool bayer = true) {
-  float db_s = Hardware::EON() ? 0.5 : 1.0; // debayering does a 2x downscale on EON
+  float db_s = Hardware::EON() || Hardware::JETSON() ? 0.5 : 1.0; // debayering does a 2x downscale on EON
   const mat3 transform = (mat3){{
     1.0, 0.0, 0.0,
     0.0, 1.0, 0.0,

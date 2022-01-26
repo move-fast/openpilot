@@ -163,6 +163,70 @@ function tici_init {
   fi
 }
 
+# jetpack 4.6
+function jetson_init {
+  # modeld need this
+  export LD_LIBRARY_PATH="/usr/lib/aarch64-linux-gnu:$BASEDIR/third_party/mapbox-gl-native-qt/jarch64:$LD_LIBRARY_PATH"
+  # jetpack 4.6 has mode 8
+  sudo nvpmodel -m 8
+
+  # use performance governor
+  sudo echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+  # run higher fan speed in case we need compilation
+  sudo echo 200 > /sys/devices/pwm-fan/target_pwm
+
+  # prevent throttling
+  echo 7000 > /sys/devices/c250000.i2c/i2c-7/7-0040/iio:device0/crit_current_limit_0
+
+  # use highest available cpu freq
+  for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+    echo 1907200 > $i;
+  done
+
+  # gpu min set to highest
+  sudo echo 1109250000 > /sys/devices/17000000.gv11b/devfreq/17000000.gv11b/min_freq
+
+  # set IO scheduler
+  for f in /sys/block/*/queue/scheduler; do
+    echo noop > $f
+  done
+
+  # give nvargus-daemon higer priority
+  for pid in $(pgrep "nvargus-daemon"); do
+    chrt -f -p 52 $pid
+  done
+
+  # scale 4.3" 800x480 to 1920x1080
+  if [ "$(xdpyinfo | awk '/dimensions/{print $2}')" == "800x480" ]; then
+    xrandr --output HDMI-0 --mode 800x480 --scale 2.4x2.25
+  fi
+
+  # enable jetson mode
+  echo -n 1 > /data/params/d/dp_jetson
+
+  # disable blank screen etc.
+  xset s off
+  xset s noblank
+  xset -dpms
+
+  # hide mouse cursor
+  unclutter -idle 0 &
+
+  # prep for model
+  rm -fr $DIR/models/*.dlc
+  if [ -f "$DIR/models/supercombo.onnx" ]; then
+    file_check_sum=$(md5sum $DIR/models/supercombo.onnx | cut -d " " -f1)
+    if [[ $file_check_sum != "e9e19c5127f717dd94e8182201a08ab8" ]]; then
+      rm -fr $DIR/models/supercombo.onnx
+    fi
+  fi
+  # make sure we have right models
+  if [ ! -f "$DIR/models/supercombo.onnx" ]; then
+    wget https://github.com/commaai/openpilot/raw/be89044c51406eccb7ce7ae7678004a8fc774a7a/models/supercombo.onnx -O "$DIR/models/supercombo.onnx"
+  fi
+}
+
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
@@ -221,6 +285,8 @@ function launch {
     two_init
   elif [ -f /TICI ]; then
     tici_init
+  elif [ -f /JETSON ]; then
+    jetson_init
   fi
 
   # write tmux scrollback to a file

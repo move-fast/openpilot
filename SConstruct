@@ -7,6 +7,8 @@ import platform
 import numpy as np
 
 TICI = os.path.isfile('/TICI')
+JETSON = os.path.isfile('/JETSON')
+
 Decider('MD5-timestamp')
 
 AddOption('--test',
@@ -60,6 +62,11 @@ if arch == "aarch64" and TICI:
   arch = "larch64"
 
 USE_WEBCAM = os.getenv("USE_WEBCAM") is not None
+USE_MIPI = os.getenv("USE_MIPI") is not None
+
+# use larch64 for now
+if JETSON:
+  arch = "larch64"
 
 lenv = {
   "PATH": os.environ['PATH'],
@@ -70,6 +77,10 @@ lenv = {
   "ACADOS_PYTHON_INTERFACE_PATH": Dir("#pyextra/acados_template").abspath,
   "TERA_PATH": Dir("#").abspath + f"/third_party/acados/{arch}/t_renderer",
 }
+
+# set to jarch64
+if JETSON:
+  arch = "jarch64"
 
 rpath = lenv["LD_LIBRARY_PATH"].copy()
 
@@ -120,7 +131,21 @@ else:
   cxxflags = []
   cpppath = []
 
-  if arch == "Darwin":
+  if arch == "jarch64":
+    libpath = [
+      "#third_party/acados/larch64/lib",
+      "#third_party/libyuv/larch64/lib",
+      "/usr/lib/aarch64-linux-gnu",
+      "#selfdrive/common",
+      "/usr/lib",
+      "/usr/local/lib",
+      "/usr/local/pocl/lib",
+      "#third_party/mapbox-gl-native-qt/jarch64",
+    ]
+    cflags = ["-DXNX", "-march=armv8.2-a"]
+    cxxflags = ["-DXNX", "-march=armv8.2-a"]
+    rpath += ["/usr/local/lib"]
+  elif arch == "Darwin":
     yuv_dir = "mac" if real_arch != "arm64" else "mac_arm64"
     libpath = [
       f"#third_party/libyuv/{yuv_dir}/lib",
@@ -149,8 +174,9 @@ else:
       "/usr/local/lib",
     ]
 
+  if arch != "jarch64":
+    rpath += [Dir("#third_party/snpe/x86_64-linux-clang").abspath]
   rpath += [
-    Dir("#third_party/snpe/x86_64-linux-clang").abspath,
     Dir("#cereal").abspath,
     Dir("#selfdrive/common").abspath
   ]
@@ -317,7 +343,7 @@ else:
   qt_dirs += [f"/usr/include/{real_arch}-linux-gnu/qt5/Qt{m}" for m in qt_modules]
 
   qt_libs = [f"Qt5{m}" for m in qt_modules]
-  if arch == "larch64":
+  if arch == "larch64" or arch == "jarch64":
     qt_libs += ["GLESv2", "wayland-client"]
   elif arch != "Darwin":
     qt_libs += ["GL"]
@@ -350,7 +376,7 @@ if GetOption("clazy"):
   qt_env['ENV']['CLAZY_IGNORE_DIRS'] = qt_dirs[0]
   qt_env['ENV']['CLAZY_CHECKS'] = ','.join(checks)
 
-Export('env', 'qt_env', 'arch', 'real_arch', 'SHARED', 'USE_WEBCAM')
+Export('env', 'qt_env', 'arch', 'real_arch', 'SHARED', 'USE_WEBCAM', 'USE_MIPI')
 
 SConscript(['selfdrive/common/SConscript'])
 Import('_common', '_gpucommon', '_gpu_libs')
@@ -424,7 +450,8 @@ SConscript(['selfdrive/clocksd/SConscript'])
 SConscript(['selfdrive/loggerd/SConscript'])
 
 SConscript(['selfdrive/locationd/SConscript'])
-SConscript(['selfdrive/sensord/SConscript'])
+if not os.path.isfile("/JETSON"):
+  SConscript(['selfdrive/sensord/SConscript'])
 SConscript(['selfdrive/ui/SConscript'])
 
 if arch != "Darwin":
