@@ -50,6 +50,8 @@ class CarState(CarStateBase):
       ret.cruiseState.enabled = bool(cp.vl["CRUISE_STATE"]["CRUISE_ENABLED"])
     else:
       ret.cruiseState.enabled = bool(cp_adas.vl["CRUISE_STATE"]["CRUISE_ENABLED"])
+    # dp
+    ret.cruiseActualEnabled = ret.cruiseState.enabled
 
     if self.CP.carFingerprint in [CAR.ROGUE, CAR.XTRAIL]:
       ret.seatbeltUnlatched = cp.vl["HUD"]["SEATBELT_DRIVER_LATCHED"] == 0
@@ -114,6 +116,9 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.ALTIMA:
       self.lkas_hud_msg = copy.copy(cp_adas.vl["PROPILOT_HUD"])
       self.lkas_hud_info_msg = copy.copy(cp_adas.vl["PROPILOT_HUD_INFO_MSG"])
+
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
 
     return ret
 

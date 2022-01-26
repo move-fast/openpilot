@@ -8,6 +8,9 @@ from selfdrive.car.ford.values import DBC
 WHEEL_RADIUS = 0.33
 
 class CarState(CarStateBase):
+  def __init__(self, CP):
+    super().__init__(CP)
+
   def update(self, cp):
     ret = car.CarState.new_message()
 
@@ -26,6 +29,8 @@ class CarState(CarStateBase):
     ret.steerError = cp.vl["Lane_Keep_Assist_Status"]["LaActDeny_B_Actl"] == 1
     ret.cruiseState.speed = cp.vl["Cruise_Status"]["Set_Speed"] * CV.MPH_TO_MS
     ret.cruiseState.enabled = not (cp.vl["Cruise_Status"]["Cruise_State"] in [0, 3])
+    # dp
+    ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = cp.vl["Cruise_Status"]["Cruise_State"] != 0
     ret.gas = cp.vl["EngineData_14"]["ApedPosScal_Pc_Actl"] / 100.
     ret.gasPressed = ret.gas > 1e-6
@@ -33,6 +38,9 @@ class CarState(CarStateBase):
     ret.genericToggle = bool(cp.vl["Steering_Buttons"]["Dist_Incr"])
     # TODO: we also need raw driver torque, needed for Assisted Lane Change
     self.lkas_state = cp.vl["Lane_Keep_Assist_Status"]["LaActAvail_D_Actl"]
+
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
 
     return ret
 
