@@ -323,7 +323,7 @@ bool send_panda_states(PubMaster *pm, const std::vector<Panda *> &pandas, bool s
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
-
+    }
   #if !defined(__x86_64__) && !defined(XNX)
     bool power_save_desired = !ignition_local && !pigeon_active;
     if (pandaState.power_save_enabled != power_save_desired) {
