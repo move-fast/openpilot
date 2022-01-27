@@ -362,17 +362,29 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   configFont(p, "Open Sans", 66, "Regular");
   drawText(p, rect().center().x(), 290, speedUnit, 200);
   }
-  if (dpUiEvent) {
   // engage-ability icon
   if (engageable) {
     if (showDebugUI && showVTC) {
       drawVisionTurnControllerUI(p, rect().right() - 184 - bdr_s, int(bdr_s * 1.5), 184, vtcColor, vtcSpeed, 100);
     } else {
+      if (dpUiEvent) {
       // engage-ability icon
       drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5),
                engage_img, bg_colors[status], 1.0);
+      }
     }
-  }
+
+    // Speed Limit Sign
+    if (showSpeedLimit) {
+      drawSpeedSign(p, speed_sgn_rc, speedLimit, slcSubText, slcSubTextSize, mapSourcedSpeedLimit, slcActive);
+    }
+
+    // Turn Speed Sign
+    if (showTurnSpeedLimit) {
+      rc.moveTop(speed_sgn_rc.bottom() + bdr_s);
+      drawTrunSpeedSign(p, rc, turnSpeedLimit, tscSubText, curveSign, tscActive);
+    }
+
   }
   if (dpUiFace) {
   // dm icon
@@ -380,16 +392,6 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     drawIcon(p, radius / 2 + (bdr_s * 2), rect().bottom() - footer_h / 2,
              dm_img, QColor(0, 0, 0, 70), dmActive ? 1.0 : 0.2);
   }
-  }
-  // Speed Limit Sign
-  if (showSpeedLimit) {
-    drawSpeedSign(p, speed_sgn_rc, speedLimit, slcSubText, slcSubTextSize, mapSourcedSpeedLimit, slcActive);
-  }
-
-  // Turn Speed Sign
-  if (showTurnSpeedLimit) {
-    rc.moveTop(speed_sgn_rc.bottom() + bdr_s);
-    drawTrunSpeedSign(p, rc, turnSpeedLimit, tscSubText, curveSign, tscActive);
   }
 }
 
