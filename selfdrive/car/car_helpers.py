@@ -1,10 +1,9 @@
 import os
-import json
 import threading
 import requests
 from common.params import Params, put_nonblocking
 from common.basedir import BASEDIR
-from selfdrive.version import get_comma_remote, get_tested_branch
+# from selfdrive.version import get_comma_remote, get_tested_branch
 from selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
 from selfdrive.car.vin import get_vin, VIN_UNKNOWN
 from selfdrive.car.fw_versions import get_fw_versions, match_fw_to_car
@@ -87,6 +86,12 @@ interfaces = load_interfaces(interface_names)
 def fingerprint(logcan, sendcan):
   fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
+
+  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8')
+  if dp_car_assigned is not None:
+    car_selected = dp_car_assigned.strip()
+    fixed_fingerprint = car_selected
+    skip_fw_query = True
 
   if not fixed_fingerprint and not skip_fw_query:
     # Vin query only reliably works thorugh OBDII
@@ -192,12 +197,6 @@ def crash_log2(fingerprints, fw):
 def get_car(logcan, sendcan):
   candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(logcan, sendcan)
 
-  params = Params()
-  if candidate is None:
-    dp_car_assigned = params.get('dp_car_assigned', encoding='utf8')
-    candidate = None if (dp_car_assigned is None or dp_car_assigned == "") else dp_car_assigned.strip()
-    source = car.CarParams.FingerprintSource.fixed
-
   if candidate is None:
     cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
     candidate = "mock"
@@ -216,6 +215,7 @@ def get_car(logcan, sendcan):
     car_params.fuzzyFingerprint = not exact_match
 
     # dp - handle sr learner memory/reset feature
+    params = Params()
     candidate_changed = params.get('dp_last_candidate', encoding='utf8') != candidate
     # keep stock sr
     put_nonblocking("dp_sr_stock", str(car_params.steerRatio))
