@@ -91,9 +91,9 @@ STATIC_DSU_MSGS = [
 
 
 FW_VERSIONS = {
-  CAR.LEXUS_ISH: {},
-  CAR.LEXUS_GSH: {},
-  CAR.LEXUS_NXT: {},
+  CAR.LEXUS_ISH: {(Ecu.esp, 0xfff, None): [b'\x00']},
+  CAR.LEXUS_GSH: {(Ecu.esp, 0xfff, None): [b'\x00']},
+  CAR.LEXUS_NXT: {(Ecu.esp, 0xfff, None): [b'\x00']},
   CAR.AVALON: {
     (Ecu.esp, 0x7b0, None): [
       b'F152607060\x00\x00\x00\x00\x00\x00',
