@@ -1,8 +1,14 @@
-dragonpilot 0.8.12-0
+dragonpilot 0.8.12-2
+========================
+* Bug fixes. 
+* ADDED: FTP to easily manage storage.
+* Readded: camera offset, path offset and autoshutdown.
+
+dragonpilot 0.8.12-1
 ========================
 * Based on openpilot 0.8.12 devel.
 * ADDED: Support for no gps (mr.one panda).
-* Reimplement: camera offset, path offset, nav for c2 and autoshutdown. 
+* Reimplement: camera offset, path offset, nav for c2 and autoshutdown.
 
 dragonpilot 0.8.10-4
 ========================
