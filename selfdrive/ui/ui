@@ -2,6 +2,7 @@
 cd "$(dirname "$0")"
 export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
 export QT_PLUGIN_PATH="../../third_party/qt-plugins/$(uname -m)"
+
 if [ -f /TICI ]; then
   exec ./_ui_c3
 else

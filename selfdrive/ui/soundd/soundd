@@ -2,4 +2,8 @@
 cd "$(dirname "$0")"
 export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
 export QT_QPA_PLATFORM="offscreen"
-exec ./_soundd
+if [ -f /TICI ]; then
+  exec ./_soundd_c3
+else
+  exec ./_soundd
+fi
