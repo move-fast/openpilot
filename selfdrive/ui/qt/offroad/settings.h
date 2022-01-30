@@ -56,6 +56,14 @@ private:
   Params params;
 };
 
+class CarSelectionPanel : public QWidget {
+  Q_OBJECT
+public:
+  explicit CarSelectionPanel(SettingsWindow *parent);
+signals:
+  void carSelected();
+};
+
 class TogglesPanel : public ListWidget {
   Q_OBJECT
 public:
