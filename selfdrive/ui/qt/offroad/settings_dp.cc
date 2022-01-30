@@ -366,7 +366,7 @@ DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   //Color blindness mode.
   QMenu *colorc_menu = new QMenu();
-  colorc_menu->addAction("None", [=]() {Hardware::set_color_mode(0);});
+  colorc_menu->addAction("None", [=]() {Hardware::set_color_blind(0);});
   colorc_menu->addAction("Deuteranomaly (red-green)", [=]() {Hardware::set_color_blind(1);});
   colorc_menu->addAction("Protanomaly (red-green)", [=]() {Hardware::set_color_blind(2);});
   colorc_menu->addAction("Tritanopia (blue-yello)", [=]() {Hardware::set_color_blind(3);});
@@ -394,11 +394,6 @@ DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(dateTimeBtn);
   layout->addWidget(horizontal_line());
   #endif
-}
-
-void DPCarPanel::carModelWidget(QVBoxLayout * layout) {
-  layout->addWidget(new LabelControl(DPCarPanel::tr("Assign Car Model:"), ""));
-  layout->addWidget(new CarModelComboBox());
 }
 
 void DPCarPanel::toyotaSpeedOverrideWidget(QVBoxLayout * layout) {
