@@ -43,7 +43,6 @@ public:
   explicit DPCarPanel(QWidget* parent = nullptr);
 
 private:
-  void carModelWidget(QVBoxLayout * layout);
   void toyotaSpeedOverrideWidget(QVBoxLayout * layout);
   void steeringRatioWidget(QVBoxLayout * layout);
 };
