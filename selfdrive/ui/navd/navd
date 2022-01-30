@@ -1,4 +1,8 @@
 #!/bin/sh
 cd "$(dirname "$0")"
 export QT_PLUGIN_PATH="../../../third_party/qt-plugins/$(uname -m)"
-exec ./_navd
+if [ -f /TICI ]; then
+  exec ./_navd_c3
+else
+  exec ./_navd
+fi

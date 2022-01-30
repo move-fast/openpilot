@@ -10,6 +10,9 @@
 #include <QrCode.hpp>
 using qrcodegen::QrCode;
 
+#include <QAction>
+#include <QMenu>
+
 void DPGeneralPanel::autoShutdownWidget(QVBoxLayout * layout) {
   QWidget *autoShutdownExt = new QWidget;
   QVBoxLayout *autoShutdownExtLayout = new QVBoxLayout;
@@ -360,6 +363,19 @@ DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(new ParamControl("dp_ui_side", DPUIPanel::tr("Display Side Info"), DPUIPanel::tr("Enable this to display steering angle / lead car distance / engine RPM."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_ui_top", DPUIPanel::tr("Display Top Info"), DPUIPanel::tr("Enable this to display time / system temp / battery level."), ICON_EMPTY));
+  layout->addWidget(horizontal_line());
+  //Color blindness mode.
+  QMenu *colorc_menu = new QMenu();
+  colorc_menu->addAction("None", [=]() {Hardware::set_color_mode(0);});
+  colorc_menu->addAction("Deuteranomaly (red-green)", [=]() {Hardware::set_color_blind(1);});
+  colorc_menu->addAction("Protanomaly (red-green)", [=]() {Hardware::set_color_blind(2);});
+  colorc_menu->addAction("Tritanopia (blue-yello)", [=]() {Hardware::set_color_blind(3);});
+
+  QPushButton *set_colorc_btn = new QPushButton("ColorBlind");
+  set_colorc_btn->setMenu(colorc_menu);
+  layout->addWidget(set_colorc_btn, 0, Qt::AlignBottom);
+  layout->addWidget(horizontal_line(), Qt::AlignBottom);
+
   #ifdef QCOM
   layout->addWidget(new LabelControl("", ""));
   layout->addWidget(horizontal_line());
