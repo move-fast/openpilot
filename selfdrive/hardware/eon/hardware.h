@@ -22,6 +22,11 @@ public:
 
   static void reboot() { std::system("reboot"); };
   static void poweroff() { std::system("LD_LIBRARY_PATH= svc power shutdown"); };
+  static void set_color_blind(int mode) {
+    char color_blind_cmd[64];
+    snprintf(color_blind_cmd, sizeof(color_blind_cmd), "service call SurfaceFlinger 1014 i32 %d", mode);
+    std::system(color_blind_cmd);
+    }
   static void set_brightness(int percent) {
     std::ofstream brightness_control("/sys/class/leds/lcd-backlight/brightness");
     if (brightness_control.is_open()) {
