@@ -37,7 +37,7 @@ CarSelectionPanel::CarSelectionPanel(SettingsWindow *parent) : QWidget(parent) {
 
   QVBoxLayout *layout = new QVBoxLayout;
   layout->setContentsMargins(QMargins());
-  QString list = QString::fromStdString((params.get("CarList")).c_str());
+  QString list = QString::fromStdString((params.get("dp_car_list")).c_str());
   QJsonDocument document = QJsonDocument::fromJson(list.toUtf8());
   QJsonObject object = document.object();
   QJsonArray models = object.value("cars").toArray();
