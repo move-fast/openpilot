@@ -4,6 +4,7 @@
 #include "selfdrive/ui/qt/widgets/controls.h"
 #include "selfdrive/ui/qt/widgets/input.h"
 #include "selfdrive/ui/qt/offroad/settings_dp.h"
+#include <QTimer>
 #include <QRandomGenerator>
 
 #define ICON_EMPTY "../assets/offroad/icon_empty.png"
@@ -469,10 +470,6 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
 //  });
 //  layout->addWidget(vwPandaCtrl);
 //  layout->addWidget(horizontal_line());
-  #ifndef QCOM2
-  // custom car model
-  carModelWidget(layout);
-  #endif
 }
 
 void NavQRWidget::updateIpAddr(QString addr) {
