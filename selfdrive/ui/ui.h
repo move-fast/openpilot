@@ -131,8 +131,8 @@ typedef struct UIScene {
 //  bool rightBlindspot;
   std::string dpLocale;
   bool dpAthenad;
-  bool dpFollowingProfileCtrl;
-  int dpFollowingProfile;
+  //bool dpFollowingProfileCtrl;
+  //int dpFollowingProfile;
   bool dpAccelProfileCtrl;
   int dpAccelProfile;
 //  int engineRPM;
