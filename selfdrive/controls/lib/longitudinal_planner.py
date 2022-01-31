@@ -23,12 +23,12 @@ A_CRUISE_MAX_BP = [0., 15., 25., 40.]
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
-DP_FOLLOWING_DIST = {
-  0: 1.0,
-  1: 1.2,
-  2: 1.4,
-  3: 1.8,
-}
+#DP_FOLLOWING_DIST = {
+#  0: 1.0,
+#  1: 1.2,
+#  2: 1.4,
+#  3: 1.8,
+#}
 
 DP_ACCEL_ECO = 0
 DP_ACCEL_NORMAL = 1
@@ -92,8 +92,8 @@ class Planner:
     # dp
     self.dp_accel_profile_ctrl = False
     self.dp_accel_profile = DP_ACCEL_ECO
-    self.dp_following_profile_ctrl = False
-    self.dp_following_profile = 2
+    #self.dp_following_profile_ctrl = False
+    #self.dp_following_profile = 2
 
   def update(self, sm):
     v_ego = sm['carState'].vEgo
@@ -101,9 +101,9 @@ class Planner:
     # dp
     self.dp_accel_profile_ctrl = sm['dragonConf'].dpAccelProfileCtrl
     self.dp_accel_profile = sm['dragonConf'].dpAccelProfile
-    self.dp_following_profile_ctrl = sm['dragonConf'].dpFollowingProfileCtrl
-    if self.dp_following_profile_ctrl:
-      self.dp_following_profile = sm['dragonConf'].dpFollowingProfile
+    #self.dp_following_profile_ctrl = sm['dragonConf'].dpFollowingProfileCtrl
+    #if self.dp_following_profile_ctrl:
+    #  self.dp_following_profile = sm['dragonConf'].dpFollowingProfile
 
     v_cruise_kph = sm['controlsState'].vCruise
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
@@ -138,7 +138,7 @@ class Planner:
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired, self.a_desired)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, prev_accel_constraint=prev_accel_constraint)
-    self.mpc.set_desired_TR(DP_FOLLOWING_DIST[self.dp_following_profile])
+    #self.mpc.set_desired_TR(DP_FOLLOWING_DIST[self.dp_following_profile])
     self.v_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.a_solution)
     self.j_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
