@@ -1,6 +1,13 @@
+dragonpilot 0.8.12-3
+========================
+* Bug fixes.
+* ADDED: Car Selector for C3.
+* ADDED: Toyota long improvement.
+* Reimplement: Following Distance and added @krkeegan implementation (toyota only with sdsu/tss2).
+
 dragonpilot 0.8.12-2
 ========================
-* Bug fixes. 
+* Bug fixes.
 * ADDED: FTP to easily manage storage.
 * Readded: camera offset, path offset and autoshutdown.
 
