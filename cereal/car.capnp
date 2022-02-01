@@ -205,6 +205,7 @@ struct CarState {
   lkMode @39 :Bool;
   engineRPM @40 :Float32;
   cruiseActualEnabled @41 :Bool;
+  distanceLines @42 :UInt8;
 
   struct WheelSpeeds {
     # optional wheel speeds
