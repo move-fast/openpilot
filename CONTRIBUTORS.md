@@ -29,6 +29,7 @@ eyezenheim                                                   | [eyezenheim](http
 Jason Wen                                                    | [sunnyhaibin](https://github.com/sunnyhaibin)               
 kegman                                                       | [kegman](https://github.com/kegman)                         
 krkeegan                                                     | [krkeegan](https://github.com/krkeegan)                     
+ihsakashi                                                    | [krkeegan](https://github.com/ihsakashi)                    
 lijunhao731                                                  | [lijunhao731](https://github.com/lijunhao731)               
 lirudy                                                       | [lirudy](https://github.com/lirudy)                         
 LOVEChen                                                     | [LOVEChen](https://github.com/LOVEChen)                     

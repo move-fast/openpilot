@@ -2,7 +2,8 @@ dragonpilot 0.8.12-3
 ========================
 * Bug fixes.
 * ADDED: Car Selector for C3.
-* ADDED: Toyota long improvement.
+* ADDED: ColorBlind mode eon only. (thanks to @ihsakashi)
+* TUNNING: Toyota long improvement.
 * Reimplement: Following Distance and added @krkeegan implementation (toyota only with sdsu/tss2).
 
 dragonpilot 0.8.12-2
