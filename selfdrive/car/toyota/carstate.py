@@ -52,7 +52,7 @@ class CarState(CarStateBase):
     self.dp_accel_profile_prev = None
     self.dp_accel_profile_init = False
 
-    self.dp_toyota_fp_btn_link = Params().get_bool('dp_toyota_fp_btn_link')
+    #self.dp_toyota_fp_btn_link = Params().get_bool('dp_toyota_fp_btn_link')
     self.dp_toyota_ap_btn_link = Params().get_bool('dp_toyota_ap_btn_link')
 
   def update(self, cp, cp_cam):
@@ -141,12 +141,12 @@ class CarState(CarStateBase):
       self.dp_accel_profile_prev = self.dp_accel_profile
 
     #dp: Thank you Arne (distance button)
-    if self.dp_toyota_fp_btn_link:
-      if not self.read_distance_lines_init or self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
-        self.read_distance_lines_init = True
-        self.read_distance_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-        put_nonblocking('dp_following_profile', str(int(max(self.read_distance_lines - 1, 0)))) # Skipping one profile.
-        put_nonblocking('dp_last_modified',str(floor(time.time())))
+    #if self.dp_toyota_fp_btn_link:
+    #  if not self.read_distance_lines_init or self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+    #    self.read_distance_lines_init = True
+    #    self.read_distance_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+    #    put_nonblocking('dp_following_profile', str(int(max(self.read_distance_lines - 1, 0)))) # Skipping one profile.
+    #    put_nonblocking('dp_last_modified',str(floor(time.time())))
 
     ret.leftBlinker = cp.vl["STEERING_LEVERS"]["TURN_SIGNALS"] == 1
     ret.rightBlinker = cp.vl["STEERING_LEVERS"]["TURN_SIGNALS"] == 2
@@ -202,7 +202,8 @@ class CarState(CarStateBase):
 
     # dp
     # distance button
-    self.distance = cp_cam.vl["ACC_CONTROL"]['DISTANCE']
+    self.distance = 1 if cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
+    ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
     self._update_traffic_signals(cp_cam)
     ret.cruiseState.speedLimit = self._calculate_speed_limit()
 
