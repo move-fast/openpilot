@@ -90,14 +90,14 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   const int y = height() - bdr_s*2 - dp_btn_wh - 20; // from drawBtn init
   const int x_offset = dp_btn_wh + dp_btn_wh_gap;
 
-  if (propagate_event && QUIState::ui_state.scene.dpFollowingProfileCtrl) {
-    x -= x_offset;
-    QRect fp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
-    if (fp_rc.contains(e->x(), e->y())) {
-      btnTriggered("dp_following_profile", QUIState::ui_state.scene.dpFollowingProfile, 0, 3);
-      propagate_event = false;
-    }
-  }
+  //if (propagate_event && QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+  //  x -= x_offset;
+  //  QRect fp_rc = QRect(x, y, dp_btn_wh, dp_btn_wh);
+  //  if (fp_rc.contains(e->x(), e->y())) {
+  //    btnTriggered("dp_following_profile", QUIState::ui_state.scene.dpFollowingProfile, 0, 3);
+  //    propagate_event = false;
+  //  }
+  //}
 
   if (propagate_event && QUIState::ui_state.scene.dpAccelProfileCtrl) {
     x -= x_offset;
@@ -856,24 +856,24 @@ void NvgWindow::drawBtns(QPainter &painter) {
   const int x_offset = dp_btn_wh + dp_btn_wh_gap;
 
   // fp
-  if (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
-    x -= x_offset;
-    QString fp;
-    switch (QUIState::ui_state.scene.dpFollowingProfile) {
-      case 1:
-        fp = NvgWindow::tr("1.2s");
-        break;
-      case 2:
-        fp = NvgWindow::tr("1.4s");
-        break;
-      case 3:
-        fp = NvgWindow::tr("1.8s");
-        break;
-      default:
-        fp = NvgWindow::tr("1.0s");
-    }
-    paintBtn(painter, x, y, fp, NvgWindow::tr("FOLLOW"));
-  }
+  //if (QUIState::ui_state.scene.dpFollowingProfileCtrl) {
+  //  x -= x_offset;
+  //  QString fp;
+  //  switch (QUIState::ui_state.scene.dpFollowingProfile) {
+  //    case 1:
+  //      fp = NvgWindow::tr("1.2s");
+  //      break;
+  //    case 2:
+  //      fp = NvgWindow::tr("1.4s");
+  //      break;
+  //    case 3:
+  //      fp = NvgWindow::tr("1.8s");
+  //      break;
+  //    default:
+  //      fp = NvgWindow::tr("1.0s");
+  //  }
+  //  paintBtn(painter, x, y, fp, NvgWindow::tr("FOLLOW"));
+  //}
 
   // ap
   if (QUIState::ui_state.scene.dpAccelProfileCtrl) {

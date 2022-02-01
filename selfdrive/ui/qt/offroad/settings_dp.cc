@@ -262,8 +262,8 @@ void DPControlPanel::longitudinalWidget(QVBoxLayout * layout) {
   longCtrlLayout->addWidget(horizontal_line());
   longCtrlLayout->addWidget(new ParamControl("dp_accel_profile_ctrl", DPControlPanel::tr("Manually Control Accel Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's acceleration control."), ICON_EMPTY));
   longCtrlLayout->addWidget(horizontal_line());
-  longCtrlLayout->addWidget(new ParamControl("dp_following_profile_ctrl", DPControlPanel::tr("Manually Control Following Dist. Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's following distance.\nopenpilot by default keeps 1.45 secs distance to lead car."), ICON_EMPTY));
-  longCtrlLayout->addWidget(horizontal_line());
+  //longCtrlLayout->addWidget(new ParamControl("dp_following_profile_ctrl", DPControlPanel::tr("Manually Control Following Dist. Mode"), DPControlPanel::tr("Enable this if you wish to adjust openpilot's following distance.\nopenpilot by default keeps 1.45 secs distance to lead car."), ICON_EMPTY));
+  //longCtrlLayout->addWidget(horizontal_line());
   longCtrlLayout->addWidget(new ParamControl("dp_allow_gas", DPControlPanel::tr("Allow Gas Pedal Pressed"), DPControlPanel::tr("Enable this if you wish openpilot to stay engaged when gas is pressed."), ICON_EMPTY));
   longCtrlLayout->addWidget(horizontal_line());
   longCtrlLayout->addWidget(new ParamControl("dp_gear_check", DPControlPanel::tr("Enable Gear Safety Check"), DPControlPanel::tr("Enable this if you wish openpilot to only work on D drive."), ICON_EMPTY));
@@ -373,7 +373,7 @@ DPUIPanel::DPUIPanel(QWidget* parent) : QWidget(parent) {
   colorc_menu->addAction("Deuteranomaly (red-green)", [=]() {Hardware::set_color_blind(1);});
   colorc_menu->addAction("Protanomaly (red-green)", [=]() {Hardware::set_color_blind(2);});
   colorc_menu->addAction("Tritanopia (blue-yello)", [=]() {Hardware::set_color_blind(3);});
-  
+
   QPushButton *set_colorc_btn = new QPushButton("ColorBlind");
   set_colorc_btn->setMenu(colorc_menu);
   layout->addWidget(set_colorc_btn, 0, Qt::AlignBottom);
@@ -439,8 +439,8 @@ DPCarPanel::DPCarPanel(QWidget* parent) : QWidget(parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_zss", DPCarPanel::tr("Enable ZSS Support"), DPCarPanel::tr("Enable this if you have ZSS module installed.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
-  layout->addWidget(new ParamControl("dp_toyota_fp_btn_link", DPCarPanel::tr("Enable FM Physical Button Ctrl"), DPCarPanel::tr("Enable this to link Following Distance Mode (FM) control to the physical button (TSS2).\nONLY WORK ON SOME OF TSS1 VEHICLES WITH SDSU.\nReboot required."), ICON_EMPTY));
-  layout->addWidget(horizontal_line());
+  //layout->addWidget(new ParamControl("dp_toyota_fp_btn_link", DPCarPanel::tr("Enable FM Physical Button Ctrl"), DPCarPanel::tr("Enable this to link Following Distance Mode (FM) control to the physical button (TSS2).\nONLY WORK ON SOME OF TSS1 VEHICLES WITH SDSU.\nReboot required."), ICON_EMPTY));
+  //layout->addWidget(horizontal_line());
   layout->addWidget(new ParamControl("dp_toyota_ap_btn_link", DPCarPanel::tr("Enable AM Physical Button Ctrl"), DPCarPanel::tr("Enable this to link Accel Mode (AM) control to the physical button (TSS2).\nONLY WORK ON SOME OF TSS1 VEHICLES.\nReboot required."), ICON_EMPTY));
   layout->addWidget(horizontal_line());
   ParamControl *disableRelayCtrl = new ParamControl("dp_toyota_disable_relay", DPCarPanel::tr("Enable No Relay Mode"), DPCarPanel::tr("Enable this will disable relay in your panda.\nReboot required."), ICON_EMPTY);

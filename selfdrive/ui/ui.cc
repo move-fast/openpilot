@@ -219,8 +219,8 @@ static void update_state(UIState *s) {
     auto dragonConf = sm["dragonConf"].getDragonConf();
     scene.dpUiDisplayMode = dragonConf.getDpUiDisplayMode();
     if (scene.started) {
-      scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
-      scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
+      //scene.dpFollowingProfileCtrl = dragonConf.getDpFollowingProfileCtrl();
+      //scene.dpFollowingProfile = dragonConf.getDpFollowingProfile();
       scene.dpAccelProfileCtrl = dragonConf.getDpAccelProfileCtrl();
       scene.dpAccelProfile = dragonConf.getDpAccelProfile();
       scene.dpLaneLessModeCtrl = dragonConf.getDpLaneLessModeCtrl();
