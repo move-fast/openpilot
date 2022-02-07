@@ -13,7 +13,7 @@ else:
 _TURN_CURVATURE_THRESHOLD = 0.002  # 1/mts. A curvature over this value will generate a speed limit section.
 _MAX_LAT_ACC = 2.3  # Maximum lateral acceleration in turns.
 _SPLINE_EVAL_STEP = 5  # mts for spline evaluation for curvature calculation
-_MIN_SPEED_SECTION_LENGHT = 100.  # mts. Sections below this value will not be split in smaller sections.
+_MIN_SPEED_SECTION_LENGTH = 100.  # mts. Sections below this value will not be split in smaller sections.
 _MAX_CURV_DEVIATION_FOR_SPLIT = 2.  # Split a speed section if the max curvature deviates from mean by this factor.
 _MAX_CURV_SPLIT_ARC_ANGLE = 90.  # degrees. Arc section to split into new speed section around max curvature.
 _MIN_NODE_DISTANCE = 50.  # mts. Minimum distance between nodes for spline evaluation. Data is enhanced if not met.
@@ -142,8 +142,8 @@ def split_speed_section_by_curv_degree(curv_sec):
   that is only really necessary for a small region of the section.
   """
   # Only consider spliting a section if long enough.
-  lenght = curv_sec[-1, 2] - curv_sec[0, 2]
-  if lenght <= _MIN_SPEED_SECTION_LENGHT:
+  length = curv_sec[-1, 2] - curv_sec[0, 2]
+  if length <= _MIN_SPEED_SECTION_LENGTH:
     return [curv_sec]
 
   # Only split if max curvature deviates substantially from mean curvature.
@@ -155,8 +155,8 @@ def split_speed_section_by_curv_degree(curv_sec):
 
   # Calcualate where to split as to isolate a curve section around the max curvature peak.
   arc_side = (np.radians(_MAX_CURV_SPLIT_ARC_ANGLE) / max_curv) / 2.
-  arc_side_idx_lenght = int(np.ceil(arc_side / _SPLINE_EVAL_STEP))
-  split_idxs = [max_curv_idx - arc_side_idx_lenght, max_curv_idx + arc_side_idx_lenght]
+  arc_side_idx_length = int(np.ceil(arc_side / _SPLINE_EVAL_STEP))
+  split_idxs = [max_curv_idx - arc_side_idx_length, max_curv_idx + arc_side_idx_length]
   split_idxs = list(filter(lambda idx: idx > 0 and idx < len(curv_sec) - 1, split_idxs))
 
   # If the arc section to split extendes outside the section, then no need to split.

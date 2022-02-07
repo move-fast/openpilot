@@ -1,7 +1,7 @@
 from selfdrive.mapd.lib.WayCollection import WayCollection
 from selfdrive.mapd.lib.geo import vectors, R
 from selfdrive.mapd.lib.NodesData import _MIN_NODE_DISTANCE, _ADDED_NODES_DIST, _SPLINE_EVAL_STEP, \
-  _MIN_SPEED_SECTION_LENGHT, nodes_raw_data_array_for_wr, node_calculations, is_wr_a_valid_divertion_from_node, \
+  _MIN_SPEED_SECTION_LENGTH, nodes_raw_data_array_for_wr, node_calculations, is_wr_a_valid_divertion_from_node, \
   spline_curvature_calculations, speed_limits_for_curvatures_data
 from scipy.interpolate import splev, splprep
 import numpy as np
@@ -266,9 +266,9 @@ mockCurveSectionSin = MockCurveSection(lambda x: np.sin(x * 2 * np.pi))
 # 200mt section with changing curvature rate.
 mockCurveSteepCurvChange = MockCurveSection(lambda x: 0.05 * x**3 - 0.007 * x**2 + 0.001 * x, df=200)
 
-# _MIN_SPEED_SECTION_LENGHT section with changing curvature rate.
+# _MIN_SPEED_SECTION_LENGTH section with changing curvature rate.
 mockCurveSteepCurvChangeShort = MockCurveSection(
-  lambda x: 0.05 * x**3 - 0.007 * x**2 + 0.001 * x, df=_MIN_SPEED_SECTION_LENGHT)
+  lambda x: 0.05 * x**3 - 0.007 * x**2 + 0.001 * x, df=_MIN_SPEED_SECTION_LENGTH)
 
 # 200mt section with smooth changing curvature rate. no deviation over 2.
 mockCurveSmoothCurveChange = MockCurveSection(lambda x: 0.0002 * x**3 - 0.001 * x**2 + 0.6 * x, df=200)
