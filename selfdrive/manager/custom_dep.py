@@ -4,10 +4,11 @@ import sys
 import errno
 import shutil
 import time
-from urllib.request import urlopen
 from glob import glob
 import subprocess
 import importlib.util
+from urllib.request import urlopen
+
 
 # NOTE: Do NOT import anything here that needs be built (e.g. params)
 from common.spinner import Spinner
