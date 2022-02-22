@@ -93,8 +93,8 @@ class Planner:
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
 
     # Get acceleration and active solutions for custom long mpc.
-    self.cruise_source, a_min_sol, v_cruise_sol = self.cruise_solutions(not disabled, self.v_desired, self.a_desired,
-                                                                        v_cruise, sm)
+    self.cruise_source, a_min_sol, v_cruise_sol = self.cruise_solutions(not disabled, self.v_desired_filter.x,
+                                                                        self.a_desired, v_cruise, sm)
 
     accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
     accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
