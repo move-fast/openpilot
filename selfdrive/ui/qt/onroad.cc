@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QPainterPath>
 #include <sstream>
+#include <iomanip>
 
 #include "selfdrive/common/timing.h"
 #include "selfdrive/ui/qt/util.h"
