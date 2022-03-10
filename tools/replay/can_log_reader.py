@@ -26,4 +26,4 @@ if __name__ == "__main__":
       writer.writerow(header)
       for can_msg in CAN_MSGS:
         # write the data
-        writer.writerow(can_msg)
+        writer.writerow(list(can_msg))
