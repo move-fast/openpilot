@@ -11,8 +11,8 @@ if __name__ == "__main__":
   # REPLAY_SEGS = list(range(10, 16))  # route has 82 segments available
   REPLAY_SEGS = [0]
   CAN_MSGS = []
-  for i in tqdm(REPLAY_SEGS): 
-    log_url = f'~/Downloads/{ROUTE}--{i}--rlog.bz2'
+  for i in tqdm(REPLAY_SEGS):
+    log_url = f'/data/iav/{ROUTE}--{i}--rlog.bz2'
     lr = LogReader(log_url)
     CAN_MSGS += [can_capnp_to_can_list(m.can) for m in lr if m.which() == 'can']
 
