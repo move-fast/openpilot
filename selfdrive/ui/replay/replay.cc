@@ -1,4 +1,5 @@
 #include "selfdrive/ui/replay/replay.h"
+#include "json11.hpp"
 
 #include <QApplication>
 #include <QDebug>
@@ -9,6 +10,8 @@
 #include "selfdrive/common/timing.h"
 #include "selfdrive/hardware/hw.h"
 #include "selfdrive/ui/replay/util.h"
+
+using namespace json11;
 
 Replay::Replay(QString route, QStringList allow, QStringList block, SubMaster *sm_, uint32_t flags, QString data_dir, QObject *parent)
     : sm(sm_), flags_(flags), QObject(parent) {
@@ -239,6 +242,20 @@ void Replay::startStream(const Segment *cur_segment) {
   stream_thread_->start();
 }
 
+void Replay::printEvent(const Event *e) {
+  if (e->event.isLiveMapData()) {
+    qInfo("received %s", sockets_[e->which]);
+  }
+  if (e->event.isLogMessage()) {
+    const std::string log_message = e->event.getLogMessage();
+    std::string err;
+    const Json jdat = Json::parse(log_message, err);
+    const std::string msg = jdat["msg"].string_value();
+    qInfo("LOG: %s", msg.c_str()); 
+  }
+
+}
+
 void Replay::publishMessage(const Event *e) {
   if (sm == nullptr) {
     auto bytes = e->bytes();
@@ -327,6 +344,7 @@ void Replay::stream() {
         if (evt->frame) {
           publishFrame(evt);
         } else {
+          printEvent(evt);
           publishMessage(evt);
         }
       }
