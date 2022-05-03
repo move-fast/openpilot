@@ -1,6 +1,7 @@
 #include "selfdrive/ui/qt/onroad.h"
 
 #include <cmath>
+#include <chrono>
 
 #include <QDebug>
 #include <QMouseEvent>
@@ -240,8 +241,11 @@ void OnroadHud::updateState(const UIState &s) {
     setProperty("showDebugUI", s.scene.show_debug_ui);
 
     const auto lmd = sm["liveMapData"].getLiveMapData();
-
-    setProperty("roadName", QString::fromStdString(lmd.getCurrentRoadName()));
+    const uint64_t lmd_fix_time = lmd.getLastGpsTimestamp();
+    const uint64_t current_ts = std::chrono::duration_cast<std::chrono::milliseconds>
+                                (std::chrono::system_clock::now().time_since_epoch()).count();
+    const bool show_road_name = current_ts - lmd_fix_time < 10000; // hide if fix older than 10s 
+    setProperty("roadName", show_road_name ? QString::fromStdString(lmd.getCurrentRoadName()) : "");
 
     const float speed_limit = lp.getSpeedLimit() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
     const float speed_limit_offset = lp.getSpeedLimitOffset() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
