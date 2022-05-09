@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 
 cd /data/openpilot
-exec ./launch_openpilot.sh
+exec ./launch_can_sender.sh
