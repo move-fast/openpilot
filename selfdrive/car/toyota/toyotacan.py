@@ -1,4 +1,4 @@
-def create_steer_command(packer, steer, steer_req, raw_cnt):
+def create_steer_command(packer, steer, steer_req, raw_cnt, raw_chksm=-1):
   """Creates a CAN message for the Toyota Steer Command."""
 
   values = {
@@ -7,7 +7,7 @@ def create_steer_command(packer, steer, steer_req, raw_cnt):
     "COUNTER": raw_cnt,
     "SET_ME_1": 1,
   }
-  return packer.make_can_msg("STEERING_LKA", 0, values)
+  return packer.make_can_msg("STEERING_LKA", 0, values, checksum=raw_chksm)
 
 
 def create_lta_steer_command(packer, steer, steer_req, raw_cnt):

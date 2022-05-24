@@ -279,13 +279,13 @@ class CarInterface(CarInterfaceBase):
 
   # pass in a car.CarControl
   # to be called @ 100hz
-  def apply_test(self, c):
+  def apply_test(self, c, tc):
     hud_control = c.hudControl
     ret = self.CC.update_test(c.enabled, c.active, self.CS, self.frame,
                               c.actuators, c.cruiseControl.cancel,
                               hud_control.visualAlert, hud_control.leftLaneVisible,
                               hud_control.rightLaneVisible, hud_control.leadVisible,
-                              hud_control.leftLaneDepart, hud_control.rightLaneDepart)
+                              hud_control.leftLaneDepart, hud_control.rightLaneDepart, tc)
 
     self.frame += 1
     return ret

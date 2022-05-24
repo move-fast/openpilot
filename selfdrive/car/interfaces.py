@@ -113,7 +113,7 @@ class CarInterfaceBase(ABC):
     pass
 
   @abstractmethod
-  def apply_test(self, c: car.CarControl) -> Tuple[car.CarControl.Actuators, List[bytes]]:
+  def apply_test(self, c: car.CarControl, tc=None) -> Tuple[car.CarControl.Actuators, List[bytes]]:
     pass
 
   def create_common_events(self, cs_out, extra_gears=None, pcm_enable=True):

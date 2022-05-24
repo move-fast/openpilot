@@ -21,9 +21,10 @@ class CarController():
     self.packer = CANPacker(dbc_name)
     self.gas = 0
     self.accel = 0
+    self.counter = 0
 
   def update_test(self, enabled, active, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
-                  left_line, right_line, lead, left_lane_depart, right_lane_depart):
+                  left_line, right_line, lead, left_lane_depart, right_lane_depart, tc):
 
     # gas and brake
     pcm_accel_cmd = actuators.accel
@@ -52,7 +53,19 @@ class CarController():
 
     # *** control msgs ***
     # lateral
-    can_sends.append(create_steer_command(self.packer, apply_steer, apply_steer_req, frame))
+
+    # on test case 01, keep counter fixed once test starts.
+    if tc == 1:
+      if self.counter == 0:
+        self.counter = frame
+    # on test case 02, increase counter by 10 per cycle
+    if tc == 2:
+      self.counter += 10
+    else:
+      # On other tests keep value to frame.
+      self.counter = frame
+
+    can_sends.append(create_steer_command(self.packer, apply_steer, apply_steer_req, self.counter))
     if frame % 2 == 0 and CS.CP.carFingerprint in TSS2_CAR:
       can_sends.append(create_lta_steer_command(self.packer, 0, 0, frame // 2))
 
