@@ -22,6 +22,79 @@ class CarController():
     self.gas = 0
     self.accel = 0
 
+  def update_test(self, enabled, active, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
+                  left_line, right_line, lead, left_lane_depart, right_lane_depart):
+
+    # gas and brake
+    pcm_accel_cmd = actuators.accel
+
+    # steer torque
+    STEER_MAX = 1500
+    new_steer = int(round(actuators.steer * STEER_MAX))
+    apply_steer = new_steer
+    self.steer_rate_limited = False
+    apply_steer_req = 1
+
+    # canceling
+    pcm_cancel_cmd = 0
+
+    # on entering standstill, send standstill request
+    if CS.out.standstill and not self.last_standstill and CS.CP.carFingerprint not in NO_STOP_TIMER_CAR:
+      self.standstill_req = True
+    if CS.pcm_acc_status != 8:
+      # pcm entered standstill or it's disabled
+      self.standstill_req = False
+
+    self.last_steer = apply_steer
+    self.last_standstill = CS.out.standstill
+
+    can_sends = []
+
+    # *** control msgs ***
+    # lateral
+    can_sends.append(create_steer_command(self.packer, apply_steer, apply_steer_req, frame))
+    if frame % 2 == 0 and CS.CP.carFingerprint in TSS2_CAR:
+      can_sends.append(create_lta_steer_command(self.packer, 0, 0, frame // 2))
+
+    # long
+    if (frame % 3 == 0 and CS.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
+      lead = lead or CS.out.vEgo < 12.    # at low speed we always assume the lead is present so ACC can be engaged
+      can_sends.append(create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type))
+      self.accel = pcm_accel_cmd
+
+    # ui mesg is at 1Hz but we send asap if:
+    # - there is something to display
+    # - there is something to stop displaying
+    fcw_alert = hud_alert == VisualAlert.fcw
+    steer_alert = hud_alert in (VisualAlert.steerRequired, VisualAlert.ldw)
+
+    send_ui = False
+    if ((fcw_alert or steer_alert) and not self.alert_active) or \
+       (not (fcw_alert or steer_alert) and self.alert_active):
+      send_ui = True
+      self.alert_active = not self.alert_active
+    elif pcm_cancel_cmd:
+      # forcing the pcm to disengage causes a bad fault sound so play a good sound instead
+      send_ui = True
+
+    if (frame % 100 == 0 or send_ui):
+      can_sends.append(create_ui_command(self.packer, steer_alert, pcm_cancel_cmd, left_line, right_line, left_lane_depart, right_lane_depart, enabled))
+
+    if frame % 100 == 0 and CS.CP.enableDsu:
+      can_sends.append(create_fcw_command(self.packer, fcw_alert))
+
+    # *** static msgs ***
+    for (addr, cars, bus, fr_step, vl) in STATIC_DSU_MSGS:
+      if frame % fr_step == 0 and CS.CP.enableDsu and CS.CP.carFingerprint in cars:
+        can_sends.append(make_can_msg(addr, vl, bus))
+
+    new_actuators = actuators.copy()
+    new_actuators.steer = apply_steer / STEER_MAX
+    new_actuators.accel = self.accel
+    new_actuators.gas = self.gas
+
+    return new_actuators, can_sends
+
   def update(self, enabled, active, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
              left_line, right_line, lead, left_lane_depart, right_lane_depart):
 
