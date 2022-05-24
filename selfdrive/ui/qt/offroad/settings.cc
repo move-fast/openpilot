@@ -107,6 +107,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "Disable default comma stock disengage on gas feature",
       "../assets/offroad/icon_openpilot.png",
     },
+    {
+      "DisableDisengageOnBreak",
+      "Disable disengage on break",
+      "Disable default comma stock disengage on break feature",
+      "../assets/offroad/icon_openpilot.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
