@@ -14,12 +14,12 @@ repos:
     -   id: check-merge-conflict
     -   id: check-symlinks
     -   id: check-added-large-files
-        args: ['--maxkb=100']
+        args: ['--maxkb=420']
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.1
     hooks:
     -   id: codespell
-        exclude: '^(pyextra/)|(third_party/)|(body/)|(cereal/)|(rednose/)|(panda/)|(laika/)|(opendbc/)|(laika_repo/)|(rednose_repo/)|(include/)|(selfdrive/ui/translations/.*.ts)|(selfdrive/controls/lib/cluster)'
+        exclude: '^(pyextra/)|(third_party/)|(body/)|(cereal/)|(rednose/)|(panda/)|(laika/)|(opendbc/)|(laika_repo/)|(rednose_repo/)|(include/)|(selfdrive/ui/translations/.*.ts)|(selfdrive/controls/lib/cluster)|(selfdrive/mapd/test/.*.xml)'
         args:
         # if you've got a short variable name that's getting flagged, add it here
         - -L bu,ro,te,ue,alo,hda,ois,nam,nams,ned,som,parm,setts,inout,warmup
