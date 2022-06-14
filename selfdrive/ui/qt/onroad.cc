@@ -1,6 +1,7 @@
 #include "selfdrive/ui/qt/onroad.h"
 
 #include <cmath>
+#include <chrono>
 
 #include <QDebug>
 
@@ -233,6 +234,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
 
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
   how_img = loadPixmap("../assets/img_hands_on_wheel.png", {img_size, img_size});
+  map_img = loadPixmap("../assets/img_world_icon.png", {subsign_img_size, subsign_img_size});
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -301,6 +303,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     setProperty("vtcSpeed", QString::number(std::nearbyint(vtc_speed)));
     setProperty("vtcColor", vtc_color);
     setProperty("showDebugUI", s.scene.show_debug_ui);
+
+    const auto lmd = sm["liveMapData"].getLiveMapData();
+    const uint64_t lmd_fix_time = lmd.getLastGpsTimestamp();
+    const uint64_t current_ts = std::chrono::duration_cast<std::chrono::milliseconds>
+                                (std::chrono::system_clock::now().time_since_epoch()).count();
+    const bool show_road_name = current_ts - lmd_fix_time < 10000; // hide if fix older than 10s 
+    setProperty("roadName", show_road_name ? QString::fromStdString(lmd.getCurrentRoadName()) : "");
   }
 
   // DM icon transition
@@ -459,6 +468,15 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
                                vtcColor, vtcSpeed, 100);
   }
 
+  // Bottom bar road name
+  if (showDebugUI && !roadName.isEmpty()) {
+    const int h = 60;
+    QRect bar_rc(rect().left(), rect().bottom() - h, rect().width(), h);
+    p.setBrush(QColor(0, 0, 0, 100));
+    p.drawRect(bar_rc);
+    configFont(p, "Open Sans", 38, "Bold");
+    drawCenteredText(p, bar_rc.center().x(), bar_rc.center().y(), roadName, QColor(255, 255, 255, 200));
+  }
   p.restore();
 }
 

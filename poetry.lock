@@ -2756,6 +2756,14 @@ raster = ["gdal", "rasterio"]
 web-map = ["folium"]
 
 [[package]]
+name = "overpy"
+version = "0.6"
+description = "Python Wrapper to access the OpenStreepMap Overpass API"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "packaging"
 version = "21.3"
 description = "Core utilities for Python packages"
@@ -7114,6 +7122,9 @@ osmium = [
 osmnx = [
     {file = "osmnx-1.2.2-py2.py3-none-any.whl", hash = "sha256:94f2a3929e857d8c0da39ae552c6da3b1a3f4bcfea6de108696bda5ee3a7689d"},
     {file = "osmnx-1.2.2.tar.gz", hash = "sha256:30924452ca02758ece3301f9fcfb1b80edf31e2be7abe7fa7e0fefddb5050408"},
+]
+overpy = [
+    {file = "overpy-0.6.tar.gz", hash = "sha256:75fa462c445a3d8ade4dad84df6f150d273f45548639229316829a3a8c3e2190"},
 ]
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},

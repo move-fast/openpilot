@@ -69,6 +69,8 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor);
   Q_PROPERTY(bool showDebugUI MEMBER showDebugUI);
 
+  Q_PROPERTY(QString roadName MEMBER roadName);
+
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -83,7 +85,9 @@ private:
   ExperimentalButton *experimental_btn;
   QPixmap dm_img;
   QPixmap how_img;
+  QPixmap map_img;
   float speed;
+  const int subsign_img_size = 35;
   QString speedUnit;
   float setSpeed;
   float speedLimit;
@@ -110,6 +114,8 @@ private:
   QColor vtcColor;
   
   bool showDebugUI = false;
+  
+  QString roadName;
 
 protected:
   void paintGL() override;
