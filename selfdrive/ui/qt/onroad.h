@@ -50,6 +50,8 @@ class NvgWindow : public CameraViewWidget {
   Q_PROPERTY(QColor vtcColor MEMBER vtcColor);
   Q_PROPERTY(bool showDebugUI MEMBER showDebugUI);
 
+  Q_PROPERTY(QString roadName MEMBER roadName);
+
 public:
   explicit NvgWindow(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -64,9 +66,11 @@ private:
   QPixmap engage_img;
   QPixmap dm_img;
   QPixmap how_img;
+  QPixmap map_img;
   const int radius = 192;
   const int img_size = (radius / 2) * 1.5;
   float speed;
+  const int subsign_img_size = 35;
   QString speedUnit;
   float setSpeed;
   float speedLimit;
@@ -89,6 +93,8 @@ private:
   QColor vtcColor;
   
   bool showDebugUI = false;
+  
+  QString roadName;
 
 protected:
   void paintGL() override;
