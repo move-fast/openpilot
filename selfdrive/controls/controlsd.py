@@ -26,6 +26,7 @@ from selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from selfdrive.controls.lib.events import Events, ET
 from selfdrive.controls.lib.alertmanager import AlertManager, set_offroad_alert
 from selfdrive.controls.lib.vehicle_model import VehicleModel
+from selfdrive.controls.faultstated import FAULTSTATE
 from selfdrive.locationd.calibrationd import Calibration
 from system.hardware import HARDWARE
 from selfdrive.manager.process_config import managed_processes
@@ -83,15 +84,17 @@ class Controls:
     self.params = Params()
     self.sm = sm
     if self.sm is None:
-      ignore = ['testJoystick']
+      ignore = ['testJoystick', 'faultState']
       if SIMULATION:
         ignore += ['driverCameraState', 'managerState']
       if self.params.get_bool('WideCameraOnly'):
         ignore += ['roadCameraState']
       self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
-                                     'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 'testJoystick'] + self.camera_packets,
-                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan', 'testJoystick'])
+                                     'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 
+                                     'testJoystick', 'faultState'] + self.camera_packets,
+                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan', 
+                                    'testJoystick', 'faultState'])
 
     if CI is None:
       # wait for one pandaState and one CAN packet
@@ -104,6 +107,7 @@ class Controls:
       self.CI, self.CP = CI, CI.CP
 
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or (self.CP.notCar and sm is None)
+    self.fail_state_mode = self.params.get_bool("FailStateMode")
 
     # set alternative experiences from parameters
     self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
@@ -201,7 +205,7 @@ class Controls:
         set_offroad_alert("Offroad_NoFirmware", True)
     elif self.read_only:
       self.events.add(EventName.dashcamMode, static=True)
-    elif self.joystick_mode:
+    elif self.joystick_mode or self.fail_state_mode:
       self.events.add(EventName.joystickDebug, static=True)
       self.startup_event = None
 
@@ -612,6 +616,29 @@ class Controls:
       actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                                              self.last_actuators, self.steer_limited, self.desired_curvature,
                                                                              self.desired_curvature_rate, self.sm['liveLocationKalman'])
+      
+      # Override as required if fail state mode is set.
+      if self.fail_state_mode and self.sm.rcv_frame['faultState'] > 0:
+        state = FAULTSTATE(self.sm['faultState'].state)
+
+        if state > FAULTSTATE.NONE:
+          if state < FAULTSTATE.MAX_LINKS: #  ACC Faults
+            if CC.longActive:
+              actuators.accel = state.acc_value()
+
+          else: #  LAT Faults
+            lac_log = log.ControlsState.LateralDebugState.new_message()
+
+            if CC.latActive:
+              steer = state.lat_value()
+              # max angle is 45 for angle-based cars
+              actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
+            
+            lac_log.active = self.active
+            lac_log.steeringAngleDeg = CS.steeringAngleDeg
+            lac_log.output = actuators.steer
+            lac_log.saturated = abs(actuators.steer) >= 0.9
+
     else:
       lac_log = log.ControlsState.LateralDebugState.new_message()
       if self.sm.rcv_frame['testJoystick'] > 0:
@@ -629,7 +656,7 @@ class Controls:
         lac_log.saturated = abs(actuators.steer) >= 0.9
 
     # Send a "steering required alert" if saturation count has reached the limit
-    if lac_log.active and not CS.steeringPressed and self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode:
+    if lac_log.active and not CS.steeringPressed and self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode and not self.fail_state_mode:
       undershooting = abs(lac_log.desiredLateralAccel) / abs(1e-3 + lac_log.actualLateralAccel) > 1.2
       turning = abs(lac_log.desiredLateralAccel) > 1.0
       good_speed = CS.vEgo > 5
@@ -781,7 +808,7 @@ class Controls:
     controlsState.experimentalMode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
 
     lat_tuning = self.CP.lateralTuning.which()
-    if self.joystick_mode:
+    if self.joystick_mode or self.fail_state_mode:
       controlsState.lateralControlState.debugState = lac_log
     elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       controlsState.lateralControlState.angleState = lac_log
