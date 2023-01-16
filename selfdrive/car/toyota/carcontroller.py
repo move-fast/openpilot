@@ -57,24 +57,31 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
     pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    if CarControllerParams.tuvParams.printAcc:
+      print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
 
     # steer torque
     new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
-    apply_steer = apply_toyota_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
 
-    # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault
-    if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
-      self.steer_rate_counter += 1
+    if CarControllerParams.tuvParams.torqueRateLimiting:
+      apply_steer = apply_toyota_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
+
+      # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault
+      if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
+        self.steer_rate_counter += 1
+      else:
+        self.steer_rate_counter = 0
+
+      apply_steer_req = 1
+      if not lat_active:
+        apply_steer = 0
+        apply_steer_req = 0
+      elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
+        apply_steer_req = 0
+        self.steer_rate_counter = 0
     else:
-      self.steer_rate_counter = 0
-
-    apply_steer_req = 1
-    if not lat_active:
-      apply_steer = 0
-      apply_steer_req = 0
-    elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
-      apply_steer_req = 0
-      self.steer_rate_counter = 0
+      apply_steer = new_steer
+      apply_steer_req = 1
 
     # TODO: probably can delete this. CS.pcm_acc_status uses a different signal
     # than CS.cruiseState.enabled. confirm they're not meaningfully different
@@ -94,7 +101,9 @@ class CarController:
     can_sends = []
 
     # *** control msgs ***
-    # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor)
+    if CarControllerParams.tuvParams.printSteer:
+      print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(apply_steer_req, apply_steer, CS.steer_torque_motor))
+    # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor))
 
     # toyota can trace shows this message at 42Hz, with counter adding alternatively 1 and 2;
     # sending it at 100Hz seem to allow a higher rate limit, as the rate limit seems imposed
