@@ -107,7 +107,7 @@ class Controls:
       self.CI, self.CP = CI, CI.CP
 
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or (self.CP.notCar and sm is None)
-    self.fail_state_mode = self.params.get_bool("FailStateMode")
+    self.tuv_test_mode = self.params.get_bool("FailStateMode")
 
     # set alternative experiences from parameters
     self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
@@ -205,7 +205,7 @@ class Controls:
         set_offroad_alert("Offroad_NoFirmware", True)
     elif self.read_only:
       self.events.add(EventName.dashcamMode, static=True)
-    elif self.joystick_mode or self.fail_state_mode:
+    elif self.joystick_mode or self.tuv_test_mode:
       self.events.add(EventName.joystickDebug, static=True)
       self.startup_event = None
 
@@ -618,7 +618,7 @@ class Controls:
                                                                              self.desired_curvature_rate, self.sm['liveLocationKalman'])
       
       # Override as required if fail state mode is set.
-      if self.fail_state_mode and self.sm.rcv_frame['faultState'] > 0:
+      if self.tuv_test_mode and self.sm.rcv_frame['faultState'] > 0:
         state = FAULTSTATE(self.sm['faultState'].state)
 
         if state > FAULTSTATE.NONE:
@@ -656,7 +656,7 @@ class Controls:
         lac_log.saturated = abs(actuators.steer) >= 0.9
 
     # Send a "steering required alert" if saturation count has reached the limit
-    if lac_log.active and not CS.steeringPressed and self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode and not self.fail_state_mode:
+    if lac_log.active and not CS.steeringPressed and self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode and not self.tuv_test_mode:
       undershooting = abs(lac_log.desiredLateralAccel) / abs(1e-3 + lac_log.actualLateralAccel) > 1.2
       turning = abs(lac_log.desiredLateralAccel) > 1.0
       good_speed = CS.vEgo > 5
@@ -808,7 +808,7 @@ class Controls:
     controlsState.experimentalMode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
 
     lat_tuning = self.CP.lateralTuning.which()
-    if self.joystick_mode or self.fail_state_mode:
+    if self.joystick_mode or self.tuv_test_mode:
       controlsState.lateralControlState.debugState = lac_log
     elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       controlsState.lateralControlState.angleState = lac_log

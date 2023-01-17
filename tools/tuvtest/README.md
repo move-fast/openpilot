@@ -1,23 +1,20 @@
-1. Connect your laptop to your comma device's hotspot and open a new SSH shell. Since service is being run on your laptop, we need to write a parameter to let controlsd know to start in failState debug mode:
-   ```shell
-   # on your comma device
-   echo -n "1" > /data/params/d/FailStateMode
-   ```
+# TUV Test setup
 
-2. Add safety parameters override
-   ```shell
-   # on your comma device
-   echo -n "1.5,-3.5,1500,350,15,25,10,25,1,0,0" > /data/params/d/TuvTestParams
-   ```
-   Values are comma separated for:
-      ACCEL_MAX (Float)
-      ACCEL_MIN (Float)
-      STEER_MAX (Int)
-      STEER_ERROR_MAX (Int)
-      STEER_DELTA_UP_torque (Int)
-      STEER_DELTA_DOWN_torque (Int)
-      STEER_DELTA_UP (Int)
-      STEER_DELTA_DOWN (Int)
-      torqueRateLimiting (Bool)
-      printAcc (Bool)
-      printSteer (Bool)
+**Hardware needed**: device running openpilot, laptop
+
+With tuvtestd, you can connect your laptop to your comma device over the network and send tuv test commands via keyboard.
+
+## Usage
+
+The car must be off, and openpilot must be offroad before starting `tuvtestd`.
+
+### Using a keyboard
+
+SSH into your comma device and start tuvtestd with the following command:
+
+```shell
+tools/tuvtestd/tuvtestd.py
+```
+
+The available keys will print showing their key mappings.
+Customize the safety parameters inside `tuvtestd.py` before running it.
