@@ -13,7 +13,7 @@ The car must be off, and openpilot must be offroad before starting `tuvtestd`.
 SSH into your comma device and start tuvtestd with the following command:
 
 ```shell
-tools/tuvtestd/tuvtestd.py
+tools/tuvtest/tuvtestd.py
 ```
 
 The available keys will print showing their key mappings.

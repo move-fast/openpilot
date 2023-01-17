@@ -16,7 +16,7 @@ class TuvParams:
     self.printSteer = False
 
   def load(self):
-    tuv_params_str = Params().get('TuvTestParams')
+    tuv_params_str = Params().get('TuvTestParams', encoding='utf-8')
     if tuv_params_str is not None:
       tuv_params_arr = tuv_params_str.split(',')
       if len(tuv_params_arr) == 11:
