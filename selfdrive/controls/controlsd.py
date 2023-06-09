@@ -79,15 +79,17 @@ class Controls:
     self.params = Params()
     self.sm = sm
     if self.sm is None:
-      ignore = ['testJoystick']
+      ignore = ['testJoystick', 'externalControl']
       if SIMULATION:
         ignore += ['driverCameraState', 'managerState']
       if self.params.get_bool('WideCameraOnly'):
         ignore += ['roadCameraState']
       self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
-                                     'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 'testJoystick'] + self.camera_packets,
-                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan', 'testJoystick'])
+                                     'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 
+                                     'testJoystick', 'externalControl'] + self.camera_packets,
+                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan', 
+                                                                          'testJoystick', 'externalControl'])
 
     if CI is None:
       # wait for one pandaState and one CAN packet
@@ -99,8 +101,9 @@ class Controls:
       self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, num_pandas)
     else:
       self.CI, self.CP = CI, CI.CP
-
+    
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
+    self.external_control_mode = self.params.get_bool("ExternalControlMode")
 
     # set alternative experiences from parameters
     self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
@@ -195,7 +198,7 @@ class Controls:
         set_offroad_alert("Offroad_NoFirmware", True)
     elif self.read_only:
       self.events.add(EventName.dashcamMode, static=True)
-    elif self.joystick_mode:
+    elif self.joystick_mode or self.external_control_mode:
       self.events.add(EventName.joystickDebug, static=True)
       self.startup_event = None
 
@@ -611,6 +614,25 @@ class Controls:
                                                                              self.last_actuators, self.steer_limited, self.desired_curvature,
                                                                              self.desired_curvature_rate, self.sm['liveLocationKalman'])
       actuators.curvature = self.desired_curvature
+      
+      # Override as required if external control mode is set.
+      if self.external_control_mode:
+        externalControl = self.sm.rcv_frame['externalControl']
+        if externalControl > 0 and externalControl.valid:
+          actuators.accel = externalControl.acceleration
+          steer = externalControl.steeringTorque
+          # max angle is 45 for angle-based cars
+          actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
+        else:
+          actuators.accel = 0.
+          actuators.steer, actuators.steeringAngleDeg = 0., 0.
+
+        lac_log = log.ControlsState.LateralDebugState.new_message()
+        lac_log.active = self.active
+        lac_log.steeringAngleDeg = CS.steeringAngleDeg
+        lac_log.output = actuators.steer
+        lac_log.saturated = abs(actuators.steer) >= 0.9
+
     else:
       lac_log = log.ControlsState.LateralDebugState.new_message()
       if self.sm.rcv_frame['testJoystick'] > 0:
@@ -789,7 +811,7 @@ class Controls:
     controlsState.experimentalMode = self.experimental_mode
 
     lat_tuning = self.CP.lateralTuning.which()
-    if self.joystick_mode:
+    if self.joystick_mode or self.external_control_mode:
       controlsState.lateralControlState.debugState = lac_log
     elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       controlsState.lateralControlState.angleState = lac_log

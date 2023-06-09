@@ -5,9 +5,11 @@ from typing import Dict, List, Union
 
 from cereal import car
 from common.conversions import Conversions as CV
+from common.params import Params
 from selfdrive.car import dbc_dict
 from selfdrive.car.docs_definitions import CarFootnote, CarInfo, Column, Harness, HarnessKit
 from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
+from selfdrive.car.toyota.tuvparams import TuvParams
 
 Ecu = car.CarParams.Ecu
 MIN_ACC_SPEED = 19. * CV.MPH_TO_MS
@@ -15,20 +17,23 @@ PEDAL_TRANSITION = 10. * CV.MPH_TO_MS
 
 
 class CarControllerParams:
-  ACCEL_MAX = 1.5  # m/s2, lower than allowed 2.0 m/s2 for tuning reasons
-  ACCEL_MIN = -3.5  # m/s2
+  tuvParams = TuvParams()
+  if Params().get_bool("ExternalControlMode"):
+    tuvParams.load()
+  ACCEL_MAX = tuvParams.ACCEL_MAX
+  ACCEL_MIN = tuvParams.ACCEL_MIN
 
   STEER_STEP = 1
-  STEER_MAX = 1500
-  STEER_ERROR_MAX = 350     # max delta between torque cmd and torque motor
+  STEER_MAX = tuvParams.STEER_MAX
+  STEER_ERROR_MAX = tuvParams.STEER_ERROR_MAX
 
   def __init__(self, CP):
     if CP.lateralTuning.which == 'torque':
-      self.STEER_DELTA_UP = 15       # 1.0s time to peak torque
-      self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+      self.STEER_DELTA_UP = CarControllerParams.tuvParams.STEER_DELTA_UP_torque
+      self.STEER_DELTA_DOWN = CarControllerParams.tuvParams.STEER_DELTA_DOWN_torque
     else:
-      self.STEER_DELTA_UP = 10       # 1.5s time to peak torque
-      self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+      self.STEER_DELTA_UP = CarControllerParams.tuvParams.STEER_DELTA_UP
+      self.STEER_DELTA_DOWN = CarControllerParams.tuvParams.STEER_DELTA_DOWN
 
 
 class ToyotaFlags(IntFlag):
