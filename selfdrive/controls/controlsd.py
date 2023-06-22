@@ -617,15 +617,16 @@ class Controls:
       
       # Override as required if external control mode is set.
       if self.external_control_mode:
-        externalControl = self.sm.rcv_frame['externalControl']
-        if externalControl > 0 and externalControl.valid:
-          actuators.accel = externalControl.acceleration
-          steer = externalControl.steeringTorque
-          # max angle is 45 for angle-based cars
-          actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
-        else:
-          actuators.accel = 0.
-          actuators.steer, actuators.steeringAngleDeg = 0., 0.
+        actuators.accel = 0.
+        actuators.steer, actuators.steeringAngleDeg = 0., 0.
+        if self.sm.rcv_frame['externalControl'] > 0:
+          externalControl = self.sm['externalControl']
+          if externalControl.valid:
+            actuators.accel = externalControl.acceleration
+            steer = externalControl.steeringTorque
+            # max angle is 45 for angle-based cars
+            actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
+            print(f'Actuators from External Control: ACC: {actuators.accel}, Torque: {steer}')
 
         lac_log = log.ControlsState.LateralDebugState.new_message()
         lac_log.active = self.active
@@ -655,7 +656,7 @@ class Controls:
 
     # Send a "steering required alert" if saturation count has reached the limit
     if lac_log.active and not recent_steer_pressed:
-      if self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode:
+      if self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode and not self.external_control_mode:
         undershooting = abs(lac_log.desiredLateralAccel) / abs(1e-3 + lac_log.actualLateralAccel) > 1.2
         turning = abs(lac_log.desiredLateralAccel) > 1.0
         good_speed = CS.vEgo > 5

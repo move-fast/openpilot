@@ -28,10 +28,11 @@ class Joystick:
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         self.cancel = True
-      print("Joystick button {} pressed.".format(event.button))
+      elif event.type == pygame.JOYBUTTONDOWN:
+        print("Joystick button {} pressed.".format(event.button))
 
     steering_torque_cmd = self.joystick.get_axis(0) # -1.0 is left, 1.0 is right
-    acceleration_cmd = self.joystick.get_axis(3) # -1.0 is left, 1.0 is right
+    acceleration_cmd = self.joystick.get_axis(1) # -1.0 is left, 1.0 is right
     torque_factor = 3.0 # Must be equal or larger than the maximum input accepted by the car!
     acceleration_factor = 5.0 # Must be equal or larger than the maximum input accepted by the car!
     self.axes_values["ACC"] = -acceleration_cmd * acceleration_factor if abs(-acceleration_cmd * acceleration_factor) > 0.05 else 0.  # center can be noisy, deadzone of 5%
