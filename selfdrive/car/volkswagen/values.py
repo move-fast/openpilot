@@ -5,10 +5,12 @@ from typing import Dict, List, Union
 
 from cereal import car
 from panda.python import uds
+from common.params import Params
 from opendbc.can.can_define import CANDefine
 from selfdrive.car import dbc_dict
 from selfdrive.car.docs_definitions import CarFootnote, CarInfo, Column, Harness, HarnessKit, HarnessPart
 from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
+from selfdrive.car.tuvparams import TuvParams
 
 Ecu = car.CarParams.Ecu
 NetworkLocation = car.CarParams.NetworkLocation
@@ -23,12 +25,20 @@ class CarControllerParams:
 
   ACCEL_MAX = 2.0                         # 2.0 m/s max acceleration
   ACCEL_MIN = -3.5                        # 3.5 m/s max deceleration
+  tuvParams = TuvParams()
+  externalControlMode = Params().get_bool("ExternalControlMode")
+  if externalControlMode:
+    tuvParams.load()
+    ACCEL_MAX = tuvParams.ACCEL_MAX
+    ACCEL_MIN = tuvParams.ACCEL_MIN
 
   def __init__(self, CP):
     # Documented lateral limits: 3.00 Nm max, rate of change 5.00 Nm/sec.
     # MQB vs PQ maximums are shared, but rate-of-change limited differently
     # based on safety requirements driven by lateral accel testing.
     self.STEER_MAX = 300                  # Max heading control assist torque 3.00 Nm
+    if self.externalControlMode:
+      self.STEER_MAX = self.tuvParams.STEER_MAX
     self.STEER_DRIVER_MULTIPLIER = 3      # weight driver torque heavily
     self.STEER_DRIVER_FACTOR = 1          # from dbc
 

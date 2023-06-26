@@ -3,6 +3,7 @@ from common.params import Params
 
 class TuvParams:
   def __init__(self):
+    # Defaults to Toyota values with Torque limiting and Acc clipping.
     self.ACCEL_MAX = 1.5  # m/s2, lower than allowed 2.0 m/s2 for tuning reasons
     self.ACCEL_MIN = -3.5  # m/s2
     self.STEER_MAX = 1500

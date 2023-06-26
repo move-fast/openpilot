@@ -22,7 +22,7 @@ MAX_USER_TORQUE = 500
 class CarController:
   def __init__(self, dbc_name, CP, VM):
     self.CP = CP
-    self.torque_rate_limits = CarControllerParams(self.CP)
+    self.CCP = CarControllerParams(self.CP)
     self.frame = 0
     self.last_steer = 0
     self.alert_active = False
@@ -57,26 +57,26 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
 
-    if CarControllerParams.externalControlMode:
+    if self.CCP.externalControlMode:
       pcm_accel_cmd = actuators.accel
-      if CarControllerParams.tuvParams.accelerationClipping:
-        pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      if CarControllerParams.tuvParams.printAcc:
+      if self.CCP.tuvParams.accelerationClipping:
+        pcm_accel_cmd = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX)
+      if self.CCP.tuvParams.printAcc:
         print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
     else:
-      pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+      pcm_accel_cmd = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX)
 
     # steer torque
-    if CarControllerParams.externalControlMode:
+    if self.CCP.externalControlMode:
       new_steer = int(round(actuators.steer * 1000))
       apply_steer = new_steer
-      if CarControllerParams.tuvParams.torqueRateLimiting:
-        apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)        
+      if self.CCP.tuvParams.torqueRateLimiting:
+        apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.CCP)        
       apply_steer_req = 1      
     
     else:
-      new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
-      apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
+      new_steer = int(round(actuators.steer * self.CCP.STEER_MAX))
+      apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.CCP)
       
       # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault
       if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
@@ -115,7 +115,7 @@ class CarController:
     can_sends = []
 
     # *** control msgs ***
-    if CarControllerParams.externalControlMode and CarControllerParams.tuvParams.printSteer:
+    if self.CCP.externalControlMode and self.CCP.tuvParams.printSteer:
       print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(apply_steer_req, apply_steer, CS.steer_torque_motor))
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor))
 
@@ -180,7 +180,7 @@ class CarController:
         can_sends.append(make_can_msg(addr, vl, bus))
 
     new_actuators = actuators.copy()
-    new_actuators.steer = apply_steer / CarControllerParams.STEER_MAX
+    new_actuators.steer = apply_steer / self.CCP.STEER_MAX
     new_actuators.steerOutputCan = apply_steer
     new_actuators.accel = self.accel
     new_actuators.gas = self.gas
