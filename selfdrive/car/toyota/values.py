@@ -9,7 +9,7 @@ from common.params import Params
 from selfdrive.car import dbc_dict
 from selfdrive.car.docs_definitions import CarFootnote, CarInfo, Column, Harness, HarnessKit
 from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
-from selfdrive.car.toyota.tuvparams import TuvParams
+from selfdrive.car.tuvparams import TuvParams
 
 Ecu = car.CarParams.Ecu
 MIN_ACC_SPEED = 19. * CV.MPH_TO_MS

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from common.params import Params
-from selfdrive.car.toyota.tuvparams import TuvParams
+from selfdrive.car.tuvparams import TuvParams
 
 
 def tuvtest_config():
