@@ -626,7 +626,6 @@ class Controls:
             steer = externalControl.steeringTorque
             # max angle is 45 for angle-based cars
             actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
-            print(f'Actuators from External Control: ACC: {actuators.accel}, Torque: {steer}')
 
         lac_log = log.ControlsState.LateralDebugState.new_message()
         lac_log.active = self.active
