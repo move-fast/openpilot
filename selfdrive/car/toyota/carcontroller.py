@@ -61,11 +61,18 @@ class CarController:
       print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
 
     # steer torque
-    new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
-
-    if CarControllerParams.tuvParams.torqueRateLimiting:
+    if CarControllerParams.externalControlMode:
+      new_steer = int(round(actuators.steer * 1000))
+      if CarControllerParams.tuvParams.torqueRateLimiting:
+        apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
+      else:
+        apply_steer = new_steer
+      apply_steer_req = 1      
+    
+    else:
+      new_steer = int(round(actuators.steer * CarControllerParams.STEER_MAX))
       apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
-
+      
       # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault
       if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
         self.steer_rate_counter += 1
@@ -79,9 +86,6 @@ class CarController:
       elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
         apply_steer_req = 0
         self.steer_rate_counter = 0
-    else:
-      apply_steer = new_steer
-      apply_steer_req = 1
 
     # Never actuate with LKA on cars that only support LTA
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:

@@ -18,7 +18,8 @@ PEDAL_TRANSITION = 10. * CV.MPH_TO_MS
 
 class CarControllerParams:
   tuvParams = TuvParams()
-  if Params().get_bool("ExternalControlMode"):
+  externalControlMode = Params().get_bool("ExternalControlMode")
+  if externalControlMode:
     tuvParams.load()
   ACCEL_MAX = tuvParams.ACCEL_MAX
   ACCEL_MIN = tuvParams.ACCEL_MIN
