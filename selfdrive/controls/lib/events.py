@@ -330,6 +330,13 @@ def joystick_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster,
   vals = f"Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%"
   return NormalPermanentAlert("Joystick Mode", vals)
 
+def external_control_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
+  valid = sm['externalControl'].valid
+  acc = sm['externalControl'].acceleration if valid else 0.0
+  steer = sm['externalControl'].steeringTorque if valid else 0.0
+  vals = f"Acc: {acc:.2f}, Steer: {steer:.2f}"
+  return NormalPermanentAlert("External Control Mode", vals)
+
 def speed_limit_adjust_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
   speedLimit = sm['longitudinalPlan'].speedLimit
   speed = round(speedLimit * (CV.MS_TO_KPH if metric else CV.MS_TO_MPH))
@@ -349,8 +356,8 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
   # ********** events only containing alerts displayed in all states **********
 
   EventName.joystickDebug: {
-    ET.WARNING: joystick_alert,
-    ET.PERMANENT: NormalPermanentAlert("Joystick Mode"),
+    ET.WARNING: external_control_alert,
+    ET.PERMANENT: NormalPermanentAlert("External Control Mode"),
   },
 
   EventName.controlsInitializing: {
