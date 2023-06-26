@@ -56,17 +56,22 @@ class CarController:
       interceptor_gas_cmd = clip(pedal_command, 0., MAX_INTERCEPTOR_GAS)
     else:
       interceptor_gas_cmd = 0.
-    pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-    if CarControllerParams.tuvParams.printAcc:
-      print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
+
+    if CarControllerParams.externalControlMode:
+      pcm_accel_cmd = actuators.accel
+      if CarControllerParams.tuvParams.accelerationClipping:
+        pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+      if CarControllerParams.tuvParams.printAcc:
+        print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
+    else:
+      pcm_accel_cmd = clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
 
     # steer torque
     if CarControllerParams.externalControlMode:
       new_steer = int(round(actuators.steer * 1000))
+      apply_steer = new_steer
       if CarControllerParams.tuvParams.torqueRateLimiting:
-        apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)
-      else:
-        apply_steer = new_steer
+        apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.torque_rate_limits)        
       apply_steer_req = 1      
     
     else:
@@ -110,7 +115,7 @@ class CarController:
     can_sends = []
 
     # *** control msgs ***
-    if CarControllerParams.tuvParams.printSteer:
+    if CarControllerParams.externalControlMode and CarControllerParams.tuvParams.printSteer:
       print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(apply_steer_req, apply_steer, CS.steer_torque_motor))
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor))
 

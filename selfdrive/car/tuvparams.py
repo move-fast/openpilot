@@ -7,6 +7,7 @@ class TuvParams:
     self.ACCEL_MIN = -3.5  # m/s2
     self.STEER_MAX = 1500
     self.torqueRateLimiting = True
+    self.accelerationClipping = True
     self.printAcc = False
     self.printSteer = False
 
@@ -19,8 +20,9 @@ class TuvParams:
         self.ACCEL_MIN = float(tuv_params_arr[1])
         self.STEER_MAX = int(tuv_params_arr[2])
         self.torqueRateLimiting = bool(tuv_params_arr[3])
-        self.printAcc = bool(tuv_params_arr[4])
-        self.printSteer = bool(tuv_params_arr[5])
+        self.accelerationClipping = bool(tuv_params_arr[4])
+        self.printAcc = bool(tuv_params_arr[5])
+        self.printSteer = bool(tuv_params_arr[6])
   
   def get_params_array(self):
     return [
@@ -28,6 +30,7 @@ class TuvParams:
       f'{self.ACCEL_MIN:.1f}',
       f'{self.STEER_MAX}',
       f'{int(self.torqueRateLimiting)}',
+      f'{int(self.accelerationClipping)}',
       f'{int(self.printAcc)}',
       f'{int(self.printSteer)}'
     ]
@@ -38,6 +41,7 @@ class TuvParams:
       'ACCEL_MIN',
       'STEER_MAX',
       'torqueRateLimiting',
+      'accelerationClipping',
       'printAcc',
       'printSteer'
     ]

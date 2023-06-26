@@ -11,6 +11,7 @@ def tuvtest_config():
   # tuvParams.ACCEL_MIN = -3.5  # m/s2
   # tuvParams.STEER_MAX = 1500
   # tuvParams.torqueRateLimiting = True
+  # tuvParams.accelerationClipping = True
   # tuvParams.printAcc = False
   # tuvParams.printSteer = False
   
