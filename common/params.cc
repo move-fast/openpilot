@@ -180,7 +180,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"TrainingVersion", PERSISTENT},
     {"TurnSpeedControl", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
-    {"TuvTestParams", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
+    {"TuvTestParams", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"UbloxAvailable", PERSISTENT},
     {"UpdateAvailable", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"UpdateFailedCount", CLEAR_ON_MANAGER_START},
