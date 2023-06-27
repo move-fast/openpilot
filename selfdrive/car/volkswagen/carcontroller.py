@@ -42,17 +42,17 @@ class CarController:
       # torque value. Do that anytime we happen to have 0 torque, or failing that,
       # when exceeding ~1/3 the 360 second timer.
 
-      if self.CCP.externalControlMode:
-        new_steer = int(round(actuators.steer * 100))
-        apply_steer = new_steer
-        if self.CCP.tuvParams.torqueRateLimiting:
+      if self.CCP.externalControlMode or CC.latActive:
+        if self.CCP.externalControlMode:
+          new_steer = int(round(actuators.steer * 100))
+          apply_steer = new_steer
+          if self.CCP.tuvParams.torqueRateLimiting:
+            apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.CCP)
+          if self.CCP.tuvParams.printSteer:
+            print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(True, apply_steer, CS.out.steeringTorque))
+        else:
+          new_steer = int(round(actuators.steer * self.CCP.STEER_MAX))
           apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.CCP)
-        hcaEnabled = False
-        if self.CCP.tuvParams.printSteer:
-          print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(True, apply_steer, CS.out.steeringTorque))
-      elif CC.latActive:
-        new_steer = int(round(actuators.steer * self.CCP.STEER_MAX))
-        apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.CCP)
         if apply_steer == 0:
           hcaEnabled = False
           self.hcaEnabledFrameCount = 0
@@ -80,22 +80,19 @@ class CarController:
     # **** Acceleration Controls ******************************************** #
 
     if self.frame % self.CCP.ACC_CONTROL_STEP == 0 and self.CP.openpilotLongitudinalControl:
+      acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive)
       if self.CCP.externalControlMode:
-        acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, False, CC.longActive)
         accel = actuators.accel
-        if self.CCP.tuvParams.accelerationClipping: 
+        if self.CCP.tuvParams.accelerationClipping:
           accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX)
         if self.CCP.tuvParams.printAcc:
           print("acc: apply -> {0}, value -> {1}".format(CC.longActive, accel))
-        can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, CC.longActive, accel,
-                                                           acc_control, False, False, False))
       else:
-        acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive)
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
         stopping = actuators.longControlState == LongCtrlState.stopping
         starting = actuators.longControlState == LongCtrlState.starting
-        can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, CC.longActive, accel,
-                                                          acc_control, stopping, starting, CS.esp_hold_confirmation))
+      can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, CC.longActive, accel,
+                                                         acc_control, stopping, starting, CS.esp_hold_confirmation))
 
     # **** HUD Controls ***************************************************** #
 

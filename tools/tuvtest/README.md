@@ -5,7 +5,7 @@
 ### Steps
 
 1. Connect a joystick to your PC.
-2. Connect your laptop to your comma device's hotspot and open a new SSH shell. 
+2. Connect your laptop to your comma device's hotspot and open a new SSH shell.
 3. We need to write a parameter to let `controlsd` know to start in `externalControl` mode and configure the TuvTest Parameters if needed.
    This is done on `tools/tuvtest/tuvtestconfig.py`
    Edit `tuvtestconfig.py` with the desired tuv test parameters:
@@ -23,8 +23,7 @@
   ```shell
     # on your comma device
     ./cereal/messaging/bridge {LAPTOP_IP} externalControl
-    ./cereal/messaging/bridge {LAPTOP_IP} carState
-    ./cereal/messaging/bridge {LAPTOP_IP} carControl
+    ./cereal/messaging/bridge {LAPTOP_IP}
   ```
 5. Run the ROS2 nodes on the PC.
   ```shell
