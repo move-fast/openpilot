@@ -25,12 +25,6 @@ class CarControllerParams:
   STEER_ERROR_MAX = 350     # max delta between torque cmd and torque motor
 
   tuvParams = TuvParams()
-  externalControlMode = Params().get_bool("ExternalControlMode")
-  if externalControlMode:
-    tuvParams.load()
-    ACCEL_MAX = tuvParams.ACCEL_MAX
-    ACCEL_MIN = tuvParams.ACCEL_MIN
-    STEER_MAX = tuvParams.STEER_MAX
 
   def __init__(self, CP):
     if CP.lateralTuning.which == 'torque':
@@ -39,6 +33,13 @@ class CarControllerParams:
     else:
       self.STEER_DELTA_UP = 10       # 1.5s time to peak torque
       self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+  
+    self.externalControlMode = Params().get_bool("ExternalControlMode")
+    if self.externalControlMode:
+      self.tuvParams.load()
+      self.ACCEL_MAX = self.tuvParams.ACCEL_MAX
+      self.ACCEL_MIN = self.tuvParams.ACCEL_MIN
+      self.STEER_MAX = self.tuvParams.STEER_MAX
 
 
 class ToyotaFlags(IntFlag):
