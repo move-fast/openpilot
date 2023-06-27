@@ -11,6 +11,7 @@
    Edit `tuvtestconfig.py` with the desired tuv test parameters:
    - Set `torqueRateLimiting` to `False` to stop OP code from limiting the rate change of the torque commands.
    - Set `accelerationClipping` to `False` to stop OP code from clipping Acceleration commands to the limits.
+   - Set `disengageOnBreak` to `False` to stop OP code from disengaging OP when break pedal is pressed.
    - Set `printAcc` and `printSteer` to `True` if you want OP to print out the steer and acc values to the output.
   Then:
   ```shell

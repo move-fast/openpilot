@@ -9,6 +9,7 @@ class TuvParams:
     self.STEER_MAX = 1500
     self.torqueRateLimiting = True
     self.accelerationClipping = True
+    self.disengageOnBreak = True
     self.printAcc = False
     self.printSteer = False
 
@@ -22,8 +23,9 @@ class TuvParams:
         self.STEER_MAX = int(tuv_params_arr[2])
         self.torqueRateLimiting = bool(tuv_params_arr[3])
         self.accelerationClipping = bool(tuv_params_arr[4])
-        self.printAcc = bool(tuv_params_arr[5])
-        self.printSteer = bool(tuv_params_arr[6])
+        self.disengageOnBreak = bool(tuv_params_arr[5])
+        self.printAcc = bool(tuv_params_arr[6])
+        self.printSteer = bool(tuv_params_arr[7])
   
   def get_params_array(self):
     return [
@@ -32,6 +34,7 @@ class TuvParams:
       f'{self.STEER_MAX}',
       f'{int(self.torqueRateLimiting)}',
       f'{int(self.accelerationClipping)}',
+      f'{int(self.disengageOnBreak)}',
       f'{int(self.printAcc)}',
       f'{int(self.printSteer)}'
     ]
@@ -43,6 +46,7 @@ class TuvParams:
       'STEER_MAX',
       'torqueRateLimiting',
       'accelerationClipping',
+      'disengageOnBreak',
       'printAcc',
       'printSteer'
     ]

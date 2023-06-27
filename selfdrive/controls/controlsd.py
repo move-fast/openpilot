@@ -240,11 +240,12 @@ class Controls:
     if not self.CP.pcmCruise and not self.v_cruise_helper.v_cruise_initialized and resume_pressed:
       self.events.add(EventName.resumeBlocked)
 
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
-      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
-      (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
-      self.events.add(EventName.pedalPressed)
+    if not self.external_control_mode or self.CI.CC.CCP.tuvParams.disengageOnBreak:
+      # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
+      if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+        (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
+        (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
+        self.events.add(EventName.pedalPressed)
 
     if CS.brakePressed and CS.standstill:
       self.events.add(EventName.preEnableStandstill)
