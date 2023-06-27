@@ -17,15 +17,15 @@ class TuvParams:
     tuv_params_str = Params().get('TuvTestParams', encoding='utf-8')
     if tuv_params_str is not None:
       tuv_params_arr = tuv_params_str.split(',')
-      if len(tuv_params_arr) == 11:
+      if len(tuv_params_arr) == 8:
         self.ACCEL_MAX = float(tuv_params_arr[0])
         self.ACCEL_MIN = float(tuv_params_arr[1])
         self.STEER_MAX = int(tuv_params_arr[2])
-        self.torqueRateLimiting = bool(tuv_params_arr[3])
-        self.accelerationClipping = bool(tuv_params_arr[4])
-        self.disengageOnBreak = bool(tuv_params_arr[5])
-        self.printAcc = bool(tuv_params_arr[6])
-        self.printSteer = bool(tuv_params_arr[7])
+        self.torqueRateLimiting = bool(int(tuv_params_arr[3]))
+        self.accelerationClipping = bool(int(tuv_params_arr[4]))
+        self.disengageOnBreak = bool(int(tuv_params_arr[5]))
+        self.printAcc = bool(int(tuv_params_arr[6]))
+        self.printSteer = bool(int(tuv_params_arr[7]))
   
   def get_params_array(self):
     return [

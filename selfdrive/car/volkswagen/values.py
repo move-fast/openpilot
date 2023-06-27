@@ -25,7 +25,6 @@ class CarControllerParams:
 
   ACCEL_MAX = 2.0                         # 2.0 m/s max acceleration
   ACCEL_MIN = -3.5                        # 3.5 m/s max deceleration
-  tuvParams = TuvParams()
 
   def __init__(self, CP):
     # Documented lateral limits: 3.00 Nm max, rate of change 5.00 Nm/sec.
@@ -36,6 +35,7 @@ class CarControllerParams:
     self.STEER_DRIVER_FACTOR = 1          # from dbc
 
     self.externalControlMode = Params().get_bool("ExternalControlMode")
+    self.tuvParams = TuvParams()
     if self.externalControlMode:
       self.tuvParams.load()
       self.STEER_MAX = self.tuvParams.STEER_MAX
