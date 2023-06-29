@@ -234,7 +234,7 @@ class CarInterfaceBase(ABC):
     pass
 
   def create_common_events(self, cs_out, extra_gears=None, pcm_enable=True, allow_enable=True,
-                           enable_buttons=(ButtonType.accelCruise, ButtonType.decelCruise)):
+                           enable_buttons=(ButtonType.accelCruise, ButtonType.decelCruise), ignore_pcm_disable=False):
     events = Events()
 
     if cs_out.doorOpen:
@@ -301,7 +301,7 @@ class CarInterfaceBase(ABC):
     if pcm_enable:
       if cs_out.cruiseState.enabled and not self.CS.out.cruiseState.enabled and allow_enable:
         events.add(EventName.pcmEnable)
-      elif not cs_out.cruiseState.enabled:
+      elif not cs_out.cruiseState.enabled and not ignore_pcm_disable:
         events.add(EventName.pcmDisable)
 
     return events

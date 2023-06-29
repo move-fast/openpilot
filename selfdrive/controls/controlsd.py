@@ -221,6 +221,10 @@ class Controls:
 
     self.events.clear()
 
+    # Add PCM Cancel event if Request Disengage parameter is present.
+    if self.params.get_bool("RequestDisengage"):
+      self.events.add(EventName.pcmDisable)
+
     # Add startup event
     if self.startup_event is not None:
       self.events.add(self.startup_event)

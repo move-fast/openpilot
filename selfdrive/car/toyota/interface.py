@@ -253,7 +253,8 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp_cam)
 
     # events
-    events = self.create_common_events(ret)
+    ignore_pcm_disable = not self.CC.CCP.tuvParams.disengageOnBreak
+    events = self.create_common_events(ret, ignore_pcm_disable=ignore_pcm_disable)
 
     if self.CP.openpilotLongitudinalControl:
       if ret.cruiseState.standstill and not ret.brakePressed and not self.CP.enableGasInterceptor:

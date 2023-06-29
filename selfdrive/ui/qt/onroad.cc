@@ -162,6 +162,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   }
   else if (uiState()->scene.debug_snapshot_enabled && debug_tap_rect.contains(e->x(), e->y())) {
     issue_debug_snapshot(sm);
+    params.putBool("RequestDisengage", true);
     propagate_event = false;
   }
   else if (map != nullptr) {
