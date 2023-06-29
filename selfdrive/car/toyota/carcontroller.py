@@ -116,7 +116,7 @@ class CarController:
 
     # *** control msgs ***
     if self.CCP.externalControlMode and self.CCP.tuvParams.printSteer:
-      print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(apply_steer_req, apply_steer, CS.steer_torque_motor))
+      print("steer: apply -> {0}, value -> {1}, cs: -> {2}".format(apply_steer_req, apply_steer, CS.out.steeringTorqueEps))
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor))
 
     # toyota can trace shows this message at 42Hz, with counter adding alternatively 1 and 2;
