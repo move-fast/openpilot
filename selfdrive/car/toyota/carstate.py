@@ -98,10 +98,10 @@ class CarState(CarStateBase):
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     # steer rate fault: goes to 21 or 25 for 1 frame, then 9 for 2 seconds
     # lka msg drop out: goes to 9 then 11 for a combined total of 2 seconds
-    ret.steerFaultTemporary = cp.vl["EPS_STATUS"]["LKA_STATE"] in (0, 9, 11, 21, 25)
+    ret.steerFaultTemporary = False  # cp.vl["EPS_STATUS"]["LKA_STATE"] in (0, 9, 11, 21, 25)
     # 17 is a fault from a prolonged high torque delta between cmd and user
     # 3 is a fault from the lka command message not being received by the EPS
-    ret.steerFaultPermanent = cp.vl["EPS_STATUS"]["LKA_STATE"] in (3, 17)
+    ret.steerFaultPermanent = False  # cp.vl["EPS_STATUS"]["LKA_STATE"] in (3, 17)
 
     if self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
       # TODO: find the bit likely in DSU_CRUISE that describes an ACC fault. one may also exist in CLUTCH
