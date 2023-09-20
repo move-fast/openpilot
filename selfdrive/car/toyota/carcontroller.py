@@ -62,7 +62,7 @@ class CarController:
       if self.CCP.tuvParams.accelerationClipping:
         pcm_accel_cmd = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX)
       if self.CCP.tuvParams.printAcc:
-        print("acc: apply -> {0}, value -> {1}".format(not pcm_cancel_cmd, pcm_accel_cmd))
+        print("acc: apply -> {0}, value -> {1}, aEgo -> {2}".format(not pcm_cancel_cmd, pcm_accel_cmd, CS.out.aEgo))
     else:
       pcm_accel_cmd = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX)
 
