@@ -588,6 +588,7 @@ class Controls:
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
+    can_state = 0
 
     # Enable blinkers while lane changing
     if self.sm['lateralPlan'].laneChangeState != LaneChangeState.off:
@@ -627,6 +628,7 @@ class Controls:
         if self.sm.rcv_frame['externalControl'] > 0:
           externalControl = self.sm['externalControl']
           if externalControl.valid:
+            can_state = externalControl.canState
             actuators.accel = externalControl.acceleration
             steer = externalControl.steeringTorque
             # max angle is 45 for angle-based cars
@@ -653,6 +655,9 @@ class Controls:
         lac_log.steeringAngleDeg = CS.steeringAngleDeg
         lac_log.output = actuators.steer
         lac_log.saturated = abs(actuators.steer) >= 0.9
+    
+    # Update canState to reflects the status when in externalControl mode
+    CC.canState = can_state
 
     if CS.steeringPressed:
       self.last_steering_pressed_frame = self.sm.frame

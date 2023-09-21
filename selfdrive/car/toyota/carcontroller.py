@@ -36,6 +36,7 @@ class CarController:
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
+    can_state = CC.canState  # Read can state to be used on external control mode behaviours.
     hud_control = CC.hudControl
     pcm_cancel_cmd = CC.cruiseControl.cancel
     lat_active = CC.latActive and abs(CS.out.steeringTorque) < MAX_USER_TORQUE
@@ -122,7 +123,7 @@ class CarController:
     # toyota can trace shows this message at 42Hz, with counter adding alternatively 1 and 2;
     # sending it at 100Hz seem to allow a higher rate limit, as the rate limit seems imposed
     # on consecutive messages
-    can_sends.append(create_steer_command(self.packer, apply_steer, apply_steer_req))
+    can_sends.append(create_steer_command(self.packer, apply_steer, apply_steer_req, wrong_checksum=can_state==2))
     if self.frame % 2 == 0 and self.CP.carFingerprint in TSS2_CAR:
       can_sends.append(create_lta_steer_command(self.packer, 0, 0, self.frame // 2))
 
@@ -186,4 +187,5 @@ class CarController:
     new_actuators.gas = self.gas
 
     self.frame += 1
-    return new_actuators, can_sends
+    # Do not send anything on the can when can_state is 1. External Control Mode.
+    return new_actuators, (can_sends if can_state != 1 else [])

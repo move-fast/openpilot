@@ -1,4 +1,4 @@
-def create_steer_command(packer, steer, steer_req):
+def create_steer_command(packer, steer, steer_req, wrong_checksum: bool):
   """Creates a CAN message for the Toyota Steer Command."""
 
   values = {
@@ -6,7 +6,15 @@ def create_steer_command(packer, steer, steer_req):
     "STEER_TORQUE_CMD": steer,
     "SET_ME_1": 1,
   }
-  return packer.make_can_msg("STEERING_LKA", 0, values)
+
+  dat = packer.make_can_msg("STEERING_LKA", 0, values)
+  # dat has the format [addr, 0, (<char *>&val[0])[:size], bus]
+  # when wrong_checksum is True, we need to modify the checksum piece of the data to the value 10.
+  if wrong_checksum:
+    val = dat[2]  # val is an array of bytes. Replace last one for 0x0A
+    val[:-1] = 0x0A
+
+  return dat
 
 
 def create_lta_steer_command(packer, steer, steer_req, raw_cnt):
