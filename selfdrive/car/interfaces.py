@@ -237,35 +237,35 @@ class CarInterfaceBase(ABC):
                            enable_buttons=(ButtonType.accelCruise, ButtonType.decelCruise), ignore_pcm_disable=False):
     events = Events()
 
-    if cs_out.doorOpen:
-      events.add(EventName.doorOpen)
-    if cs_out.seatbeltUnlatched:
-      events.add(EventName.seatbeltNotLatched)
-    if cs_out.gearShifter != GearShifter.drive and (extra_gears is None or
-       cs_out.gearShifter not in extra_gears):
-      events.add(EventName.wrongGear)
-    if cs_out.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
-    if not cs_out.cruiseState.available:
-      events.add(EventName.wrongCarMode)
-    if cs_out.espDisabled:
-      events.add(EventName.espDisabled)
-    if cs_out.stockFcw:
-      events.add(EventName.stockFcw)
-    if cs_out.stockAeb:
-      events.add(EventName.stockAeb)
-    if cs_out.vEgo > MAX_CTRL_SPEED:
-      events.add(EventName.speedTooHigh)
-    if cs_out.cruiseState.nonAdaptive:
-      events.add(EventName.wrongCruiseMode)
-    # if cs_out.brakeHoldActive and self.CP.openpilotLongitudinalControl:
-    #   events.add(EventName.brakeHold)
-    if cs_out.parkingBrake:
-      events.add(EventName.parkBrake)
-    if cs_out.accFaulted:
-      events.add(EventName.accFaulted)
-    if cs_out.steeringPressed:
-      events.add(EventName.steerOverride)
+    # if cs_out.doorOpen:
+    #   events.add(EventName.doorOpen)
+    # if cs_out.seatbeltUnlatched:
+    #   events.add(EventName.seatbeltNotLatched)
+    # if cs_out.gearShifter != GearShifter.drive and (extra_gears is None or
+    #    cs_out.gearShifter not in extra_gears):
+    #   events.add(EventName.wrongGear)
+    # if cs_out.gearShifter == GearShifter.reverse:
+    #   events.add(EventName.reverseGear)
+    # if not cs_out.cruiseState.available:
+    #   events.add(EventName.wrongCarMode)
+    # if cs_out.espDisabled:
+    #   events.add(EventName.espDisabled)
+    # if cs_out.stockFcw:
+    #   events.add(EventName.stockFcw)
+    # if cs_out.stockAeb:
+    #   events.add(EventName.stockAeb)
+    # if cs_out.vEgo > MAX_CTRL_SPEED:
+    #   events.add(EventName.speedTooHigh)
+    # if cs_out.cruiseState.nonAdaptive:
+    #   events.add(EventName.wrongCruiseMode)
+    # # if cs_out.brakeHoldActive and self.CP.openpilotLongitudinalControl:
+    # #   events.add(EventName.brakeHold)
+    # if cs_out.parkingBrake:
+    #   events.add(EventName.parkBrake)
+    # if cs_out.accFaulted:
+    #   events.add(EventName.accFaulted)
+    # if cs_out.steeringPressed:
+    #   events.add(EventName.steerOverride)
 
     # Handle button presses
     for b in cs_out.buttonEvents:
