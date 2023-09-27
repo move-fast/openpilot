@@ -8,8 +8,8 @@ class TuvParams:
     self.ACCEL_MIN = -3.5  # m/s2
     self.STEER_MAX = 1500
     self.torqueRateLimiting = True
-    self.accelerationClipping = True
-    self.disengageOnBreak = True
+    self.accelerationClipping = False
+    self.disengageOnBreak = False
     self.printAcc = False
     self.printSteer = False
 

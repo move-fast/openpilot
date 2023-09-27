@@ -15,8 +15,8 @@ def tuvtest_config():
 
   # GENERAL SETTINGS ---------------
   # tuvParams.torqueRateLimiting = True
-  # tuvParams.accelerationClipping = True
-  # tuvParams.disengageOnBreak = True
+  # tuvParams.accelerationClipping = False
+  # tuvParams.disengageOnBreak = False
   # tuvParams.printAcc = False
   # tuvParams.printSteer = False
   
