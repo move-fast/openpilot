@@ -3,7 +3,8 @@ name: tools
 on:
   push:
     branches:
-      - master
+      - 'release_**'
+      - 'develop'
   pull_request:
 
 concurrency:
@@ -13,6 +14,7 @@ concurrency:
 env:
   BASE_IMAGE: openpilot-base
   CL_BASE_IMAGE: openpilot-base-cl
+  DOCKER_REGISTRY: ghcr.io/move-fast
   DOCKER_LOGIN: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
   BUILD: selfdrive/test/docker_build.sh base
