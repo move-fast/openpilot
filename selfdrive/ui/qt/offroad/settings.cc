@@ -71,6 +71,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
+    {
+      "HandsOnWheelMonitoring",
+      "Enable Hands on Wheel Monitoring",
+      "Monitor and alert when driver is not keeping the hands on the steering wheel.",
+      "../assets/offroad/icon_openpilot.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",

@@ -275,6 +275,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
+  how_img = loadPixmap("../assets/img_hands_on_wheel.png", {img_size, img_size});
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -319,6 +320,10 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
   dmActive = dm_state.getIsActiveMode();
   rightHandDM = dm_state.getIsRHD();
+  auto howState = sm["driverMonitoringState"].getDriverMonitoringState().getHandsOnWheelState();
+  showHowAlert = howState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING;
+  howWarning = howState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING;
+
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
 
@@ -534,6 +539,11 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   int y = height() - offset;
   float opacity = dmActive ? 0.65 : 0.2;
   drawIcon(painter, QPoint(x, y), dm_img, blackColor(70), opacity);
+
+  // Hands on wheel icon
+  if (showHowAlert) {
+    drawIcon(painter, QPoint(x, y), how_img, howWarning ? QColor("orange") : QColor("red"), opacity);
+  }
 
   // face
   QPointF face_kpts_draw[std::size(default_face_kpts_3d)];
