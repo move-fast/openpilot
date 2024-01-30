@@ -69,6 +69,10 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool showHowAlert MEMBER showHowAlert);
   Q_PROPERTY(bool howWarning MEMBER howWarning);
 
+  Q_PROPERTY(bool showVTC MEMBER showVTC);
+  Q_PROPERTY(QString vtcSpeed MEMBER vtcSpeed);
+  Q_PROPERTY(QColor vtcColor MEMBER vtcColor);
+
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -77,6 +81,9 @@ public:
 
 private:
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
+  void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
+  void drawVisionTurnControllerUI(QPainter &p, int x, int y, int size, const QColor &color, const QString &speed, 
+                                  int alpha);
 
   QVBoxLayout *main_layout;
   ExperimentalButton *experimental_btn;
@@ -88,6 +95,12 @@ private:
   float speedLimit;
   bool is_cruise_set = false;
   bool is_metric = false;
+  int status = STATUS_DISENGAGED;
+  std::unique_ptr<PubMaster> pm;
+
+  int skip_frame_count = 0;
+  bool wide_cam_requested = false;
+
   bool dmActive = false;
   bool hideBottomIcons = false;
   bool rightHandDM = false;
@@ -97,11 +110,10 @@ private:
   bool v_ego_cluster_seen = false;
   bool showHowAlert = false;
   bool howWarning = false;
-  int status = STATUS_DISENGAGED;
-  std::unique_ptr<PubMaster> pm;
 
-  int skip_frame_count = 0;
-  bool wide_cam_requested = false;
+  bool showVTC = false;
+  QString vtcSpeed;
+  QColor vtcColor;
 
 protected:
   void paintGL() override;
