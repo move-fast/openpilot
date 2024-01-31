@@ -83,6 +83,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "Use vision path predictions to estimate the appropriate speed to drive through turns ahead.",
       "../assets/offroad/icon_road.png",
     },
+    {
+      "ShowDebugUI",
+      "Show debug UI elements",
+      "Show UI elements that aid debugging.",
+      "../assets/offroad/icon_calibration.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",

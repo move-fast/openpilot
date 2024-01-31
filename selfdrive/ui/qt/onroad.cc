@@ -333,6 +333,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   vtcSpeed = QString::number(std::nearbyint(vtc_speed));
   vtcColor = tcs_colors[int(vtcState)];
   vtcColor.setAlpha(lpSoruce == cereal::LongitudinalPlan::LongitudinalPlanSource::TURN ? 255 : 100);
+  showDebugUI = s.scene.show_debug_ui;
 
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
@@ -439,7 +440,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.setFont(InterFont(66));
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
-  if (showVTC) {
+  if (showDebugUI && showVTC) {
     drawVisionTurnControllerUI(p, set_speed_rect.left(), set_speed_rect.bottom() + sign_margin, set_speed_rect.width(), 
                                vtcColor, vtcSpeed, 100);
   }
