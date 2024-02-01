@@ -17,6 +17,7 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
 from openpilot.selfdrive.controls.lib.vision_turn_controller import VisionTurnController
 from openpilot.selfdrive.controls.lib.speed_limit_controller import SpeedLimitController, SpeedLimitResolver
+from openpilot.selfdrive.controls.lib.turn_speed_controller import TurnSpeedController
 from openpilot.selfdrive.controls.lib.events import Events
 from openpilot.system.swaglog import cloudlog
 
@@ -69,6 +70,7 @@ class LongitudinalPlanner:
     self.cruise_source = 'cruise'
     self.vision_turn_controller = VisionTurnController(CP)
     self.speed_limit_controller = SpeedLimitController()
+    self.turn_speed_controller = TurnSpeedController()
     self.events = Events()
     self.personality = log.LongitudinalPersonality.standard
 
@@ -196,6 +198,11 @@ class LongitudinalPlanner:
     longitudinalPlan.isMapSpeedLimit = bool(self.speed_limit_controller.source == SpeedLimitResolver.Source.map_data)
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
+    longitudinalPlan.turnSpeedControlState = self.turn_speed_controller.state
+    longitudinalPlan.turnSpeed = float(self.turn_speed_controller.speed_limit)
+    longitudinalPlan.distToTurn = float(self.turn_speed_controller.distance)
+    longitudinalPlan.turnSign = int(self.turn_speed_controller.turn_sign)
+
     pm.send('longitudinalPlan', plan_send)
 
   def cruise_solutions(self, enabled, v_ego, a_ego, v_cruise, sm):
@@ -203,6 +210,7 @@ class LongitudinalPlanner:
     self.vision_turn_controller.update(enabled, v_ego, a_ego, v_cruise, sm)
     self.events = Events()
     self.speed_limit_controller.update(enabled, v_ego, a_ego, sm, v_cruise, self.events)
+    self.turn_speed_controller.update(enabled, v_ego, a_ego, sm)
 
     # Pick solution with lowest velocity target.
     a_solutions = {'cruise': float("inf")}
@@ -215,6 +223,10 @@ class LongitudinalPlanner:
     if self.speed_limit_controller.is_active:
       a_solutions['limit'] = self.speed_limit_controller.a_target
       v_solutions['limit'] = self.speed_limit_controller.speed_limit_offseted
+
+    if self.turn_speed_controller.is_active:
+      a_solutions['turnlimit'] = self.turn_speed_controller.a_target
+      v_solutions['turnlimit'] = self.turn_speed_controller.speed_limit
 
     source = min(v_solutions, key=v_solutions.get)
 
