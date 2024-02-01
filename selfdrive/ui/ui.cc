@@ -234,6 +234,7 @@ void UIState::updateStatus() {
       scene.show_debug_ui = Params().getBool("ShowDebugUI");
       scene.speed_limit_control_enabled = Params().getBool("SpeedLimitControl");
       scene.speed_limit_perc_offset = Params().getBool("SpeedLimitPercOffset");
+      scene.debug_snapshot_enabled = Params().getBool("EnableDebugSnapshot");
     }
     started_prev = scene.started;
     emit offroadTransition(!scene.started);

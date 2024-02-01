@@ -456,6 +456,29 @@
     </message>
 </context>
 <context>
+    <name>OnroadWindow</name>
+    <message>
+        <source>km/h</source>
+        <translation type="obsolete">km/h</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation type="obsolete">mph</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation type="obsolete">最高定速</translation>
+    </message>
+    <message>
+        <source>SPEED</source>
+        <translation type="obsolete">SPEED</translation>
+    </message>
+    <message>
+        <source>LIMIT</source>
+        <translation type="obsolete">LIMIT</translation>
+    </message>
+</context>
+<context>
     <name>PairingPopup</name>
     <message>
         <source>Pair your device to your comma account</source>

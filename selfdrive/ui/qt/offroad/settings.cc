@@ -107,6 +107,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "Show UI elements that aid debugging.",
       "../assets/offroad/icon_calibration.png",
     },
+    {
+      "EnableDebugSnapshot",
+      "Debug snapshot on screen center tap",
+      "Stores snapshot file with current state of some modules.",
+      "../assets/offroad/icon_calibration.png",
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
