@@ -112,6 +112,7 @@ tqdm = "*"
 websocket_client = "*"
 polyline = "*"
 sconscontrib = {git = "https://github.com/SCons/scons-contrib.git"}
+overpy = "==0.6"
 
 
 [tool.poetry.group.dev.dependencies]
