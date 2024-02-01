@@ -50,6 +50,8 @@ def manager_init() -> None:
     ("OpenpilotEnabledToggle", "1"),
     ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
     ("ShowDebugUI", "1"),
+    ("SpeedLimitControl", "1"),
+    ("SpeedLimitPercOffset", "1"),
     ("TurnVisionControl", "1"),
   ]
   if not PC:

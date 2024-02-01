@@ -22,6 +22,7 @@ const int UI_HEADER_HEIGHT = 420;
 
 const int UI_FREQ = 20; // Hz
 const int BACKLIGHT_OFFROAD = 50;
+const QRect speed_sgn_rc(12 * 2, 12 * 2.5 + 202, 184, 184);
 typedef cereal::CarControl::HUDControl::AudibleAlert AudibleAlert;
 
 const mat3 DEFAULT_CALIBRATION = {{ 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 }};
@@ -136,7 +137,11 @@ typedef struct UIScene {
   // Debug UI
   bool show_debug_ui;
 
-  // modelV2
+  // Speed limit control
+  bool speed_limit_control_enabled;
+  bool speed_limit_perc_offset;
+  double last_speed_limit_sign_tap;
+
   float lane_line_probs[4];
   float road_edge_stds[2];
   QPolygonF track_vertices;

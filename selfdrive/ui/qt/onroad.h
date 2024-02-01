@@ -76,6 +76,13 @@ class AnnotatedCameraWidget : public CameraWidget {
 
   Q_PROPERTY(QString roadName MEMBER roadName);
 
+  Q_PROPERTY(bool showSpeedLimit MEMBER showSpeedLimit);
+  Q_PROPERTY(QString speedLimitSLC MEMBER speedLimitSLC);
+  Q_PROPERTY(QString slcSubText MEMBER slcSubText);
+  Q_PROPERTY(float slcSubTextSize MEMBER slcSubTextSize);
+  Q_PROPERTY(bool mapSourcedSpeedLimit MEMBER mapSourcedSpeedLimit);
+  Q_PROPERTY(bool slcActive MEMBER slcActive);
+
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
@@ -87,6 +94,9 @@ private:
   void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
   void drawVisionTurnControllerUI(QPainter &p, int x, int y, int size, const QColor &color, const QString &speed, 
                                   int alpha);
+  void drawCircle(QPainter &p, int x, int y, int r, QBrush bg);
+  void drawSpeedSign(QPainter &p, QRect rc, const QString &speed, const QString &sub_text, int subtext_size, 
+                     bool is_map_sourced, bool is_active);
 
   QVBoxLayout *main_layout;
   ExperimentalButton *experimental_btn;
@@ -123,6 +133,13 @@ private:
   bool showDebugUI = false;
   
   QString roadName;
+
+  bool showSpeedLimit = false;
+  QString speedLimitSLC;
+  QString slcSubText;
+  float slcSubTextSize = 0.0;
+  bool mapSourcedSpeedLimit = false;
+  bool slcActive = false;
 
 protected:
   void paintGL() override;
