@@ -79,8 +79,7 @@ class CarController:
       apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.CCP)
 
     # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault.
-    # We do not do this when in External Control Mode so that car safety is persistent after user takes control
-    if lat_active and not self.CCP.externalControlMode and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
+    if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
       self.steer_rate_counter += 1
     else:
       self.steer_rate_counter = 0
